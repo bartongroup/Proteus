@@ -107,7 +107,7 @@ makePeptideTable <- function(evi) {
 #' Split peptide table (containing all samples) into separate tables, one per condition.
 #' Condition information is provided in the meta table.
 #' @param meta Metadata data frame, needs columns 'sample' and 'condition'.
-#' @params peptab Peptide table
+#' @param peptab Peptide table
 #' @return A list of intensity tables, one per condition.
 splitConditions <- function(peptab, meta) {
   conditions <- levels(meta$condition)
@@ -191,7 +191,7 @@ standardize <- function(v, trim=0){
   v <- as.numeric(v)
   x <- v[!is.na(v)]
   n <- length(x)
-  if(n < 2) stop("Need at lest 2 points in standardize")
+  #if(n < 2) stop("Need at lest 2 points in standardize")
 
   if(trim > 0) {
    if(n - 2*trim < 2) stop("Too much trim")
@@ -208,7 +208,7 @@ standardize <- function(v, trim=0){
 #' Plot peptide count per sample
 #'
 #' @param peptab Peptide table
-#' @meta meta Metadata table (needed to separate conditions)
+#' @param meta Metadata table (needed to separate conditions)
 #' @return A plot of the number of peptides detected in each sample
 plotPeptideCount <- function(peptab, meta){
   pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
@@ -223,7 +223,6 @@ plotPeptideCount <- function(peptab, meta){
 #' @param sigma Z-score limit, default value is 5
 #' @param trim Number of trimmed points on each side for finding Z-score
 #' @return Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
-
 downlierSigma <- function(v, sigma=5, trim=0) {
   v <- na.omit(v)
   n <- length(v)

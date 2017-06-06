@@ -7,6 +7,8 @@
 splitConditions(peptab, meta)
 }
 \arguments{
+\item{peptab}{Peptide table}
+
 \item{meta}{Metadata data frame, needs columns 'sample' and 'condition'.}
 }
 \value{

@@ -3,10 +3,9 @@ Type: Package
 Title: Downstream analysis of the MaxQuant output
 Version: 0.1.0
 Author: MG
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Maintainer: Marek Gierlinski
+Description: Just a few function for analysing evidence files.
+License: Driving license cat. B
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1

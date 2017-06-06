@@ -151,6 +151,11 @@ testNormality <- function(int) {
 
 #####
 
+#' Standardize a vector
+#'
+#' Calculate Z-scores for a vectore, NAs are ignored.
+#' @param x Input numeric vector
+#' @return Z-score vector
 standardize <- function(x){
   x <- as.numeric(x)
   s <- (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)

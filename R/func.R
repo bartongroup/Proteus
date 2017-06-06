@@ -193,35 +193,24 @@ standardize <- function(x){
 }
 
 #####
-
+#' Plot peptide count per sample
+#'
+#' @param peptab Peptide table
+#' @meta meta Metadata table (needed to separate conditions)
+#' @return A plot of the number of peptides detected in each sample
 plotPeptideCount <- function(peptab, meta){
   pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
   df <- data.frame(x=samples, y=pep.count, condition=meta$condition)
   ggplot(df, aes(x=x,y=y,color=condition)) + geom_col() + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) + labs(x='Sample', y='Peptide count')
 }
 
-#####
-
-
-reportPeptide <- function(ev, mypep, mqpep, sequence='AGAIENARK', sample='1083-1'){
-  e <- ev[which(ev$sequence == sequence & ev$experiment == sample),]
-  k1 <- select(e, modseq, charge, type, numscans, pep, score, intensity)
-  k2 <- data.frame(
-    our_intensity = mypep[sequence, sample],
-    MaxQuant_intensity = mqpep[sequence, sample]
-  )
-  print(kable(k1))
-  print(kable(k2))
-  #return(list(k1, k2))
-}
-
-####
-
+#' Detect downliers
 #'
-#'
-#'
-#'
-selectSigma <- function(v, sigma=5) {
+#' Detect a downlier based on Z-score.
+#' @param v An input numeric vector
+#' @param sigma Z-score limit, default value is 5
+#' @return Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
+downlierSigma <- function(v, sigma=5) {
   v <- na.omit(v)
   n <- length(v)
   if(n < 7) return(0)

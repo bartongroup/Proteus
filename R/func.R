@@ -187,6 +187,10 @@ reportPeptide <- function(ev, mypep, mqpep, sequence='AGAIENARK', sample='1083-1
 
 ####
 
+#'
+#'
+#'
+#'
 selectSigma <- function(v, sigma=5) {
   v <- na.omit(v)
   n <- length(v)

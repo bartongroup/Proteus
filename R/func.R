@@ -1,5 +1,3 @@
-library(nortest)
-
 #' Evidence columns
 #'
 #' Columns to be read from the evidence file. This matrix contains two rows: first with the name used
@@ -124,7 +122,12 @@ splitConditions <- function(peptab, meta) {
 
 #######
 
-testNormality <- function(int) {
+#' Normality test wrapper
+#'
+#' Performs a normality test for the intensity table list (all conditions).
+#' @param int Intensity table list (created with splitConditions)
+#' @return A list of data frames with mean, p-value and adjusted p-value
+testNormalityConditions <- function(int) {
   norm.test <- list()
   for(condition in names(int)) {
     w <- int[[condition]]
@@ -148,6 +151,33 @@ testNormality <- function(int) {
   }
   return(norm.test)
 }
+
+#####
+
+#' Anderson-Darling test for normality
+#'
+#' Performs a normality test for the intensity table, row by row.
+#' @param w Intensity table (columns: replicates, rows: peptides/proteins/genes etc.)
+#' @return Data frame with mean intensity, p-value and BH-adjusted p-value
+testNormality <- function(w) {
+  P <- c()
+  # struggled with apply here, so just an old-fashined loop
+  for(i in 1:nrow(w)) {
+    p <- 1
+    x <- na.omit(as.numeric(w[i,]))
+    if(length(x) > 7) {
+      ad <- ad.test(x)
+      p <- ad$p.value
+    }
+    P <- c(P, p)
+  }
+  data.frame(
+    mean = rowMeans(w, na.rm=TRUE),
+    p = P,
+    p.adj = p.adjust(P, method="BH")
+  )
+}
+
 
 #####
 

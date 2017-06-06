@@ -183,12 +183,24 @@ testNormality <- function(w) {
 
 #' Standardize a vector
 #'
-#' Calculate Z-scores for a vectore, NAs are ignored.
-#' @param x Input numeric vector
+#' Calculate Z-scores for a vector, NAs are ignored.
+#' @param v Input numeric vector
+#' @param trim A number of point to be trimmed on each side for mean and sd
 #' @return Z-score vector
-standardize <- function(x){
-  x <- as.numeric(x)
-  s <- (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
+standardize <- function(v, trim=0){
+  v <- as.numeric(v)
+  x <- v[!is.na(v)]
+  n <- length(x)
+  if(n < 2) stop("Need at lest 2 points in standardize")
+
+  if(trim > 0) {
+   if(n - 2*trim < 2) stop("Too much trim")
+    x <- sort(x)
+    lo <- trim + 1
+    up <- n - trim
+    x <- x[lo:up]
+  }
+  s <- (v - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
   return(s)
 }
 
@@ -210,6 +222,7 @@ plotPeptideCount <- function(peptab, meta){
 #' @param v An input numeric vector
 #' @param sigma Z-score limit, default value is 5
 #' @return Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
+
 downlierSigma <- function(v, sigma=5) {
   v <- na.omit(v)
   n <- length(v)

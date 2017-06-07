@@ -12,5 +12,5 @@ normalizeTable(peptab, normfac)
 \item{normfac}{A vector of normalizing factors.}
 }
 \description{
-Normalize peptide table with normalizing factors. Column and row names are retained.
+Normalize peptide table with normalizing factors. Attributes are retained.
 }

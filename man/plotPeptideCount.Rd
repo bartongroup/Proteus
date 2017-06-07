@@ -4,12 +4,10 @@
 \alias{plotPeptideCount}
 \title{Plot peptide count per sample}
 \usage{
-plotPeptideCount(peptab, meta)
+plotPeptideCount(peptab)
 }
 \arguments{
-\item{peptab}{Peptide table}
-
-\item{meta}{Metadata table (needed to separate conditions)}
+\item{peptab}{Peptide table (with metadata attribute)}
 }
 \value{
 A plot of the number of peptides detected in each sample

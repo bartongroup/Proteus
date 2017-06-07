@@ -4,10 +4,12 @@
 \alias{readEvidenceFile}
 \title{Read MaxQuant's evidence file}
 \usage{
-readEvidenceFile(file)
+readEvidenceFile(file, columns = evidenceColumns)
 }
 \arguments{
 \item{file}{File name.}
+
+\item{columns}{Named list with columns to read.}
 }
 \value{
 Data frame with selected columns from the evidence file.

@@ -4,12 +4,12 @@
 \name{evidenceColumns}
 \alias{evidenceColumns}
 \title{Evidence columns}
-\format{An object of class \code{matrix} with 2 rows and 15 columns.}
+\format{An object of class \code{list} of length 15.}
 \usage{
 evidenceColumns
 }
 \description{
-Columns to be read from the evidence file. This matrix contains two rows: first with the name used
-in the package and second with the original name.
+Columns to be read from the evidence file. This list contains names of columns to be read.
+The names of list elements are used internally to reference evidence data.
 }
 \keyword{datasets}

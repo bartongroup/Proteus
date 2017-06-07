@@ -4,10 +4,12 @@
 \alias{testNormalityConditions}
 \title{Normality test wrapper}
 \usage{
-testNormalityConditions(int)
+testNormalityConditions(intab, norm = "median")
 }
 \arguments{
-\item{int}{Intensity table list (created with splitConditions)}
+\item{norm}{How to normalize intensities (default: "median")}
+
+\item{int}{Intensity table}
 }
 \value{
 A list of data frames with mean, p-value and adjusted p-value

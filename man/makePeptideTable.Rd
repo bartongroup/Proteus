@@ -4,10 +4,12 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi)
+makePeptideTable(evi, meta)
 }
 \arguments{
 \item{evi}{Evidence table created with readEvidenceFile.}
+
+\item{meta}{Data frame with metadata. As minimum, it should contain "sample" and "condition"}
 }
 \value{
 Peptide intensity table.

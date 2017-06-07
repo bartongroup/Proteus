@@ -30,7 +30,7 @@ evidenceColumns <- list(
 #' @return Data frame with selected columns from the evidence file.
 readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
-  evi <- evi[, columns]
+  evi <- evi[, as.character(columns)]
   names(evi) <- names(columns)
   # sometimes there are only NAs and the condition doesn't work
   evi$reverse[is.na(evi$reverse)] = ''
@@ -48,6 +48,7 @@ readPeptideFile <- function(file) {
   pep$Reverse[is.na(pep$Reverse)] = ''
   pep$`Potential contaminant`[is.na(pep$`Potential contaminant`)] = ''
   pep <- pep[which(pep$`Potential contaminant` != '+' & pep$Reverse != '+'),]
+  attr(pep, "norm") <- "none"
 }
 
 
@@ -63,6 +64,7 @@ normalizingFactors <- function(peptab, method="median") {
   } else {
     stop("Unknown normalization method.")
   }
+  attr(norm, "method") <- method
   return(norm)
 }
 
@@ -70,15 +72,14 @@ normalizingFactors <- function(peptab, method="median") {
 
 #' Normalize peptide table
 #'
-#' Normalize peptide table with normalizing factors. Column and row names are retained.
+#' Normalize peptide table with normalizing factors. Attributes are retained.
 #' @param peptab Peptab table.
 #' @param normfac A vector of normalizing factors.
 normalizeTable <- function(peptab, normfac) {
-  rows <- rownames(peptab)
-  cols <- colnames(peptab)
-  peptab <- t(t(peptab) / normfac)
-  rownames(peptab) <- rows
-  colnames(peptab) <- cols
+  atr <- attributes(peptab)
+  peptab <- data.frame(t(t(peptab) / normfac))  # this clears all attributes!
+  attributes(peptab) <- atr
+  attr(peptab, "norm") = attr(normfac, "method")
   return(peptab)
 }
 
@@ -89,14 +90,17 @@ normalizeTable <- function(peptab, normfac) {
 #' Creates a table with columns corresponding to samples (experiments) and rows corresponding to peptides.
 #' Each cell is a sum of all intensities for this sample/peptide in the input evidence data.
 #' @param evi Evidence table created with readEvidenceFile.
+#' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition"
 #' @return Peptide intensity table.
-makePeptideTable <- function(evi) {
+makePeptideTable <- function(evi, meta) {
   peptab.raw <- cast(evi, sequence ~ experiment, sum, value = 'intensity')
   peptab.raw[peptab.raw == 0] <- NA
   rownames(peptab.raw) <- peptab.raw$sequence
   peptab.raw <- peptab.raw[,2:ncol(peptab.raw)]
   # cast creates a 'cast_data_frame' or something and this screws things up
   peptab.raw <- as.data.frame(peptab.raw)
+  attr(peptab.raw, "metadata") <- meta
+  attr(peptab.raw, "norm") <- "none"
   return(peptab.raw)
 }
 
@@ -106,18 +110,18 @@ makePeptideTable <- function(evi) {
 #'
 #' Split peptide table (containing all samples) into separate tables, one per condition.
 #' Condition information is provided in the meta table.
-#' @param meta Metadata data frame, needs columns 'sample' and 'condition'.
-#' @param peptab Peptide table
+#' @param intab Intensity table
 #' @return A list of intensity tables, one per condition.
-splitConditions <- function(peptab, meta) {
+splitConditions <- function(intab) {
+  meta <- attr(intab, "metadata")
   conditions <- levels(meta$condition)
-  int <- list()
+  inlist <- list()
   for(condition in conditions) {
     colnames <- as.character(meta$sample[which(meta$condition == condition)])
-    tab <- peptab[,colnames]
-    int[[condition]] <- tab
+    tab <- intab[,colnames]
+    inlist[[condition]] <- tab
   }
-  return(int)
+  return(inlist)
 }
 
 #######
@@ -125,12 +129,17 @@ splitConditions <- function(peptab, meta) {
 #' Normality test wrapper
 #'
 #' Performs a normality test for the intensity table list (all conditions).
-#' @param int Intensity table list (created with splitConditions)
+#' @param int Intensity table
+#' @param norm How to normalize intensities (default: "median")
 #' @return A list of data frames with mean, p-value and adjusted p-value
-testNormalityConditions <- function(int) {
+testNormalityConditions <- function(intab, norm="median") {
+  normfac <- normalizingFactors(intab, norm)
+  intab <- normalizeTable(intab, normfac)
+  intab <- log10(intab)
+  inlist <- splitConditions(intab)
   norm.test <- list()
-  for(condition in names(int)) {
-    w <- int[[condition]]
+  for(condition in names(inlist)) {
+    w <- inlist[[condition]]
     P <- c()
     # struggled with apply here, so just an old-fashined loop
     for(i in 1:nrow(w)) {
@@ -207,10 +216,11 @@ standardize <- function(v, trim=0){
 #####
 #' Plot peptide count per sample
 #'
-#' @param peptab Peptide table
-#' @param meta Metadata table (needed to separate conditions)
+#' @param peptab Peptide table (with metadata attribute)
 #' @return A plot of the number of peptides detected in each sample
-plotPeptideCount <- function(peptab, meta){
+plotPeptideCount <- function(peptab){
+  meta <- attr(peptab, "metadata")
+  if(is.null(meta)) stop("Attribute 'metadata' is missing from table")
   pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
   df <- data.frame(x=samples, y=pep.count, condition=meta$condition)
   ggplot(df, aes(x=x,y=y,color=condition)) + geom_col() + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) + labs(x='Sample', y='Peptide count')
@@ -224,7 +234,7 @@ plotPeptideCount <- function(peptab, meta){
 #' @param trim Number of trimmed points on each side for finding Z-score
 #' @return Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
 downlierSigma <- function(v, sigma=5, trim=0) {
-  v <- na.omit(v)
+  v <- na.omit(as.numeric(v))
   n <- length(v)
   if(n < 7) return(0)
 

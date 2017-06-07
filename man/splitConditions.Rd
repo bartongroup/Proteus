@@ -4,12 +4,10 @@
 \alias{splitConditions}
 \title{Split peptide table into conditions}
 \usage{
-splitConditions(peptab, meta)
+splitConditions(intab)
 }
 \arguments{
-\item{peptab}{Peptide table}
-
-\item{meta}{Metadata data frame, needs columns 'sample' and 'condition'.}
+\item{intab}{Intensity table}
 }
 \value{
 A list of intensity tables, one per condition.

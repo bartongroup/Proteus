@@ -1,24 +1,23 @@
 #' Evidence columns
 #'
-#' Columns to be read from the evidence file. This matrix contains two rows: first with the name used
-#' in the package and second with the original name.
-evidenceColumns <- matrix(c(
-  'sequence', 'Sequence',
-  'modseq', 'Modified sequence',
-  'modifications', 'Modifications',
-  'proteins', 'Proteins',
-  'protein', 'Leading razor protein',
-  'type', 'Type',
-  'experiment', 'Experiment',
-  'charge', 'Charge',
-  'numpoints', 'Number of data points',
-  'numscans', 'Number of scans',
-  'pep', 'PEP',
-  'score', 'Score',
-  'intensity', 'Intensity',
-  'reverse', 'Reverse',
-  'contaminant', 'Potential contaminant'
-),2
+#' Columns to be read from the evidence file. This list contains names of columns to be read.
+#' The names of list elements are used internally to reference evidence data.
+evidenceColumns <- list(
+  sequence = 'Sequence',
+  modseq = 'Modified sequence',
+  modifications = 'Modifications',
+  proteins = 'Proteins',
+  protein = 'Leading razor protein',
+  type = 'Type',
+  experiment = 'Experiment',
+  charge = 'Charge',
+  numpoints = 'Number of data points',
+  numscans = 'Number of scans',
+  pep = 'PEP',
+  score = 'Score',
+  intensity = 'Intensity',
+  reverse = 'Reverse',
+  contaminant = 'Potential contaminant'
 )
 
 #' Read MaxQuant's evidence file
@@ -27,11 +26,12 @@ evidenceColumns <- matrix(c(
 #' Contaminants and reverse sequences are filtered out.
 #'
 #' @param file File name.
+#' @param columns Named list with columns to read.
 #' @return Data frame with selected columns from the evidence file.
-readEvidenceFile <- function(file) {
+readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
-  evi <- evi[,evidenceColumns[2,]]
-  names(evi) <- evidenceColumns[1,]
+  evi <- evi[, columns]
+  names(evi) <- names(columns)
   # sometimes there are only NAs and the condition doesn't work
   evi$reverse[is.na(evi$reverse)] = ''
   evi$contaminant[is.na(evi$contaminant)] = ''

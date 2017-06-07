@@ -129,7 +129,7 @@ splitConditions <- function(intab) {
 #' Normality test wrapper
 #'
 #' Performs a normality test for the intensity table list (all conditions).
-#' @param int Intensity table
+#' @param intab Intensity table, unnormalized raw data
 #' @param norm How to normalize intensities (default: "median")
 #' @return A list of data frames with mean, p-value and adjusted p-value
 testNormalityConditions <- function(intab, norm="median") {
@@ -247,3 +247,27 @@ downlierSigma <- function(v, sigma=5, trim=0) {
     return(0)
   }
 }
+
+#' Statistics for an intensity table
+#'
+#' Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,
+#' for all conditions)
+#' @param intab Intensity table
+#' @return List of data frames with statistics, one per conditions
+intensityStats <- function(intab) {
+  meta <- attr(intab, "metadata")
+  logflag <- attr(intab, "logflag")
+  if(is.null(logflag)) logflag <- FALSE
+
+  intlist <- splitConditions(intab)
+  stats <- list()
+  for(condition in conditions) {
+    w <- intlist[[condition]]
+    if(!logflag) w <- log10(w)
+    m <- rowMeans(w, na.rm=TRUE)
+    v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
+    stats[[condition]] <- data.frame(mean=m, variance=v)
+  }
+  return(stats)
+}
+

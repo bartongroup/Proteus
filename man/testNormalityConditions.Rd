@@ -7,9 +7,9 @@
 testNormalityConditions(intab, norm = "median")
 }
 \arguments{
-\item{norm}{How to normalize intensities (default: "median")}
+\item{intab}{Intensity table, unnormalized raw data}
 
-\item{int}{Intensity table}
+\item{norm}{How to normalize intensities (default: "median")}
 }
 \value{
 A list of data frames with mean, p-value and adjusted p-value

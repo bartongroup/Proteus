@@ -90,17 +90,24 @@ normalizeTable <- function(peptab, normfac) {
 #' Creates a table with columns corresponding to samples (experiments) and rows corresponding to peptides.
 #' Each cell is a sum of all intensities for this sample/peptide in the input evidence data.
 #' @param evi Evidence table created with readEvidenceFile.
-#' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition"
+#' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition".
+#' @param id A column name to identify peptides. The default is "sequence". Can be "modseq".
+#' @param value A column name to use for results. The default is "intensity".
 #' @return Peptide intensity table.
-makePeptideTable <- function(evi, meta) {
-  peptab.raw <- cast(evi, sequence ~ experiment, sum, value = 'intensity')
+makePeptideTable <- function(evi, meta, id="sequence", value="intensity") {
+  if(!id %in% c("sequence", "modseq")) stop("Incorrect id. Has to be 'sequence' or 'modseq'.")
+  form <- as.formula(paste0(id, " ~ experiment"))
+  peptab.raw <- cast(evi, form, sum, value = value)
   peptab.raw[peptab.raw == 0] <- NA
-  rownames(peptab.raw) <- peptab.raw$sequence
+  rownames(peptab.raw) <- peptab.raw[,1]
   peptab.raw <- peptab.raw[,2:ncol(peptab.raw)]
   # cast creates a 'cast_data_frame' or something and this screws things up
   peptab.raw <- as.data.frame(peptab.raw)
   attr(peptab.raw, "metadata") <- meta
   attr(peptab.raw, "norm") <- "none"
+  attr(peptab.raw, "logflag") <- FALSE
+  attr(peptab.raw, "id") <- id
+  attr(peptab.raw, "value") <- value
   return(peptab.raw)
 }
 

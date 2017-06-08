@@ -20,6 +20,15 @@ evidenceColumns <- list(
   contaminant = 'Potential contaminant'
 )
 
+library(ggplot2)
+simple_theme <- theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_line(colour = "grey90"),
+    panel.grid.minor = element_line(colour = "grey95"),
+    axis.line = element_line(colour = "black")
+  )
+
 #' Read MaxQuant's evidence file
 #'
 #' Works only with unlabelled data, that is, the evidence file with one Intensity column.
@@ -281,20 +290,22 @@ downlierSigma <- function(v, sigma=5, trim=0) {
 #' Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,
 #' for all conditions)
 #' @param intab Intensity table
-#' @return List of data frames with statistics, one per conditions
+#' @return A data frame with several statistics
 intensityStats <- function(intab) {
   meta <- attr(intab, "metadata")
   logflag <- attr(intab, "logflag")
   if(is.null(logflag)) logflag <- FALSE
 
-  intlist <- splitConditions(intab)
-  stats <- list()
+  conditions <- levels(meta$condition)
+  stats <- NULL
   for(condition in conditions) {
-    w <- intlist[[condition]]
+    w <- intab[,which(meta$condition == condition)]
     if(logflag) w <- 10^w
     m <- rowMeans(w, na.rm=TRUE)
+    m[which(is.nan(m))] <- NA
     v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
-    stats[[condition]] <- data.frame(mean=m, variance=v)
+    ngood <- apply(w, 1, function(v) sum(!is.na(v)))
+    stats <- rbind(stats, data.frame(condition=condition, mean=m, variance=v, ngood=ngood))
   }
   return(stats)
 }
@@ -312,28 +323,35 @@ plotMV <- function(intab, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
 
   stats <- attr(intab, "stats")
   if(is.null(stats)) stats <- intensityStats(intab)
+  stats$mean <- log10(stats$mean)
+  stats$variance <- log10(stats$variance)
 
-  P <- list()
-  for(condition in conditions) {
-    st <- stats[[condition]]
-    df <- data.frame(mean=log10(st$mean), variance=log10(st$variance))
-    P[[condition]] <- ggplot(df, aes(mean, variance)) + geom_point(alpha=0.3) +
-      labs(x="log mean", y="log variance", title=paste0(condition, " n = ", length(na.omit(st$variance)))) +
-      xlim(xmin, xmax) +
-      ylim(ymin, ymax)
-    if(with.loess) {
-      ls <- loess(variance ~ mean, data=df)
-      x <- seq(from=min(na.omit(df$mean)), to=max(na.omit(df$mean)), by=0.05)
+  # has to be calculated for each condition separately
+  if(with.loess) {
+    ldf <- NULL
+    for(cond in levels(conditions))
+    {
+      st <- stats[which(stats$condition == cond),]
+      ls <- loess(variance ~ mean, data=st)
+      x <- seq(from=min(na.omit(st$mean)), to=max(na.omit(st$mean)), by=0.01)
       pr <- predict(ls, x)
-      pf <- data.frame(x=x, y=pr)
-      P[[condition]] <- P[[condition]] + geom_line(data=pf, aes(x,y), color='yellow')
+      ldf <- rbind(ldf, data.frame(condition=cond, x=x, y=pr))
     }
   }
-  grid.arrange(grobs=P, ncol=length(P))
+
+  ggplot(s, aes(x=log10(mean), y=log10(variance))) +
+    simple_theme +
+    xlim(xmin, xmax) +
+    ylim(ymin, ymax) +
+    facet_wrap(~condition) +
+    stat_binhex(bins=80) +
+    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
+    if(with.loess) {geom_line(data=ldf, aes(x,y), color='black')}
+
 }
 
 
-#' Make proteins
+#' Make protein table
 #'
 #' Create a protein table from the peptide table using high-flyers.
 #' @param evi Evidence table, used only to cross-reference peptides with proteins.
@@ -342,7 +360,7 @@ plotMV <- function(intab, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
 #' @param norm Normalization to use on peptides before converting into proteins.
 #' @param min.peptides Minimum number of peptides per protein.
 #' @return Protein intensity table.
-makeProteins <- function(evi, peptab, hifly=3, norm="median", min.peptides=1) {
+makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1) {
   meta <- attr(peptab, "metadata")
   normfac <- normalizingFactors(peptab, method=norm)
   peptab <- normalizeTable(peptab, normfac)

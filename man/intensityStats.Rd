@@ -10,7 +10,7 @@ intensityStats(intab)
 \item{intab}{Intensity table}
 }
 \value{
-List of data frames with statistics, one per conditions
+A data frame with several statistics
 }
 \description{
 Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,

@@ -14,7 +14,7 @@ downlierSigma(v, sigma = 5, trim = 0)
 \item{trim}{Number of trimmed points on each side for finding Z-score}
 }
 \value{
-Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
+Integer vector with index of all downliers. If there are no downliers, the vector is empty.
 }
 \description{
 Detect a downlier based on Z-score.

@@ -220,6 +220,27 @@ standardize <- function(v, trim=0){
   return(s)
 }
 
+#' Trim a vector
+#'
+#' Trim a vector by replacing "trim" top and bottom elements with NA.
+#'
+#' @param v Input vector
+#' @param trim number of elements to remove on each side
+#' @return Trimmed vector
+trimVector <- function(v, trim) {
+  if(trim == 0) return(v)
+  n <- length(which(!is.na(v)))
+  if(n - 2*trim < 2) stop("Too much trim")
+  # index of sorted elements. na.last indicates to put NAs at the end. This works only with radix.
+  idx <- sort.int(x, index.return = TRUE, na.last=TRUE, method="radix")$ix
+  lo <- trim
+  up <- n-trim+1
+  last <- length(idx)
+  v[idx[1:lo]] <- NA
+  v[idx[up:last]] <- NA
+  return(v)
+}
+
 #####
 #' Plot peptide count per sample
 #'
@@ -239,20 +260,14 @@ plotPeptideCount <- function(peptab){
 #' @param v An input numeric vector
 #' @param sigma Z-score limit, default value is 5
 #' @param trim Number of trimmed points on each side for finding Z-score
-#' @return Index of the downlier if detected (that is the lowest intensity Z-score is less than sigma), otherwise zero.
+#' @return Integer vector with index of all downliers. If there are no downliers, the vector is empty.
 downlierSigma <- function(v, sigma=5, trim=0) {
-  v <- na.omit(as.numeric(v))
-  n <- length(v)
-  if(n < 7) return(0)
+  n <- length(which(!is.na(v)))
+  if(n < 6) return(integer(0))
 
   Z <- standardize(v, trim)
-  down <- which.min(Z)
-
-  if(Z[down] <= -sigma) {
-    return(down)
-  } else {
-    return(0)
-  }
+  down <- which(Z <= -sigma)
+  return(down)
 }
 
 #' Statistics for an intensity table

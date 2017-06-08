@@ -59,29 +59,3 @@ makeProteins <- function(evi, peptab, norm="median") {
   return(protab)
 }
 
-plotMV <- function(intab, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
-  meta <- attr(intab, "metadata")
-  if(is.null(meta)) stop("No metadata found.")
-  conditions <- meta$condition
-
-  stats <- attr(intab, "stats")
-  if(is.null(stats)) stats <- intensityStats(intab)
-
-  P <- list()
-  for(condition in conditions) {
-    st <- stats[[condition]]
-    df <- data.frame(mean=log10(st$mean), variance=log10(st$variance))
-    P[[condition]] <- ggplot(df, aes(mean, variance)) + geom_point(alpha=0.3) +
-      labs(x="log mean", y="log variance", title=condition) +
-      xlim(xmin, xmax) +
-      ylim(ymin, ymax)
-    if(with.loess) {
-      ls <- loess(variance ~ mean, data=df)
-      x <- seq(from=min(na.omit(df$mean)), to=max(na.omit(df$mean)), by=0.05)
-      pr <- predict(ls, x)
-      pf <- data.frame(x=x, y=pr)
-      P[[condition]] <- P[[condition]] + geom_line(data=pf, aes(x,y), color='yellow')
-    }
-  }
-  grid.arrange(grobs=P, ncol=length(P))
-}

@@ -5,7 +5,7 @@
 \title{Make protein table}
 \usage{
 makeProteinTable(evi, peptab, hifly = 3, norm = "median",
-  min.peptides = 1)
+  min.peptides = 1, verbose = FALSE)
 }
 \arguments{
 \item{evi}{Evidence table, used only to cross-reference peptides with proteins.}

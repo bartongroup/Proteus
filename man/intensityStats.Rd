@@ -4,10 +4,10 @@
 \alias{intensityStats}
 \title{Statistics for an intensity table}
 \usage{
-intensityStats(intab)
+intensityStats(pdat)
 }
 \arguments{
-\item{intab}{Intensity table}
+\item{pdat}{Intensity dat tructure}
 }
 \value{
 A data frame with several statistics

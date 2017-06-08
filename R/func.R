@@ -63,12 +63,12 @@ readPeptideFile <- function(file) {
 
 #' Calculate normalizing factors
 #'
-#' @param peptab peptide intensity table for all conditions.
-#' @param method method of normalization, only 'median' at the moment.
+#' @param tab Intensity table for all conditions.
+#' @param method Method of normalization, only 'median' at the moment.
 #' @return A vector with normalizing factors.
-normalizingFactors <- function(peptab, method="median") {
+normalizingFactors <- function(tab, method="median") {
   if(method == 'median') {
-    norm <- apply(peptab, 2, function(x) {median(x, na.rm=TRUE)})
+    norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
     norm <- norm / mean(norm)
   } else {
     stop("Unknown normalization method.")
@@ -79,17 +79,16 @@ normalizingFactors <- function(peptab, method="median") {
 
 ######
 
-#' Normalize peptide table
+#' Normalize intensity table
 #'
-#' Normalize peptide table with normalizing factors. Attributes are retained.
-#' @param peptab Peptab table.
+#' Normalize intensity table with normalizing factors. Attributes are retained.
+#' @param tab Peptab table.
 #' @param normfac A vector of normalizing factors.
-normalizeTable <- function(peptab, normfac) {
-  atr <- attributes(peptab)
-  peptab <- data.frame(t(t(peptab) / normfac))  # this clears all attributes!
-  attributes(peptab) <- atr
-  attr(peptab, "norm") = attr(normfac, "method")
-  return(peptab)
+normalizeTable <- function(tab, normfac) {
+  atr <- attributes(tab)
+  tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
+  attributes(tab) <- atr
+  return(tab)
 }
 
 ######
@@ -102,22 +101,24 @@ normalizeTable <- function(peptab, normfac) {
 #' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition".
 #' @param id A column name to identify peptides. The default is "sequence". Can be "modseq".
 #' @param value A column name to use for results. The default is "intensity".
-#' @return Peptide intensity table.
+#' @return An intensity table structure
 makePeptideTable <- function(evi, meta, id="sequence", value="intensity") {
   if(!id %in% c("sequence", "modseq")) stop("Incorrect id. Has to be 'sequence' or 'modseq'.")
   form <- as.formula(paste0(id, " ~ experiment"))
-  peptab.raw <- cast(evi, form, sum, value = value)
-  peptab.raw[peptab.raw == 0] <- NA
-  rownames(peptab.raw) <- peptab.raw[,1]
-  peptab.raw <- peptab.raw[,2:ncol(peptab.raw)]
-  # cast creates a 'cast_data_frame' or something and this screws things up
-  peptab.raw <- as.data.frame(peptab.raw)
-  attr(peptab.raw, "metadata") <- meta
-  attr(peptab.raw, "norm") <- "none"
-  attr(peptab.raw, "logflag") <- FALSE
-  attr(peptab.raw, "id") <- id
-  attr(peptab.raw, "value") <- value
-  return(peptab.raw)
+  tab <- cast(evi, form, sum, value = value)
+  tab[tab == 0] <- NA
+  rownames(tab) <- tab[,1]
+  tab <- tab[,2:ncol(tab)]
+  # cast creates a 'cast_data_frame' or something and this screws things up; need df
+  peptab <- list(
+    tab = as.data.frame(tab),
+    metadata = meta,
+    norm = "none",
+    logflag = FALSE,
+    id = id,
+    value = value
+  )
+  return(peptab)
 }
 
 #######
@@ -145,17 +146,22 @@ splitConditions <- function(intab) {
 #' Normality test wrapper
 #'
 #' Performs a normality test for the intensity table list (all conditions).
-#' @param intab Intensity table, unnormalized raw data
+#' @param dat Intensity data, unnormalized raw data
 #' @param norm How to normalize intensities (default: "median")
-#' @return A list of data frames with mean, p-value and adjusted p-value
-testNormalityConditions <- function(intab, norm="median") {
-  normfac <- normalizingFactors(intab, norm)
-  intab <- normalizeTable(intab, normfac)
-  intab <- log10(intab)
-  inlist <- splitConditions(intab)
-  norm.test <- list()
-  for(condition in names(inlist)) {
-    w <- inlist[[condition]]
+#' @return A data frame with test results
+testNormalityConditions <- function(dat, norm="median") {
+  if(dat$norm == "none") {
+    normfac <- normalizingFactors(dat$tab, norm)
+    tab <- normalizeTable(dat$tab, normfac)
+  } else {
+    tab <- dat$tab
+  }
+  if(!dat$logflag) tab <- log10(tab)
+
+  conditions <- dat$meta$condition
+  norm.test <- NULL
+  for(cond in levels(conditions)) {
+    w <- tab[,which(conditions == cond)]
     P <- c()
     # struggled with apply here, so just an old-fashined loop
     for(i in 1:nrow(w)) {
@@ -168,11 +174,12 @@ testNormalityConditions <- function(intab, norm="median") {
       }
       P <- c(P, p)
     }
-    norm.test[[condition]] <- data.frame(
+    norm.test <- rbind(norm.test, data.frame(
+      condition = cond,
       mean = rowMeans(w, na.rm=TRUE),
       p = P,
       p.adj = p.adjust(P, method="BH")
-    )
+    ))
   }
   return(norm.test)
 }
@@ -289,23 +296,23 @@ downlierSigma <- function(v, sigma=5, trim=0) {
 #'
 #' Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,
 #' for all conditions)
-#' @param intab Intensity table
+#' @param pdat Intensity dat tructure
 #' @return A data frame with several statistics
-intensityStats <- function(intab) {
-  meta <- attr(intab, "metadata")
-  logflag <- attr(intab, "logflag")
+intensityStats <- function(pdat) {
+  meta <- pdat$metadata
+  logflag <- pdat$logflag
   if(is.null(logflag)) logflag <- FALSE
 
   conditions <- levels(meta$condition)
   stats <- NULL
-  for(condition in conditions) {
-    w <- intab[,which(meta$condition == condition)]
+  for(cond in conditions) {
+    w <- pdat$tab[,which(meta$condition == cond)]
     if(logflag) w <- 10^w
     m <- rowMeans(w, na.rm=TRUE)
     m[which(is.nan(m))] <- NA
     v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
     ngood <- apply(w, 1, function(v) sum(!is.na(v)))
-    stats <- rbind(stats, data.frame(condition=condition, mean=m, variance=v, ngood=ngood))
+    stats <- rbind(stats, data.frame(condition=cond, mean=m, variance=v, ngood=ngood))
   }
   return(stats)
 }
@@ -314,15 +321,15 @@ intensityStats <- function(intab) {
 #' Plot mean-variance relationship
 #'
 #' Plot variance of log-intensity vs mean of log-intensity.
-#' @param intab Intensity table, preferably with added stats.
+#' @param pdat Intensity data structure.
 #' @param with.loess Logical. If true, a loess line will be added.
-plotMV <- function(intab, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
-  meta <- attr(intab, "metadata")
+plotMV <- function(pdat, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
+  meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
   conditions <- meta$condition
 
-  stats <- attr(intab, "stats")
-  if(is.null(stats)) stats <- intensityStats(intab)
+  stats <- pdat$stats
+  if(is.null(stats)) stats <- intensityStats(pdat)
   stats$mean <- log10(stats$mean)
   stats$variance <- log10(stats$variance)
 
@@ -360,23 +367,22 @@ plotMV <- function(intab, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
 #' @param norm Normalization to use on peptides before converting into proteins.
 #' @param min.peptides Minimum number of peptides per protein.
 #' @return Protein intensity table.
-makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1) {
-  meta <- attr(peptab, "metadata")
-  normfac <- normalizingFactors(peptab, method=norm)
-  peptab <- normalizeTable(peptab, normfac)
+makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
+  meta <- peptab$metadata
+  normfac <- normalizingFactors(peptab$tab, method=norm)
+  tab <- normalizeTable(peptab$tab, normfac)
 
   pep2prot <- select(evi, sequence, protein)
   pep2prot <- unique(pep2prot)
 
   # make sure order of peptides is as in intensity tables
-  peptides <- data.frame(sequence=rownames(peptab))
+  peptides <- data.frame(sequence=rownames(tab))
   peptides <- merge(peptides, pep2prot, by="sequence")
   proteins <- levels(as.factor(peptides$protein))
 
-  intlist <- splitConditions(peptab)
   protlist <- list()
-  for(condition in names(intlist)) {
-    w <- intlist[[condition]]
+  for(cond in levels(meta$condition)) {
+    w <- tab[,which(meta$condition == cond)]
     samples <- colnames(w)
     protint <- NULL
     for(prot in proteins) {
@@ -396,19 +402,22 @@ makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1
       }
     }
     colnames(protint) <- c("protein", samples)
-    protlist[[condition]] <- protint
+    protlist[[cond]] <- protint
   }
 
   # dplyr join all tables
   protlist %>% Reduce(function(df1, df2) full_join(df1,df2, by="protein"), .) -> protab
   rownames(protab) <- protab$protein
   protab <- protab[,2:ncol(protab)]
-  attr(protab, "metadata") <- meta
-  attr(protab, "pep2prot") <- pep2prot
-  attr(protab, "norm") <- norm
-  attr(protab, "logflag") <- FALSE
-  attr(protab, "stats") <- intensityStats(protab)
+  prodat <- list(
+    tab = protab,
+    metadata = meta,
+    pep2prot = pep2prot,
+    norm = norm,
+    logflag = FALSE
+  )
+  prodat$stats <- intensityStats(prodat)
 
-  return(protab)
+  return(prodat)
 }
 

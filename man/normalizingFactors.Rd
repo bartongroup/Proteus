@@ -4,12 +4,12 @@
 \alias{normalizingFactors}
 \title{Calculate normalizing factors}
 \usage{
-normalizingFactors(peptab, method = "median")
+normalizingFactors(tab, method = "median")
 }
 \arguments{
-\item{peptab}{peptide intensity table for all conditions.}
+\item{tab}{Intensity table for all conditions.}
 
-\item{method}{method of normalization, only 'median' at the moment.}
+\item{method}{Method of normalization, only 'median' at the moment.}
 }
 \value{
 A vector with normalizing factors.

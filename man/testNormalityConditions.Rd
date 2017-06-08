@@ -4,15 +4,15 @@
 \alias{testNormalityConditions}
 \title{Normality test wrapper}
 \usage{
-testNormalityConditions(intab, norm = "median")
+testNormalityConditions(dat, norm = "median")
 }
 \arguments{
-\item{intab}{Intensity table, unnormalized raw data}
+\item{dat}{Intensity data, unnormalized raw data}
 
 \item{norm}{How to normalize intensities (default: "median")}
 }
 \value{
-A list of data frames with mean, p-value and adjusted p-value
+A data frame with test results
 }
 \description{
 Performs a normality test for the intensity table list (all conditions).

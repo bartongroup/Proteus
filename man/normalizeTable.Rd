@@ -2,15 +2,15 @@
 % Please edit documentation in R/func.R
 \name{normalizeTable}
 \alias{normalizeTable}
-\title{Normalize peptide table}
+\title{Normalize intensity table}
 \usage{
-normalizeTable(peptab, normfac)
+normalizeTable(tab, normfac)
 }
 \arguments{
-\item{peptab}{Peptab table.}
+\item{tab}{Peptab table.}
 
 \item{normfac}{A vector of normalizing factors.}
 }
 \description{
-Normalize peptide table with normalizing factors. Attributes are retained.
+Normalize intensity table with normalizing factors. Attributes are retained.
 }

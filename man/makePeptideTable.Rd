@@ -16,7 +16,7 @@ makePeptideTable(evi, meta, id = "sequence", value = "intensity")
 \item{value}{A column name to use for results. The default is "intensity".}
 }
 \value{
-Peptide intensity table.
+An intensity table structure
 }
 \description{
 Creates a table with columns corresponding to samples (experiments) and rows corresponding to peptides.

@@ -250,7 +250,7 @@ plotPeptideCount <- function(peptab){
   meta <- attr(peptab, "metadata")
   if(is.null(meta)) stop("Attribute 'metadata' is missing from table")
   pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
-  df <- data.frame(x=samples, y=pep.count, condition=meta$condition)
+  df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
   ggplot(df, aes(x=x,y=y,color=condition)) + geom_col() + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) + labs(x='Sample', y='Peptide count')
 }
 

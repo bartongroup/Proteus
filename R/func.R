@@ -250,8 +250,14 @@ plotPeptideCount <- function(peptab){
   meta <- attr(peptab, "metadata")
   if(is.null(meta)) stop("Attribute 'metadata' is missing from table")
   pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
+  med.count <- median(pep.count)
   df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
-  ggplot(df, aes(x=x,y=y,color=condition)) + geom_col() + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) + labs(x='Sample', y='Peptide count')
+  ggplot(df, aes(x=x,y=y,color=condition)) +
+    geom_col() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) +
+    labs(x='Sample', y='Peptide count') +
+    labs(title = paste0("Median peptide count = ", med.count)) +
+    theme(plot.title=element_text(hjust=0, size=10))
 }
 
 #' Detect downliers
@@ -285,7 +291,7 @@ intensityStats <- function(intab) {
   stats <- list()
   for(condition in conditions) {
     w <- intlist[[condition]]
-    if(!logflag) w <- log10(w)
+    if(logflag) w <- 10^w
     m <- rowMeans(w, na.rm=TRUE)
     v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
     stats[[condition]] <- data.frame(mean=m, variance=v)

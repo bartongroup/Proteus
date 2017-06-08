@@ -1,7 +1,7 @@
 
 
 
-makeProteins <- function(evi, peptab, norm="median") {
+makeProteins <- function(evi, peptab, norm="median", min.peptides=1) {
   meta <- attr(peptab, "metadata")
   normfac <- normalizingFactors(peptab, method=norm)
   peptab <- normalizeTable(peptab, normfac)
@@ -22,11 +22,16 @@ makeProteins <- function(evi, peptab, norm="median") {
     protint <- NULL
     for(prot in proteins) {
       sel <- which(peptides$protein == prot)
-      if(length(sel) > 0)
+      if(length(sel) >= min.peptides)
       {
-        wp <- w[sel,, drop=FALSE]  #ARGHHH! Took me forever to get it right
+        # ARGHHH! Took me forever to get it right
+        # without drop=FALSE it will drop a dimension for one-row selection
+        # and all downstream analysis goes to hell
+        wp <- w[sel,, drop=FALSE]
         medPep <- apply(wp, 1, function(x) {median(x, na.rm=TRUE)})  # median across replicates
-        itop <- sort.int(medPep, decreasing=TRUE, index.return=TRUE)$ix[1:hifly] #index of top peptides
+        nmed <- length(medPep)
+        top <- min(c(nmed, hifly))
+        itop <- sort.int(medPep, decreasing=TRUE, index.return=TRUE)$ix[1:top] #index of top peptides
         row <- data.frame(protein=prot, t(colMeans(wp[itop,]))) # mean of the top peptides
         protint <- rbind(protint, row)
       }
@@ -42,19 +47,8 @@ makeProteins <- function(evi, peptab, norm="median") {
   attr(protab, "metadata") <- meta
   attr(protab, "pep2prot") <- pep2prot
   attr(protab, "norm") <- norm
-  attr(protab, "logflaf") <- FALSE
-
-
-  # split again to calculate statistics
-  intlist <- splitConditions(protab)
-  stats <- list()
-  for(condition in conditions) {
-    w <- intlist[[condition]]
-    m <- rowMeans(w, na.rm=TRUE)
-    v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
-    stats[[condition]] <- data.frame(mean=m, variance=v)
-  }
-  attr(protab, "stats") <- stats
+  attr(protab, "logflag") <- FALSE
+  attr(protab, "stats") <- intensityStats(protab)
 
   return(protab)
 }

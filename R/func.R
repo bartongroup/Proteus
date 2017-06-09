@@ -24,10 +24,18 @@ library(ggplot2)
 simple_theme <- theme_bw() +
   theme(
     panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black")
+  )
+simple_theme_grid <- theme_bw() +
+  theme(
+    panel.border = element_blank(),
     panel.grid.major = element_line(colour = "grey90"),
     panel.grid.minor = element_line(colour = "grey95"),
     axis.line = element_line(colour = "black")
   )
+
 
 #' Read MaxQuant's evidence file
 #'
@@ -73,11 +81,9 @@ normalizingFactors <- function(tab, method="median") {
   } else {
     stop("Unknown normalization method.")
   }
-  attr(norm, "method") <- method
   return(norm)
 }
 
-######
 
 #' Normalize intensity table
 #'
@@ -91,7 +97,6 @@ normalizeTable <- function(tab, normfac) {
   return(tab)
 }
 
-######
 
 #' Create peptide table from evidence data
 #'
@@ -99,49 +104,50 @@ normalizeTable <- function(tab, normfac) {
 #' Each cell is a sum of all intensities for this sample/peptide in the input evidence data.
 #' @param evi Evidence table created with readEvidenceFile.
 #' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition".
-#' @param id A column name to identify peptides. The default is "sequence". Can be "modseq".
-#' @param value A column name to use for results. The default is "intensity".
+#' @param pepseq A column name to identify peptides. Can be "sequence" or "modseq".
+#' @param intensity A column name to use for results. The default is "intensity".
 #' @return An intensity table structure
-makePeptideTable <- function(evi, meta, id="sequence", value="intensity") {
-  if(!id %in% c("sequence", "modseq")) stop("Incorrect id. Has to be 'sequence' or 'modseq'.")
-  form <- as.formula(paste0(id, " ~ experiment"))
-  tab <- cast(evi, form, sum, value = value)
+makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity") {
+
+  if(!(pepseq %in% c("sequence", "modseq"))) stop("Incorrect pepseq. Has to be 'sequence' or 'modseq'.")
+
+  # cast evidence data (long format) into peptide table (wide format)
+  form <- as.formula(paste0(pepseq, " ~ experiment"))
+  tab <- cast(evi, form, sum, value = intensity)
   tab[tab == 0] <- NA
   rownames(tab) <- tab[,1]
   tab <- tab[,2:ncol(tab)]
-  # cast creates a 'cast_data_frame' or something and this screws things up; need df
-  peptab <- list(
-    tab = as.data.frame(tab),
+  # cast creates a 'cast_data_frame' or something and this screws things up; need data frame
+  tab <- as.data.frame(tab)
+  # keep only columns from the metadata file
+  # you can remove bad replicates
+  tab <- tab[,meta$sample]
+
+  # peptide to protein conversion
+  peptides <- rownames(tab)
+  pep2prot <- select(evi, sequence, protein)
+  pep2prot <- unique(pep2prot)
+  rownames(pep2prot) <- pep2prot$sequence
+  pep2prot <- pep2prot[peptides,]
+  proteins <- levels(as.factor(pep2prot$protein))
+
+  # create pdat object
+  pdat <- list(
+    tab = tab,
+    content = 'peptide',
+    type = 'unlabelled',
     metadata = meta,
     norm = "none",
     logflag = FALSE,
-    id = id,
-    value = value
+    pepseq = pepseq,
+    intensity = intensity,
+    pep2prot = pep2prot,
+    peptides = peptides,
+    proteins = proteins
   )
-  return(peptab)
+  return(pdat)
 }
 
-#######
-
-#' Split peptide table into conditions
-#'
-#' Split peptide table (containing all samples) into separate tables, one per condition.
-#' Condition information is provided in the meta table.
-#' @param intab Intensity table
-#' @return A list of intensity tables, one per condition.
-splitConditions <- function(intab) {
-  meta <- attr(intab, "metadata")
-  conditions <- levels(meta$condition)
-  inlist <- list()
-  for(condition in conditions) {
-    colnames <- as.character(meta$sample[which(meta$condition == condition)])
-    tab <- intab[,colnames]
-    inlist[[condition]] <- tab
-  }
-  return(inlist)
-}
-
-#######
 
 #' Normality test wrapper
 #'
@@ -184,7 +190,6 @@ testNormalityConditions <- function(dat, norm="median") {
   return(norm.test)
 }
 
-#####
 
 #' Anderson-Darling test for normality
 #'
@@ -211,7 +216,6 @@ testNormality <- function(w) {
 }
 
 
-#####
 
 #' Standardize a vector
 #'
@@ -257,23 +261,48 @@ trimVector <- function(v, trim) {
   return(v)
 }
 
-#####
+
+#' Plot correlation matrix
+#'
+#' Plot correlation matrix for peptide or protein data.
+#' @param pdat Peptide/protein data object
+plotCorrelationMatrix <- function(pdat) {
+  corr.mat <- cor(pdat$tab, use="complete.obs")
+  heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
+}
+
+#' Plot clustering dendrogram
+#'
+#' @param pdat Peptide/protein data object.
+plotClustering <- function(pdat) {
+  corr.mat <- cor(pdat$tab, use="complete.obs")
+  dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
+  dend <- as.dendrogram(hclust(dis))
+  colors_to_use <- as.numeric(pdat$metadata$condition)
+  colors_to_use <- colors_to_use[order.dendrogram(dend)]
+  labels_colors(dend) <- colors_to_use
+  plot(dend)
+}
+
+
 #' Plot peptide count per sample
 #'
-#' @param peptab Peptide table (with metadata attribute)
+#' @param pdat Peptide data object
+#' @param x.text.size Size of text on the x-axis
 #' @return A plot of the number of peptides detected in each sample
-plotPeptideCount <- function(peptab){
-  meta <- attr(peptab, "metadata")
-  if(is.null(meta)) stop("Attribute 'metadata' is missing from table")
-  pep.count <- sapply(peptab, function(x) sum(!is.na(x)))
+plotPeptideCount <- function(pdat, x.text.size=7){
+  meta <- pdat$meta
+  pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
   med.count <- median(pep.count)
   df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
-  ggplot(df, aes(x=x,y=y,color=condition)) +
+  ggplot(df, aes(x=x,y=y,fill=condition)) +
     geom_col() +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=7)) +
+    simple_theme +
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
-    theme(plot.title=element_text(hjust=0, size=10))
+    theme(plot.title=element_text(hjust=0, size=12))
 }
 
 #' Detect downliers
@@ -323,13 +352,14 @@ intensityStats <- function(pdat) {
 #' Plot variance of log-intensity vs mean of log-intensity.
 #' @param pdat Intensity data structure.
 #' @param with.loess Logical. If true, a loess line will be added.
-plotMV <- function(pdat, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
+plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
   conditions <- meta$condition
 
   stats <- pdat$stats
   if(is.null(stats)) stats <- intensityStats(pdat)
+  stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance)),]
   stats$mean <- log10(stats$mean)
   stats$variance <- log10(stats$variance)
 
@@ -346,12 +376,12 @@ plotMV <- function(pdat, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
     }
   }
 
-  ggplot(s, aes(x=log10(mean), y=log10(variance))) +
-    simple_theme +
+  ggplot(stats, aes(x=mean, y=variance)) +
+    simple_theme_grid +
     xlim(xmin, xmax) +
     ylim(ymin, ymax) +
     facet_wrap(~condition) +
-    stat_binhex(bins=80) +
+    stat_binhex(bins=bins) +
     scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
     if(with.loess) {geom_line(data=ldf, aes(x,y), color='black')}
 
@@ -361,32 +391,23 @@ plotMV <- function(pdat, with.loess=FALSE, xmin=5, xmax=10, ymin=7, ymax=20) {
 #' Make protein table
 #'
 #' Create a protein table from the peptide table using high-flyers.
-#' @param evi Evidence table, used only to cross-reference peptides with proteins.
-#' @param peptab Peptide intensity table.
+#' @param pepdat Peptide intensity object.
 #' @param hifly The number of top peptides (high-flyers) to be used for protein intensity.
 #' @param norm Normalization to use on peptides before converting into proteins.
 #' @param min.peptides Minimum number of peptides per protein.
-#' @return Protein intensity table.
-makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
-  meta <- peptab$metadata
-  normfac <- normalizingFactors(peptab$tab, method=norm)
-  tab <- normalizeTable(peptab$tab, normfac)
-
-  pep2prot <- select(evi, sequence, protein)
-  pep2prot <- unique(pep2prot)
-
-  # make sure order of peptides is as in intensity tables
-  peptides <- data.frame(sequence=rownames(tab))
-  peptides <- merge(peptides, pep2prot, by="sequence")
-  proteins <- levels(as.factor(peptides$protein))
+#' @return Protein intensity object.
+makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
+  meta <- pepdat$metadata
+  normfac <- normalizingFactors(pepdat$tab, method=norm)
+  tab <- normalizeTable(pepdat$tab, normfac)
 
   protlist <- list()
   for(cond in levels(meta$condition)) {
     w <- tab[,which(meta$condition == cond)]
     samples <- colnames(w)
     protint <- NULL
-    for(prot in proteins) {
-      sel <- which(peptides$protein == prot)
+    for(prot in pepdat$proteins) {
+      sel <- which(pepdat$pep2prot$protein == prot)
       if(length(sel) >= min.peptides)
       {
         # ARGHHH! Took me forever to get it right
@@ -411,13 +432,70 @@ makeProteinTable <- function(evi, peptab, hifly=3, norm="median", min.peptides=1
   protab <- protab[,2:ncol(protab)]
   prodat <- list(
     tab = protab,
+    content = "protein",
+    type = pepdat$type,
+    pepseq = pepdat$pepseq,
+    intensity = pepdat$intensity,
     metadata = meta,
-    pep2prot = pep2prot,
+    hifly = hifly,
+    mmin.peptides = min.peptides,
     norm = norm,
-    logflag = FALSE
+    logflag = FALSE,
+    pep2prot = pepdat$pep2prot,
+    peptides = pepdat$peptides,
+    proteins = pepdat$proteins
   )
   prodat$stats <- intensityStats(prodat)
 
   return(prodat)
 }
 
+
+#' Plot protein(s)
+#'
+#' Plot protein intensity as a function of the condition and replicate. When
+#' multiple proteins are entered, the mean and standard error is plotted.
+#' @param pdat Protein intensity structure.
+#' @param protein Protein name (string) or a vector with protein names.
+#' @param log Logical. If set TRUE a logarithm of intensity is plotted.
+plotProteins <- function(pdat, protein=protein, log=FALSE) {
+  sel <- which(pdat$proteins %in% protein)
+  if(length(sel) > 0 && sel > 0) {
+    E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
+    e <- colMeans(E, na.rm=TRUE)
+    s <- sapply(E, function(x) sd(x, na.rm=TRUE)/sqrt(length(x)))
+    n <- length(sel)
+
+    if(n == 1) {
+      title <- protein
+    } else {
+      title <- paste0("selection of ", n, " proteins.")
+    }
+
+    p <- data.frame(
+      expr = e,
+      lo = e - s,
+      up = e + s,
+      condition = factor(meta$condition, levels=unique(meta$condition)),
+      replicates = factor(meta$replicate)
+    )
+    # define shapes
+    p$shape <- rep(21, length(p$expr))
+    p$shape[which(p$expr==0)] <- 24
+    pd <- position_dodge(width = 0.15)
+    # without 'as.numeric' it returns logical NA (!!!)
+    ylo <- as.numeric(ifelse(log, NA, 0))
+    ylab <- ifelse(log, "log10 intensity", "Intensity")
+    # colour-blind friendly palette
+    cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+    ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
+      simple_theme_grid +
+      theme(text = element_text(size=20), legend.position = "none") +
+      ylim(ylo, NA) +
+      {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
+      geom_point(position=pd, size=4) +
+      scale_shape_identity() +  # necessary for shape mapping
+      #scale_fill_manual(values=cbPalette) +
+      labs(x = 'Condition', y = ylab, title=title)
+  }
+}

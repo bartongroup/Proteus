@@ -1,0 +1,95 @@
+---
+title: "Tutorial"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(PepFunc)
+library(knitr)
+library(dplyr)
+library(reshape)
+library(ggplot2)
+library(gplots)
+library(png)
+library(grid)
+require(gridExtra)
+library(nortest)
+library(dendextend)
+options(width = 1000)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Input data
+
+```{r}
+topDir <- '/Users/mgierlinski/Work/Biology/Paper/GreatProt'
+dataDir <- paste0(topDir, '/data')
+
+evidenceFile <- paste0(dataDir, '/1112/evidence.txt')
+peptideFile <- paste0(dataDir, '/1112/peptides.txt')
+metadataFile <- paste0(dataDir, '/m2_metadata.txt')
+```
+
+Read evidence file and metadata.
+
+```{r}
+evi <- readEvidenceFile(evidenceFile)
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
+```
+
+Our recommendation is to clean the evidence file and remove data with number of scans <= 10 and number of points <= 10:
+
+```{r}
+evi <- evi[which(evi$numpoints > 10 & evi$numscans > 10),]
+```
+
+This is the design of our expeiment:
+
+```{r}
+select(meta, sample, condition, replicate)
+```
+
+Create a peptide data object.
+
+```{r}
+pepdat <- makePeptideTable(evi, meta)
+```
+
+It consists of the intensity table
+
+```{r}
+head(pepdat$tab)
+```
+
+and additional information
+
+```{r}
+names(pepdat)
+```
+
+Check the total number of peptides and proteins.
+
+```{r}
+length(pepdat$peptides)
+length(pepdat$proteins)
+```
+See the number of peptides detected in each sample.
+
+```{r}
+plotPeptideCount(pepdat, x.text.size=10)
+```
+
+Quick quality control.
+
+```{r}
+plotCorrelationMatrix(pepdat)
+plotClustering(pepdat)
+```
+
+The last sample (BMO-7) looks odd. Lets say we call it "bad" and want to remove from analysis.
+
+```{r}
+meta_clean <- meta[which(meta$sample  != 'BMO-7'),]
+pepdat <- makePeptideTable(evi, meta_clean)
+plotClustering(pepdat)
+```

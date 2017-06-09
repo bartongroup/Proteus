@@ -4,10 +4,12 @@
 \alias{plotPeptideCount}
 \title{Plot peptide count per sample}
 \usage{
-plotPeptideCount(peptab)
+plotPeptideCount(pdat, x.text.size = 7)
 }
 \arguments{
-\item{peptab}{Peptide table (with metadata attribute)}
+\item{pdat}{Peptide data object}
+
+\item{x.text.size}{Size of text on the x-axis}
 }
 \value{
 A plot of the number of peptides detected in each sample

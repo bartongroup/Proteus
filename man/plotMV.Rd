@@ -4,8 +4,8 @@
 \alias{plotMV}
 \title{Plot mean-variance relationship}
 \usage{
-plotMV(pdat, with.loess = FALSE, xmin = 5, xmax = 10, ymin = 7,
-  ymax = 20)
+plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
+  ymin = 7, ymax = 20)
 }
 \arguments{
 \item{pdat}{Intensity data structure.}

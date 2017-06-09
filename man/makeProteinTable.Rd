@@ -4,13 +4,11 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(evi, peptab, hifly = 3, norm = "median",
-  min.peptides = 1, verbose = FALSE)
+makeProteinTable(pepdat, hifly = 3, norm = "median", min.peptides = 1,
+  verbose = FALSE)
 }
 \arguments{
-\item{evi}{Evidence table, used only to cross-reference peptides with proteins.}
-
-\item{peptab}{Peptide intensity table.}
+\item{pepdat}{Peptide intensity object.}
 
 \item{hifly}{The number of top peptides (high-flyers) to be used for protein intensity.}
 
@@ -19,7 +17,7 @@ makeProteinTable(evi, peptab, hifly = 3, norm = "median",
 \item{min.peptides}{Minimum number of peptides per protein.}
 }
 \value{
-Protein intensity table.
+Protein intensity object.
 }
 \description{
 Create a protein table from the peptide table using high-flyers.

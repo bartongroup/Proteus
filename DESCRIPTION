@@ -12,4 +12,7 @@ RoxygenNote: 6.0.1
 Imports:
     dplyr,
     reshape,
-    nortest
+    nortest,
+    ggplot2,
+    gplots,
+    dendextend

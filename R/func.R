@@ -541,7 +541,16 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' log fold change versus log sum plot.
 #' @param pdat Protein data structure.
 #' @param pair A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.
-plotMA <- function(pdat, pair=NULL, pvalue=NULL, marginal.histograms=FALSE, classic=FALSE, xmin=NULL, xmax=NULL, ymax=NULL) {
+#' @param pvalue A vector with corresponding p-values for an interactive plotly plot
+#' @param bins Number of bins for binhex
+#' @param marginal.histograms A logical to add marginal histograms
+#' @param xmin Lower limit on x-axis
+#' @param xmax Upper limit on x-axis
+#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax
+#' @param text.size Text size
+#' @param show.legend Logical to show legend (colour key)
+#' @param plot.grid Logical to plot grid
+plotMA <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE, xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
   if(is.null(pair)) pair <- levels(pdat$metadata$condition)
   if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair.")
 
@@ -561,14 +570,54 @@ plotMA <- function(pdat, pair=NULL, pvalue=NULL, marginal.histograms=FALSE, clas
 
   title <- paste0(c1, ":", c2)
   g <- ggplot(d, aes(x=x, y=y)) +
-    simple_theme_grid +
-    geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
+    {if(plot.grid) simple_theme_grid else simple_theme} +
+    stat_binhex(bins=bins, show.legend=show.legend) +
+    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
+    #geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
     geom_abline(colour='red', slope=0, intercept=0) +
-    labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1))
+    labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1)) +
+    theme(text = element_text(size=text.size))
   if(!is.null(xmin) && !is.null(xmax)) g <- g + scale_x_continuous(limits = c(xmin, xmax), expand = c(0, 0))
   if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(-ymax, ymax), expand = c(0, 0))
-  if(classic) g <- g + theme_classic(base_size=20) else g <- g + theme(text = element_text(size=20))
   if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))
+  return(g)
+}
+
+#' Plot p-value distribution
+#'
+#' Plot distribution of raw p-value, obtained by limmaDE.
+#' @param res Result table from limmaTable
+#' @param text.size Text size
+#' @param plot.grid Logical to plot grid
+plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
+  ggplot(res, aes(P.Value, ..density..)) +
+    {if(plot.grid) simple_theme_grid else simple_theme} +
+    geom_histogram(breaks=seq(0, 1, bin.size), colour='blue') +
+    labs(x='P-value', y='Density') +
+    theme(text = element_text(size=text.size))
+}
+
+#' Volcano plot
+#'
+#' Volcano plot from limma results.
+#' @param res Result table from limmaTable
+#' @param bins Number of bins for binhex
+#' @param xmax Upper limit on x-axis. If used, the lower limit is -xmax
+#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax
+#' @param text.size Text size
+#' @param show.legend Logical to show legend (colour key)
+#' @param plot.grid Logical to plot grid
+plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
+  g <- ggplot(res, aes(logFC, -log10(P.Value))) +
+    {if(plot.grid) simple_theme_grid else simple_theme} +
+    stat_binhex(bins=bins, show.legend=show.legend) +
+    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
+    geom_vline(colour='red', xintercept=0) +
+    theme(text = element_text(size=text.size))
+    # labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1))
+
+    if(!is.null(xmax)) g <- g + scale_x_continuous(limits = c(-xmax, xmax), expand = c(0, 0))
+    if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(0, ymax), expand = c(0, 0))
   return(g)
 }
 

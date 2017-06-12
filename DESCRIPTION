@@ -15,4 +15,5 @@ Imports:
     nortest,
     ggplot2,
     gplots,
+    ggExtra,
     dendextend

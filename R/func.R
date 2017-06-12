@@ -352,6 +352,11 @@ intensityStats <- function(pdat) {
 #' Plot variance of log-intensity vs mean of log-intensity.
 #' @param pdat Intensity data structure.
 #' @param with.loess Logical. If true, a loess line will be added.
+#' @param bins Number of bins for binhex
+#' @param xmin Lower limit on x-axis
+#' @param xmax Upper limit on x-axis
+#' @param ymin Lower limit on y-axis
+#' @param ymax Upper limit on y-axis
 plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
@@ -362,6 +367,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance)),]
   stats$mean <- log10(stats$mean)
   stats$variance <- log10(stats$variance)
+  protnum <- as.data.frame(table(stats$condition))  #number of proteins in each condition
+  colnames(protnum) <- c("condition", "n")
 
   # has to be calculated for each condition separately
   if(with.loess) {
@@ -383,7 +390,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     facet_wrap(~condition) +
     stat_binhex(bins=bins) +
     scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
-    if(with.loess) {geom_line(data=ldf, aes(x,y), color='black')}
+    geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
+   # if(with.loess) {geom_line(data=ldf, aes(x,y), color='black')}
 
 }
 
@@ -499,3 +507,68 @@ plotProteins <- function(pdat, protein=protein, log=FALSE) {
       labs(x = 'Condition', y = ylab, title=title)
   }
 }
+
+#' Differential expression with limma
+#'
+#' Calls limma to perform differential expression.
+#' @param pdat Protein intensity structure.
+#' @param formula A string with a formula for building the linear model. The default value is "~condition".
+#' @return limma output from eBays. See limma documentation for more details.
+limmaDE <- function(pdat, formula="~condition") {
+  design <- model.matrix(as.formula(formula), pdat$metadata)
+  tab <- log10(pdat$tab)
+  fit <- lmFit(tab, design)
+  ebay <- eBayes(fit)
+}
+
+#' Create differential expression result.
+#'
+#' Use limmaDE output to create a table with DE results.
+#' @param pdat Protein intensity structure.
+#' @param ebay Output from "limmaDE"
+#' @param column Which column should be used to extract data. The default value is "condition".
+#' @return A data frame with DE results.
+limmaTable <- function(pdat, ebay, column="condition") {
+  # levels from the column (e.g. conditions)
+  levs <- levels(factor(pdat$metadata[[column]]))
+  # coef is the column name + the last level, e.g. "conditionWT"
+  coef <- paste0(column, levs[-1])
+  res <- topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
+}
+
+#' MA plot
+#'
+#' log fold change versus log sum plot.
+#' @param pdat Protein data structure.
+#' @param pair A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.
+plotMA <- function(pdat, pair=NULL, pvalue=NULL, marginal.histograms=FALSE, classic=FALSE, xmin=NULL, xmax=NULL, ymax=NULL) {
+  if(is.null(pair)) pair <- levels(pdat$metadata$condition)
+  if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair.")
+
+  stats <- pdat$stats
+  c1 <- pair[1]
+  c2 <- pair[2]
+  m1 <- log10(stats[which(stats$condition == c1),]$mean)
+  m2 <- log10(stats[which(stats$condition == c2),]$mean)
+  d <- data.frame(x = (m1 + m2) / 2, y = m2 - m1)
+  d$id <- pdat$proteins
+  n <- length(m1)
+  if(is.null(pvalue)) {
+    d$p <- rep('NA', n)
+  } else {
+    d$p <- signif(pvalue, 2)
+  }
+
+  title <- paste0(c1, ":", c2)
+  g <- ggplot(d, aes(x=x, y=y)) +
+    simple_theme_grid +
+    geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
+    geom_abline(colour='red', slope=0, intercept=0) +
+    labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1))
+  if(!is.null(xmin) && !is.null(xmax)) g <- g + scale_x_continuous(limits = c(xmin, xmax), expand = c(0, 0))
+  if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(-ymax, ymax), expand = c(0, 0))
+  if(classic) g <- g + theme_classic(base_size=20) else g <- g + theme(text = element_text(size=20))
+  if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))
+  return(g)
+}
+

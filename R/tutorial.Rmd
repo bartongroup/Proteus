@@ -93,3 +93,20 @@ meta_clean <- meta[which(meta$sample  != 'BMO-7'),]
 pepdat <- makePeptideTable(evi, meta_clean)
 plotClustering(pepdat)
 ```
+
+Next, we create a protein data table:
+
+```{r}
+prodat <- makeProteinTable(pepdat)
+```
+
+Mean-variance relationship.
+
+```{r}
+plotMV(prodat)
+```
+
+```{r}
+plotClustering(prodat)
+```
+

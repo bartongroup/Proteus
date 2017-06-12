@@ -11,6 +11,16 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
 \item{pdat}{Intensity data structure.}
 
 \item{with.loess}{Logical. If true, a loess line will be added.}
+
+\item{bins}{Number of bins for binhex}
+
+\item{xmin}{Lower limit on x-axis}
+
+\item{xmax}{Upper limit on x-axis}
+
+\item{ymin}{Lower limit on y-axis}
+
+\item{ymax}{Upper limit on y-axis}
 }
 \description{
 Plot variance of log-intensity vs mean of log-intensity.

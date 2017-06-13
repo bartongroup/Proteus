@@ -416,17 +416,33 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
     protint <- NULL
     for(prot in pepdat$proteins) {
       sel <- which(pepdat$pep2prot$protein == prot)
-      if(length(sel) >= min.peptides)
+      npep <- length(sel)
+      if(npep >= min.peptides)
       {
         # ARGHHH! Took me forever to get it right
         # without drop=FALSE it will drop a dimension for one-row selection
         # and all downstream analysis goes to hell
         wp <- w[sel,, drop=FALSE]
-        medPep <- apply(wp, 1, function(x) {median(x, na.rm=TRUE)})  # median across replicates
-        nmed <- length(medPep)
-        top <- min(c(nmed, hifly))
-        itop <- sort.int(medPep, decreasing=TRUE, index.return=TRUE)$ix[1:top] #index of top peptides
-        row <- data.frame(protein=prot, t(colMeans(wp[itop,]))) # mean of the top peptides
+        if(npep > 1) {
+          wp[is.na(wp)] <- 0   # zeroes for sorting only
+          sp <- as.matrix(apply(wp, 2, sort, decreasing=TRUE))
+          sp[sp == 0] <- NA  # put NAs back
+          ntop <- min(npep, hifly)
+          row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
+          row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs
+        } else {
+          row <- wp
+        }
+        row <- data.frame(protein=prot, row)
+
+        # this was old method using the same three peptides for all samples
+        # but it doesn't work well, missing a lot of data
+        # now (above) I pick three top peptides for each sample separately
+        #medPep <- apply(wp, 1, function(x) {median(x, na.rm=TRUE)})  # median across replicates
+        #nmed <- length(medPep)
+        #top <- min(c(nmed, hifly))
+        #itop <- sort.int(medPep, decreasing=TRUE, index.return=TRUE)$ix[1:top] #index of top peptides
+        #row <- data.frame(protein=prot, t(colMeans(wp[itop,]))) # mean of the top peptides
         protint <- rbind(protint, row)
       }
     }
@@ -534,6 +550,9 @@ limmaTable <- function(pdat, ebay, column="condition") {
   # coef is the column name + the last level, e.g. "conditionWT"
   coef <- paste0(column, levs[-1])
   res <- topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
+  res <- cbind(protein=rownames(res), res)
+  rownames(res) <- c()
+  return(res)
 }
 
 #' MA plot
@@ -621,3 +640,38 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
   return(g)
 }
 
+
+
+plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
+  # all peptides for this protein
+  peps <- pepdat$pep2prot[which(pepdat$pep2prot$protein == protein),'sequence']
+  mat <- as.matrix(pepdat$tab[peps,])
+  dat <- melt(mat, varnames=c("peptide", "sample"))
+  dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers
+  dat$intensity <- log10(dat$value)
+
+  # add condition column (is there a simpler way?)
+  s2c <- select(pdat$metadata, condition)
+  rownames(s2c) <- pdat$metadata$sample
+  dat$condition <- s2c[dat$sample,]
+
+  # add protein intensity column (is there a simpler way)
+  if(!is.null(prodat)) {
+    p2p <- data.frame(int=as.numeric(prodat$tab[protein,]))
+    rownames(p2p) <- colnames(prodat$tab)
+    dat$prot.intensity <- log10(p2p[dat$sample,])
+  }
+
+  g1 <- ggplot(dat, aes(x=pepnum, y=intensity, fill=condition)) +
+    geom_boxplot(outlier.shape = NA)  +
+    geom_jitter(width=0, size=0.5) +
+    facet_wrap(~condition) +
+    theme(legend.position="none")
+  g2 <- ggplot(dat, aes(x=sample, y=intensity, fill=condition)) +
+    geom_boxplot(outlier.shape = NA)  +
+    geom_jitter(width=0, size=0.5) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 0.5)) +
+    theme(legend.position="none")
+  if(!is.null(prodat)) g2 <- g2 + geom_point(aes(x=sample, y=prot.intensity), shape=22, size=3, fill='white')
+  grid.arrange(g1, g2, ncol=1)
+}

@@ -682,3 +682,4 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   if(!is.null(prodat)) g2 <- g2 + geom_point(aes(x=sample, y=prot.intensity), shape=22, size=3, fill='white')
   grid.arrange(g1, g2, ncol=1)
 }
+

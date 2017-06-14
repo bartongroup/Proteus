@@ -1,4 +1,4 @@
-Package: PepFunc
+Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
 Version: 0.1.0

@@ -4,7 +4,8 @@
 \alias{plotProteins}
 \title{Plot protein(s)}
 \usage{
-plotProteins(pdat, protein = protein, log = FALSE)
+plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
+  ymax = as.numeric(NA))
 }
 \arguments{
 \item{pdat}{Protein intensity structure.}
@@ -12,6 +13,10 @@ plotProteins(pdat, protein = protein, log = FALSE)
 \item{protein}{Protein name (string) or a vector with protein names.}
 
 \item{log}{Logical. If set TRUE a logarithm of intensity is plotted.}
+
+\item{ymin}{Lower bound for y-axis}
+
+\item{ymax}{Upper bound for y-axis}
 }
 \description{
 Plot protein intensity as a function of the condition and replicate. When

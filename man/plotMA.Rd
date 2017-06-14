@@ -7,7 +7,7 @@
 plotMA(pdat, pair = NULL, pvalue = NULL, bins = 80,
   marginal.histograms = FALSE, classic = FALSE, xmin = NULL,
   xmax = NULL, ymax = NULL, text.size = 12, show.legend = TRUE,
-  plot.grid = TRUE)
+  plot.grid = TRUE, binhex = TRUE)
 }
 \arguments{
 \item{pdat}{Protein data structure.}

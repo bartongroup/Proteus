@@ -482,7 +482,10 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
 #' @param pdat Protein intensity structure.
 #' @param protein Protein name (string) or a vector with protein names.
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
-plotProteins <- function(pdat, protein=protein, log=FALSE) {
+#' @param ymin Lower bound for y-axis
+#' @param ymax Upper bound for y-axis
+# without 'as.numeric' it returns logical NA (!!!)
+plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA)) {
   sel <- which(pdat$proteins %in% protein)
   if(length(sel) > 0 && sel > 0) {
     E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
@@ -507,15 +510,15 @@ plotProteins <- function(pdat, protein=protein, log=FALSE) {
     p$shape <- rep(21, length(p$expr))
     p$shape[which(p$expr==0)] <- 24
     pd <- position_dodge(width = 0.15)
-    # without 'as.numeric' it returns logical NA (!!!)
-    ylo <- as.numeric(ifelse(log, NA, 0))
+    #
+    if(is.na(ymin) && !log) ymin=0
     ylab <- ifelse(log, "log10 intensity", "Intensity")
     # colour-blind friendly palette
     cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
     ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
       simple_theme_grid +
       theme(text = element_text(size=20), legend.position = "none") +
-      ylim(ylo, NA) +
+      ylim(ymin, ymax) +
       {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
       geom_point(position=pd, size=4) +
       scale_shape_identity() +  # necessary for shape mapping
@@ -569,7 +572,9 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' @param text.size Text size
 #' @param show.legend Logical to show legend (colour key)
 #' @param plot.grid Logical to plot grid
-plotMA <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE, xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
+plotMA <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE,
+                   xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
+                   binhex=TRUE) {
   if(is.null(pair)) pair <- levels(pdat$metadata$condition)
   if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair.")
 
@@ -590,7 +595,7 @@ plotMA <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FA
   title <- paste0(c1, ":", c2)
   g <- ggplot(d, aes(x=x, y=y)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
-    stat_binhex(bins=bins, show.legend=show.legend) +
+    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=id))}+
     scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
     #geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
     geom_abline(colour='red', slope=0, intercept=0) +
@@ -651,8 +656,8 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   dat$intensity <- log10(dat$value)
 
   # add condition column (is there a simpler way?)
-  s2c <- select(pdat$metadata, condition)
-  rownames(s2c) <- pdat$metadata$sample
+  s2c <- select(pepdat$metadata, condition)
+  rownames(s2c) <- pepdat$metadata$sample
   dat$condition <- s2c[dat$sample,]
 
   # add protein intensity column (is there a simpler way)

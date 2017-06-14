@@ -484,8 +484,12 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
 #' @param ymax Upper bound for y-axis
+#' @param text.size Text size
+#' @param point.size Point size
+#' @param title Title of the plot (defaults to protein name)
 # without 'as.numeric' it returns logical NA (!!!)
-plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA)) {
+plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
+                         text.size=12, point.size=3, title=NULL) {
   sel <- which(pdat$proteins %in% protein)
   if(length(sel) > 0 && sel > 0) {
     E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
@@ -493,10 +497,8 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
     s <- sapply(E, function(x) sd(x, na.rm=TRUE)/sqrt(length(x)))
     n <- length(sel)
 
-    if(n == 1) {
-      title <- protein
-    } else {
-      title <- paste0("selection of ", n, " proteins.")
+    if(is.null(title)) {
+      title <- ifelse(n == 1, protein, paste0("selection of ", n, " proteins."))
     }
 
     p <- data.frame(
@@ -517,10 +519,10 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
     cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
     ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
       simple_theme_grid +
-      theme(text = element_text(size=20), legend.position = "none") +
+      theme(text = element_text(size=text.size), legend.position = "none") +
       ylim(ymin, ymax) +
       {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
-      geom_point(position=pd, size=4) +
+      geom_point(position=pd, size=point.size) +
       scale_shape_identity() +  # necessary for shape mapping
       #scale_fill_manual(values=cbPalette) +
       labs(x = 'Condition', y = ylab, title=title)

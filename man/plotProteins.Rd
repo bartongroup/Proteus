@@ -5,7 +5,7 @@
 \title{Plot protein(s)}
 \usage{
 plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
-  ymax = as.numeric(NA))
+  ymax = as.numeric(NA), text.size = 12, point.size = 3)
 }
 \arguments{
 \item{pdat}{Protein intensity structure.}
@@ -17,6 +17,10 @@ plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
 \item{ymin}{Lower bound for y-axis}
 
 \item{ymax}{Upper bound for y-axis}
+
+\item{text.size}{Text size}
+
+\item{point.size}{Point size}
 }
 \description{
 Plot protein intensity as a function of the condition and replicate. When

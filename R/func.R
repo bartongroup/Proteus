@@ -120,7 +120,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
   tab <- as.data.frame(tab)
   # keep only columns from the metadata file
   # you can remove bad replicates
-  tab <- tab[,meta$sample]
+  tab <- tab[,as.character(meta$sample)]
 
   # peptide to protein conversion
   peptides <- rownames(tab)

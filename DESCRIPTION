@@ -16,4 +16,5 @@ Imports:
     ggplot2,
     gplots,
     ggExtra,
-    dendextend
+    dendextend,
+    limma

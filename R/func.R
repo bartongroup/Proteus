@@ -65,7 +65,6 @@ readPeptideFile <- function(file) {
   pep$Reverse[is.na(pep$Reverse)] = ''
   pep$`Potential contaminant`[is.na(pep$`Potential contaminant`)] = ''
   pep <- pep[which(pep$`Potential contaminant` != '+' & pep$Reverse != '+'),]
-  attr(pep, "norm") <- "none"
 }
 
 

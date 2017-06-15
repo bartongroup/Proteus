@@ -653,6 +653,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   peps <- pepdat$pep2prot[which(pepdat$pep2prot$protein == protein),'sequence']
   mat <- as.matrix(pepdat$tab[peps,])
   dat <- melt(mat, varnames=c("peptide", "sample"))
+  levels(dat$sample) <- pepdat$metadata$sample # melt loses order of sample levels
   dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers
   dat$intensity <- log10(dat$value)
 
@@ -672,12 +673,14 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     facet_wrap(~condition) +
-    theme(legend.position="none")
+    theme(legend.position="none") +
+    labs(x="Peptide", y="log intensity", title=protein)
   g2 <- ggplot(dat, aes(x=sample, y=intensity, fill=condition)) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     theme(axis.text.x = element_text(angle = 90, hjust = 0.5)) +
-    theme(legend.position="none")
+    theme(legend.position="none") +
+    labs(x="Sample", y="log intensity")
   if(!is.null(prodat)) g2 <- g2 + geom_point(aes(x=sample, y=prot.intensity), shape=22, size=3, fill='white')
   grid.arrange(g1, g2, ncol=1)
 }

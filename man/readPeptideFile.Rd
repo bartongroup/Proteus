@@ -13,5 +13,10 @@ readPeptideFile(file)
 Data frame with selected columns from the evidence file.
 }
 \description{
-Read MaxQuant's peptide file
+\code{readPeptideFile} reads MaxQuant's peptide file. Contaminants and reverse sequences
+are filtered out.
+}
+\examples{
+pep.tab <- readPeptideFile("peptides.txt")
+
 }

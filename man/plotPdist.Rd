@@ -7,12 +7,18 @@
 plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 }
 \arguments{
-\item{res}{Result table from limmaTable}
+\item{res}{Output table from \code{\link{limmaTable}}.}
 
-\item{text.size}{Text size}
+\item{text.size}{Text size.}
 
-\item{plot.grid}{Logical to plot grid}
+\item{plot.grid}{Logical to plot grid.}
 }
 \description{
-Plot distribution of raw p-value, obtained by limmaDE.
+\code{plotPdist} makes a plot with distribution of raw p-values, obtained by \code{\link{limmaDE}}.
+}
+\examples{
+ebay <- limmaDE(prodat)
+res <- limmaTable(prodat, ebay)
+plotPdist(res)
+
 }

@@ -15,6 +15,10 @@ readEvidenceFile(file, columns = evidenceColumns)
 Data frame with selected columns from the evidence file.
 }
 \description{
-Works only with unlabelled data, that is, the evidence file with one Intensity column.
-Contaminants and reverse sequences are filtered out.
+\code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and reverse sequences
+are filtered out. It can read only one intensity column (specifed by \code{columns} parameter).
+}
+\examples{
+evi <- readEvidenceFile("evidence.txt")
+
 }

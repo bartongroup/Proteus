@@ -7,13 +7,17 @@
 limmaDE(pdat, formula = "~condition")
 }
 \arguments{
-\item{pdat}{Protein intensity structure.}
+\item{pdat}{Protein \code{proteusData} object.}
 
-\item{formula}{A string with a formula for building the linear model. The default value is "~condition".}
+\item{formula}{A string with a formula for building the linear model.}
 }
 \value{
 limma output from eBays. See limma documentation for more details.
+The output from this function can be used with \code{\link{limmaTable}} to create
+a table with differential expression results.
 }
-\description{
-Calls limma to perform differential expression.
+\examples{
+ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+res <- limmaTable(prodat, ebay)
+
 }

@@ -1,6 +1,7 @@
+
 #' Evidence columns
 #'
-#' Columns to be read from the evidence file. This list contains names of columns to be read.
+#' \code{evidenceColumns} contains default columns to be read from the evidence file.
 #' The names of list elements are used internally to reference evidence data.
 evidenceColumns <- list(
   sequence = 'Sequence',
@@ -20,31 +21,35 @@ evidenceColumns <- list(
   contaminant = 'Potential contaminant'
 )
 
-library(ggplot2)
-simple_theme <- theme_bw() +
-  theme(
-    panel.border = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(colour = "black")
+#' @import ggplot2
+simple_theme <- ggplot2::theme_bw() +
+  ggplot2::theme(
+    panel.border = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.line = ggplot2::element_line(colour = "black")
   )
-simple_theme_grid <- theme_bw() +
-  theme(
-    panel.border = element_blank(),
-    panel.grid.major = element_line(colour = "grey90"),
-    panel.grid.minor = element_line(colour = "grey95"),
-    axis.line = element_line(colour = "black")
+simple_theme_grid <- ggplot2::theme_bw() +
+  ggplot2::theme(
+    panel.border = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_line(colour = "grey90"),
+    panel.grid.minor = ggplot2::element_line(colour = "grey95"),
+    axis.line = ggplot2::element_line(colour = "black")
   )
 
 
 #' Read MaxQuant's evidence file
 #'
-#' Works only with unlabelled data, that is, the evidence file with one Intensity column.
-#' Contaminants and reverse sequences are filtered out.
+#' \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and reverse sequences
+#' are filtered out. It can read only one intensity column (specifed by \code{columns} parameter).
 #'
 #' @param file File name.
 #' @param columns Named list with columns to read.
 #' @return Data frame with selected columns from the evidence file.
+#'
+#' @examples
+#' evi <- readEvidenceFile("evidence.txt")
+#'
 readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
   evi <- evi[, as.character(columns)]
@@ -58,8 +63,15 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 
 #' Read MaxQuant's peptide file
 #'
+#' \code{readPeptideFile} reads MaxQuant's peptide file. Contaminants and reverse sequences
+#' are filtered out.
+#'
 #' @param file File name.
 #' @return Data frame with selected columns from the evidence file.
+#'
+#' @examples
+#' pep.tab <- readPeptideFile("peptides.txt")
+#'
 readPeptideFile <- function(file) {
   pep <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
   pep$Reverse[is.na(pep$Reverse)] = ''
@@ -68,51 +80,31 @@ readPeptideFile <- function(file) {
 }
 
 
-#' Calculate normalizing factors
-#'
-#' @param tab Intensity table for all conditions.
-#' @param method Method of normalization, only 'median' at the moment.
-#' @return A vector with normalizing factors.
-normalizingFactors <- function(tab, method="median") {
-  if(method == 'median') {
-    norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
-    norm <- norm / mean(norm)
-  } else {
-    stop("Unknown normalization method.")
-  }
-  return(norm)
-}
-
-
-#' Normalize intensity table
-#'
-#' Normalize intensity table with normalizing factors. Attributes are retained.
-#' @param tab Peptab table.
-#' @param normfac A vector of normalizing factors.
-normalizeTable <- function(tab, normfac) {
-  atr <- attributes(tab)
-  tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
-  attributes(tab) <- atr
-  return(tab)
-}
-
-
 #' Create peptide table from evidence data
 #'
-#' Creates a table with columns corresponding to samples (experiments) and rows corresponding to peptides.
-#' Each cell is a sum of all intensities for this sample/peptide in the input evidence data.
+#' \code{makePeptideTable} creates a table with columns corresponding to samples (experiments) and
+#' rows corresponding to peptides. Each cell is a sum of all intensities for this sample/peptide
+#' in the input evidence data.
+#'
 #' @param evi Evidence table created with readEvidenceFile.
-#' @param meta Data frame with metadata. As minimum, it should contain "sample" and "condition".
-#' @param pepseq A column name to identify peptides. Can be "sequence" or "modseq".
+#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
+#' @param pepseq A column name to identify peptides. Can be either "sequence" or "modseq".
 #' @param intensity A column name to use for results. The default is "intensity".
-#' @return An intensity table structure
+#' @return A \code{proteusData} object, containing peptide intensities and metadata.
+#'
+#' @examples
+#' evi <- readEvidenceFile("evidence.txt")
+#' meta <- read.delim("metadata.txt", header=TRUE)
+#' meta$sample <- factor(meta$sample, levels=meta$sample)
+#' pepdat <- makePeptideTable(evi, meta)
+#'
 makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity") {
 
   if(!(pepseq %in% c("sequence", "modseq"))) stop("Incorrect pepseq. Has to be 'sequence' or 'modseq'.")
 
   # cast evidence data (long format) into peptide table (wide format)
   form <- as.formula(paste0(pepseq, " ~ experiment"))
-  tab <- cast(evi, form, sum, value = intensity)
+  tab <- reshape::cast(evi, form, sum, value = intensity)
   tab[tab == 0] <- NA
   rownames(tab) <- tab[,1]
   tab <- tab[,2:ncol(tab)]
@@ -124,7 +116,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 
   # peptide to protein conversion
   peptides <- rownames(tab)
-  pep2prot <- select(evi, sequence, protein)
+  pep2prot <- dplyr::select(evi, sequence, protein)
   pep2prot <- unique(pep2prot)
   rownames(pep2prot) <- pep2prot$sequence
   pep2prot <- pep2prot[peptides,]
@@ -137,6 +129,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
     type = 'unlabelled',
     metadata = meta,
     norm = "none",
+    stats = NULL,
     logflag = FALSE,
     pepseq = pepseq,
     intensity = intensity,
@@ -144,266 +137,38 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
     peptides = peptides,
     proteins = proteins
   )
+  class(pdat) <- append(class(pdat), "proteusData")
   return(pdat)
-}
-
-
-#' Normality test wrapper
-#'
-#' Performs a normality test for the intensity table list (all conditions).
-#' @param dat Intensity data, unnormalized raw data
-#' @param norm How to normalize intensities (default: "median")
-#' @return A data frame with test results
-testNormalityConditions <- function(dat, norm="median") {
-  if(dat$norm == "none") {
-    normfac <- normalizingFactors(dat$tab, norm)
-    tab <- normalizeTable(dat$tab, normfac)
-  } else {
-    tab <- dat$tab
-  }
-  if(!dat$logflag) tab <- log10(tab)
-
-  conditions <- dat$meta$condition
-  norm.test <- NULL
-  for(cond in levels(conditions)) {
-    w <- tab[,which(conditions == cond)]
-    P <- c()
-    # struggled with apply here, so just an old-fashined loop
-    for(i in 1:nrow(w)) {
-      p <- 1
-      x <- na.omit(as.numeric(w[i,]))
-      if(length(x) > 7) {
-        #sw <- shapiro.test(x)
-        ad <- ad.test(x)
-        p <- ad$p.value
-      }
-      P <- c(P, p)
-    }
-    norm.test <- rbind(norm.test, data.frame(
-      condition = cond,
-      mean = rowMeans(w, na.rm=TRUE),
-      p = P,
-      p.adj = p.adjust(P, method="BH")
-    ))
-  }
-  return(norm.test)
-}
-
-
-#' Anderson-Darling test for normality
-#'
-#' Performs a normality test for the intensity table, row by row.
-#' @param w Intensity table (columns: replicates, rows: peptides/proteins/genes etc.)
-#' @return Data frame with mean intensity, p-value and BH-adjusted p-value
-testNormality <- function(w) {
-  P <- c()
-  # struggled with apply here, so just an old-fashined loop
-  for(i in 1:nrow(w)) {
-    p <- 1
-    x <- na.omit(as.numeric(w[i,]))
-    if(length(x) > 7) {
-      ad <- ad.test(x)
-      p <- ad$p.value
-    }
-    P <- c(P, p)
-  }
-  data.frame(
-    mean = rowMeans(w, na.rm=TRUE),
-    p = P,
-    p.adj = p.adjust(P, method="BH")
-  )
-}
-
-
-
-#' Standardize a vector
-#'
-#' Calculate Z-scores for a vector, NAs are ignored.
-#' @param v Input numeric vector
-#' @param trim A number of points to be trimmed on each side for mean and sd
-#' @return Z-score vector
-standardize <- function(v, trim=0){
-  v <- as.numeric(v)
-  x <- v[!is.na(v)]
-  n <- length(x)
-  #if(n < 2) stop("Need at lest 2 points in standardize")
-
-  if(trim > 0) {
-   if(n - 2*trim < 2) stop("Too much trim")
-    x <- sort(x)
-    lo <- trim + 1
-    up <- n - trim
-    x <- x[lo:up]
-  }
-  s <- (v - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
-  return(s)
-}
-
-#' Trim a vector
-#'
-#' Trim a vector by replacing "trim" top and bottom elements with NA.
-#'
-#' @param v Input vector
-#' @param trim number of elements to remove on each side
-#' @return Trimmed vector
-trimVector <- function(v, trim) {
-  if(trim == 0) return(v)
-  n <- length(which(!is.na(v)))
-  if(n - 2*trim < 2) stop("Too much trim")
-  # index of sorted elements. na.last indicates to put NAs at the end. This works only with radix.
-  idx <- sort.int(x, index.return = TRUE, na.last=TRUE, method="radix")$ix
-  lo <- trim
-  up <- n-trim+1
-  last <- length(idx)
-  v[idx[1:lo]] <- NA
-  v[idx[up:last]] <- NA
-  return(v)
-}
-
-
-#' Plot correlation matrix
-#'
-#' Plot correlation matrix for peptide or protein data.
-#' @param pdat Peptide/protein data object
-plotCorrelationMatrix <- function(pdat) {
-  corr.mat <- cor(pdat$tab, use="complete.obs")
-  heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
-}
-
-#' Plot clustering dendrogram
-#'
-#' @param pdat Peptide/protein data object.
-plotClustering <- function(pdat) {
-  corr.mat <- cor(pdat$tab, use="complete.obs")
-  dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
-  dend <- as.dendrogram(hclust(dis))
-  colors_to_use <- as.numeric(pdat$metadata$condition)
-  colors_to_use <- colors_to_use[order.dendrogram(dend)]
-  labels_colors(dend) <- colors_to_use
-  plot(dend)
-}
-
-
-#' Plot peptide count per sample
-#'
-#' @param pdat Peptide data object
-#' @param x.text.size Size of text on the x-axis
-#' @return A plot of the number of peptides detected in each sample
-plotPeptideCount <- function(pdat, x.text.size=7){
-  meta <- pdat$meta
-  pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
-  med.count <- median(pep.count)
-  df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
-  ggplot(df, aes(x=x,y=y,fill=condition)) +
-    geom_col() +
-    simple_theme +
-    scale_y_continuous(expand = c(0,0)) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
-    labs(x='Sample', y='Peptide count') +
-    labs(title = paste0("Median peptide count = ", med.count)) +
-    theme(plot.title=element_text(hjust=0, size=12))
-}
-
-#' Detect downliers
-#'
-#' Detect a downlier based on Z-score.
-#' @param v An input numeric vector
-#' @param sigma Z-score limit, default value is 5
-#' @param trim Number of trimmed points on each side for finding Z-score
-#' @return Integer vector with index of all downliers. If there are no downliers, the vector is empty.
-downlierSigma <- function(v, sigma=5, trim=0) {
-  n <- length(which(!is.na(v)))
-  if(n < 6) return(integer(0))
-
-  Z <- standardize(v, trim)
-  down <- which(Z <= -sigma)
-  return(down)
-}
-
-#' Statistics for an intensity table
-#'
-#' Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,
-#' for all conditions)
-#' @param pdat Intensity dat tructure
-#' @return A data frame with several statistics
-intensityStats <- function(pdat) {
-  meta <- pdat$metadata
-  logflag <- pdat$logflag
-  if(is.null(logflag)) logflag <- FALSE
-
-  conditions <- levels(meta$condition)
-  stats <- NULL
-  for(cond in conditions) {
-    w <- pdat$tab[,which(meta$condition == cond)]
-    if(logflag) w <- 10^w
-    m <- rowMeans(w, na.rm=TRUE)
-    m[which(is.nan(m))] <- NA
-    v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
-    ngood <- apply(w, 1, function(v) sum(!is.na(v)))
-    stats <- rbind(stats, data.frame(condition=cond, mean=m, variance=v, ngood=ngood))
-  }
-  return(stats)
-}
-
-
-#' Plot mean-variance relationship
-#'
-#' Plot variance of log-intensity vs mean of log-intensity.
-#' @param pdat Intensity data structure.
-#' @param with.loess Logical. If true, a loess line will be added.
-#' @param bins Number of bins for binhex
-#' @param xmin Lower limit on x-axis
-#' @param xmax Upper limit on x-axis
-#' @param ymin Lower limit on y-axis
-#' @param ymax Upper limit on y-axis
-plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
-  meta <- pdat$metadata
-  if(is.null(meta)) stop("No metadata found.")
-  conditions <- meta$condition
-
-  stats <- pdat$stats
-  if(is.null(stats)) stats <- intensityStats(pdat)
-  stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance)),]
-  stats$mean <- log10(stats$mean)
-  stats$variance <- log10(stats$variance)
-  protnum <- as.data.frame(table(stats$condition))  #number of proteins in each condition
-  colnames(protnum) <- c("condition", "n")
-
-  # has to be calculated for each condition separately
-  if(with.loess) {
-    ldf <- NULL
-    for(cond in levels(conditions))
-    {
-      st <- stats[which(stats$condition == cond),]
-      ls <- loess(variance ~ mean, data=st)
-      x <- seq(from=min(na.omit(st$mean)), to=max(na.omit(st$mean)), by=0.01)
-      pr <- predict(ls, x)
-      ldf <- rbind(ldf, data.frame(condition=cond, x=x, y=pr))
-    }
-  }
-
-  ggplot(stats, aes(x=mean, y=variance)) +
-    simple_theme_grid +
-    xlim(xmin, xmax) +
-    ylim(ymin, ymax) +
-    facet_wrap(~condition) +
-    stat_binhex(bins=bins) +
-    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
-    geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
-   # if(with.loess) {geom_line(data=ldf, aes(x,y), color='black')}
-
 }
 
 
 #' Make protein table
 #'
-#' Create a protein table from the peptide table using high-flyers.
-#' @param pepdat Peptide intensity object.
+#' \code{makeProteinTable} creates a protein table from the peptide table using high-flyers.
+#' The method used is a follows.
+#' \enumerate{
+#'   \item For a given protein find all corresponding peptides.
+#'   \item In each replicate, order intensities from the highest to the lowest. This is done separetly for each replicate.
+#'   \item Select n top rows of the ordered table.
+#'   \item In each replicate, find the mean of these three rows. This is the estimated protein intensity.
+#' }
+#'
+#' @param pepdat A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}
 #' @param hifly The number of top peptides (high-flyers) to be used for protein intensity.
 #' @param norm Normalization to use on peptides before converting into proteins.
 #' @param min.peptides Minimum number of peptides per protein.
-#' @return Protein intensity object.
+#' @return A \code{proteusData} object containing protein intensities and metadata.
+#'
+#' @examples
+#' evi <- readEvidenceFile("evidence.txt")
+#' meta <- read.delim("metadata.txt", header=TRUE)
+#' meta$sample <- factor(meta$sample, levels=meta$sample)
+#' pepdat <- makePeptideTable(evi, meta)
+#' prodat <- makeProteinTable(pepdat)
+#'
 makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
+  if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
   meta <- pepdat$metadata
   normfac <- normalizingFactors(pepdat$tab, method=norm)
   tab <- normalizeTable(pepdat$tab, normfac)
@@ -450,7 +215,7 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
   }
 
   # dplyr join all tables
-  protlist %>% Reduce(function(df1, df2) full_join(df1,df2, by="protein"), .) -> protab
+  protlist %>% Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), .) -> protab
   rownames(protab) <- protab$protein
   protab <- protab[,2:ncol(protab)]
   prodat <- list(
@@ -469,16 +234,211 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
     proteins = pepdat$proteins
   )
   prodat$stats <- intensityStats(prodat)
+  class(prodat) <- append(class(prodat), "proteusData")
 
   return(prodat)
 }
 
 
+
+#' Calculate normalizing factors
+#'
+#' \code{normalizingFactors} finds normalizing factors for a given intensity matrix.
+#' At this moment there is only one method of normalization available: to the median.
+#'
+#' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field
+#' in the \code{proteusData} object (see examples below).
+#' @param method Method of normalization, only 'median' is available at the moment.
+#' @return A vector with normalizing factors. \code{\link{normalizeTable}} uses these factors to normalize peptide intensities.
+#'
+#' @examples
+#' norm.fac <- normalizingFactors(pepdat$tab)
+#' tab <- normalizeTable(pepdat$tab, norm.fac)
+#'
+normalizingFactors <- function(tab, method="median") {
+  if(method == 'median') {
+    norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
+    norm <- norm / mean(norm)
+  } else {
+    stop("Unknown normalization method.")
+  }
+  return(norm)
+}
+
+
+#' Normalize intensity table
+#'
+#' \code{normalizeTable} normalizes intensity table with normalizing factors, normally obtained with
+#' \code{\link{normalizingFactors}}.
+#'
+#' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field in
+#' the \code{proteusData}
+#' object (see examples below).
+#' @param normfac A vector of normalizing (dividing) factors.
+#' @return Normalized intensity table.
+#'
+#' @examples
+#' norm.fac <- normalizingFactors(pepdat$tab)
+#' tab <- normalizeTable(pepdat$tab, norm.fac)
+#'
+normalizeTable <- function(tab, normfac) {
+  atr <- attributes(tab)
+  tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
+  attributes(tab) <- atr
+  return(tab)
+}
+
+
+#' Plot correlation matrix
+#'
+#' \code{plotCorrelationMatrix} plots a correlation matrix for peptide or protein data.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#'
+#' @examples
+#' plotCorrelationMatrix(pepdat)
+#'
+plotCorrelationMatrix <- function(pdat) {
+  corr.mat <- cor(pdat$tab, use="complete.obs")
+  gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
+}
+
+
+#' Plot clustering dendrogram
+#'
+#' \code{plotClustering} plots a dendrogram of intensity data, using hierarchical clustering.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#'
+#' @examples
+#' plotClustering(pepdat)
+#'
+plotClustering <- function(pdat) {
+  corr.mat <- cor(pdat$tab, use="complete.obs")
+  dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
+  dend <- as.dendrogram(hclust(dis))
+  colors_to_use <- as.numeric(pdat$metadata$condition)
+  colors_to_use <- dendextend::colors_to_use[order.dendrogram(dend)]
+  labels_colors(dend) <- colors_to_use
+  plot(dend)
+}
+
+
+#' Plot peptide count per sample
+#'
+#' \code{plotPeptideCount} makes a plot of peptide count per sample.
+#'
+#' @param pdat Peptide \code{proteusData} object.
+#' @param x.text.size Size of text on the x-axis.
+#' @return A plot of the number of peptides detected in each sample.
+#'
+#' @examples
+#' plotPeptideCount(pepdat)
+#'
+plotPeptideCount <- function(pdat, x.text.size=7){
+  meta <- pdat$meta
+  pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
+  med.count <- median(pep.count)
+  df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
+  ggplot(df, aes(x=x,y=y,fill=condition)) +
+    geom_col() +
+    simple_theme +
+    scale_y_continuous(expand = c(0,0)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
+    labs(x='Sample', y='Peptide count') +
+    labs(title = paste0("Median peptide count = ", med.count)) +
+    theme(plot.title=element_text(hjust=0, size=12))
+}
+
+#' Statistics for an intensity table
+#'
+#' \code{intensityStats} calculates the mean, variance and number of good data points for peptide or protein intensities.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#' @return A data frame with several statistics.
+#'
+#' @examples
+#' stats <- intensityStats(prodat)
+#'
+intensityStats <- function(pdat) {
+  meta <- pdat$metadata
+  logflag <- pdat$logflag
+  if(is.null(logflag)) logflag <- FALSE
+
+  conditions <- levels(meta$condition)
+  stats <- NULL
+  for(cond in conditions) {
+    w <- pdat$tab[,which(meta$condition == cond)]
+    if(logflag) w <- 10^w
+    m <- rowMeans(w, na.rm=TRUE)
+    m[which(is.nan(m))] <- NA
+    v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
+    ngood <- apply(w, 1, function(v) sum(!is.na(v)))
+    stats <- rbind(stats, data.frame(condition=cond, mean=m, variance=v, ngood=ngood))
+  }
+  return(stats)
+}
+
+
+#' Plot mean-variance relationship
+#'
+#' \code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#' @param with.loess Logical. If true, a loess line will be added.
+#' @param bins Number of bins for binhex
+#' @param xmin Lower limit on x-axis
+#' @param xmax Upper limit on x-axis
+#' @param ymin Lower limit on y-axis
+#' @param ymax Upper limit on y-axis
+#'
+#' @examples
+#' plotMV(prodat, with.loess=TRUE)
+#'
+plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
+  meta <- pdat$metadata
+  if(is.null(meta)) stop("No metadata found.")
+  conditions <- meta$condition
+
+  stats <- pdat$stats
+  if(is.null(stats)) stats <- intensityStats(pdat)
+  stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance)),]
+  stats$mean <- log10(stats$mean)
+  stats$variance <- log10(stats$variance)
+  protnum <- as.data.frame(table(stats$condition))  #number of proteins in each condition
+  colnames(protnum) <- c("condition", "n")
+
+  # has to be calculated for each condition separately
+  if(with.loess) {
+    ldf <- NULL
+    for(cond in levels(conditions))
+    {
+      st <- stats[which(stats$condition == cond),]
+      ls <- loess(variance ~ mean, data=st)
+      x <- seq(from=min(na.omit(st$mean)), to=max(na.omit(st$mean)), by=0.01)
+      pr <- predict(ls, x)
+      ldf <- rbind(ldf, data.frame(condition=cond, x=x, y=pr))
+    }
+  }
+
+  g <- ggplot(stats, aes(x=mean, y=variance)) +
+    simple_theme_grid +
+    xlim(xmin, xmax) +
+    ylim(ymin, ymax) +
+    facet_wrap(~condition) +
+    stat_binhex(bins=bins) +
+    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count", na.value=NA) +
+    geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
+  if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')
+  return(g)
+}
+
 #' Plot protein(s)
 #'
-#' Plot protein intensity as a function of the condition and replicate. When
-#' multiple proteins are entered, the mean and standard error is plotted.
-#' @param pdat Protein intensity structure.
+#' \code{plotProteins} makes a plot with protein intensity as a function of the condition and
+#' replicate. When multiple proteins are entered, the mean and standard error is plotted.
+#'
+#' @param pdat Protein \code{proteusData} object.
 #' @param protein Protein name (string) or a vector with protein names.
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
@@ -486,10 +446,15 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
 #' @param text.size Text size
 #' @param point.size Point size
 #' @param title Title of the plot (defaults to protein name)
-# without 'as.numeric' it returns logical NA (!!!)
+#'
+#' @examples
+#' plotProteins(prodat, 'sp|P53059|MNT2_YEAST', log=TRUE, title="MNT2")
+#'
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
                          text.size=12, point.size=3, title=NULL) {
-  sel <- which(pdat$proteins %in% protein)
+  # without 'as.numeric' it returns logical NA (!!!)
+
+    sel <- which(pdat$proteins %in% protein)
   if(length(sel) > 0 && sel > 0) {
     E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
     e <- colMeans(E, na.rm=TRUE)
@@ -530,24 +495,39 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 
 #' Differential expression with limma
 #'
-#' Calls limma to perform differential expression.
-#' @param pdat Protein intensity structure.
-#' @param formula A string with a formula for building the linear model. The default value is "~condition".
+#' \code(limmaDE} is a simple wrapper around limma differential expression.
+#'
+#' @param pdat Protein \code{proteusData} object.
+#' @param formula A string with a formula for building the linear model.
 #' @return limma output from eBays. See limma documentation for more details.
+#' The output from this function can be used with \code{\link{limmaTable}} to create
+#' a table with differential expression results.
+#'
+#' @examples
+#' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+#' res <- limmaTable(prodat, ebay)
+#'
 limmaDE <- function(pdat, formula="~condition") {
-  design <- model.matrix(as.formula(formula), pdat$metadata)
+  design <- limma::model.matrix(as.formula(formula), pdat$metadata)
   tab <- log10(pdat$tab)
-  fit <- lmFit(tab, design)
-  ebay <- eBayes(fit)
+  fit <- limma::lmFit(tab, design)
+  ebay <- limma::eBayes(fit)
 }
 
-#' Create differential expression result.
+#' Create differential expression result
 #'
-#' Use limmaDE output to create a table with DE results.
-#' @param pdat Protein intensity structure.
-#' @param ebay Output from "limmaDE"
+#' \code{limmaTable} creates a table with differential expressioni results, using
+#' an object created with \code{\link{limmaDE}}
+#'
+#' @param pdat Protein \code{proteusData} object.
+#' @param ebay Output from  \code{\link{limmaDE}}.
 #' @param column Which column should be used to extract data. The default value is "condition".
 #' @return A data frame with DE results.
+#'
+#' @examples
+#' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+#' res <- limmaTable(prodat, ebay)
+#'
 limmaTable <- function(pdat, ebay, column="condition") {
   # levels from the column (e.g. conditions)
   levs <- levels(factor(pdat$metadata[[column]]))
@@ -559,25 +539,33 @@ limmaTable <- function(pdat, ebay, column="condition") {
   return(res)
 }
 
-#' Fold-change intensity (MA) diagram
+#' Fold-change intensity diagram
 #'
-#' log fold change versus log sum intensity plot.
-#' @param pdat Protein data structure.
+#' \code{plotFID} makes a log fold change versus log sum intensity plot, usually known as MA plot.
+#'
+#' @param pdat Protein \code{proteusData} object.
 #' @param pair A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.
-#' @param pvalue A vector with corresponding p-values for an interactive plotly plot
-#' @param bins Number of bins for binhex
-#' @param marginal.histograms A logical to add marginal histograms
-#' @param xmin Lower limit on x-axis
-#' @param xmax Upper limit on x-axis
-#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax
-#' @param text.size Text size
-#' @param show.legend Logical to show legend (colour key)
-#' @param plot.grid Logical to plot grid
-plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE,
+#' @param pvalue An optional vector with corresponding p-values to be used with an interactive plotly plot.
+#' @param bins Number of bins for binhex.
+#' @param marginal.histograms A logical to add marginal histograms.
+#' @param xmin Lower limit on x-axis.
+#' @param xmax Upper limit on x-axis.
+#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
+#' @param text.size Text size.
+#' @param show.legend Logical to show legend (colour key).
+#' @param plot.grid Logical to plot a grid.
+#'
+#' @examples
+#' plotFID(prodat, pair=c("WT", "KO1"))
+#' g <- plotFID(prodat, pair=c("WT", "KO1"), pvalue=res$adj.P.Val)
+#' ggplotly(g)
+#'
+plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
                    binhex=TRUE) {
   if(is.null(pair)) pair <- levels(pdat$metadata$condition)
-  if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair.")
+  if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair parameter.")
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   stats <- pdat$stats
   c1 <- pair[1]
@@ -610,10 +598,17 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 
 #' Plot p-value distribution
 #'
-#' Plot distribution of raw p-value, obtained by limmaDE.
-#' @param res Result table from limmaTable
-#' @param text.size Text size
-#' @param plot.grid Logical to plot grid
+#' \code{plotPdist} makes a plot with distribution of raw p-values, obtained by \code{\link{limmaDE}}.
+#'
+#' @param res Output table from \code{\link{limmaTable}}.
+#' @param text.size Text size.
+#' @param plot.grid Logical to plot grid.
+#'
+#' @examples
+#' ebay <- limmaDE(prodat)
+#' res <- limmaTable(prodat, ebay)
+#' plotPdist(res)
+#'
 plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
   ggplot(res, aes(P.Value, ..density..)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
@@ -624,14 +619,21 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 
 #' Volcano plot
 #'
-#' Volcano plot from limma results.
-#' @param res Result table from limmaTable
-#' @param bins Number of bins for binhex
-#' @param xmax Upper limit on x-axis. If used, the lower limit is -xmax
-#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax
-#' @param text.size Text size
-#' @param show.legend Logical to show legend (colour key)
-#' @param plot.grid Logical to plot grid
+#' \code{plotVolcano} makes a volcano plot from limma results. Uses \code{\link{stat_binhex}} function
+#'from ggplo2 to make a hexagonal heatmap.
+#'
+#' @param res Result table from  \code{\link{limmaTable}}.
+#' @param bins Number of bins for binhex.
+#' @param xmax Upper limit on x-axis. If used, the lower limit is -xmax.
+#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
+#' @param text.size Text size.
+#' @param show.legend Logical to show legend (colour key).
+#' @param plot.grid Logical to plot grid.
+#'
+#' @examples
+#' ebay <- limmaDE(prodat)
+#' res <- limmaTable(prodat, ebay)
+#' plotVolcano(res)
 plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
@@ -647,11 +649,26 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 }
 
 
-
+#' Protein-peptide plot
+#'
+#' \code{plotProtPeptides} creates a plot consisting of two panels. The top panel shows peptide log
+#' intensity. Each box represents one peptide, peptide numbering follows alphabetical sequence order.
+#' The bottom panel shows sample intensity. Each box represents one sample. White boxes show
+#' derived protein intensities (if \code{prodat} is provided).
+#'
+#' @param pepdat Peptide \code{proteusData} object.
+#' @param protein Protein name.
+#' @param prodat (optional) protein \code{proteusData} object.
+#'
+#' @examples
+#' plotProtPeptides(pepdat, 'sp|P53059|MNT2_YEAST', prodat = prodat)
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
+  norm <- normalizingFactors(pepdat$tab)
+  tab <- normalizeTable(pepdat$tab, norm)
+
   # all peptides for this protein
   peps <- pepdat$pep2prot[which(pepdat$pep2prot$protein == protein),'sequence']
-  mat <- as.matrix(pepdat$tab[peps,])
+  mat <- as.matrix(tab[peps,])
   dat <- melt(mat, varnames=c("peptide", "sample"))
   levels(dat$sample) <- pepdat$metadata$sample # melt loses order of sample levels
   dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers

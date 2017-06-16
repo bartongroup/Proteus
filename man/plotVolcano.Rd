@@ -8,20 +8,26 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
   show.legend = TRUE, plot.grid = TRUE)
 }
 \arguments{
-\item{res}{Result table from limmaTable}
+\item{res}{Result table from  \code{\link{limmaTable}}.}
 
-\item{bins}{Number of bins for binhex}
+\item{bins}{Number of bins for binhex.}
 
-\item{xmax}{Upper limit on x-axis. If used, the lower limit is -xmax}
+\item{xmax}{Upper limit on x-axis. If used, the lower limit is -xmax.}
 
-\item{ymax}{Upper limit on y-axis. If used, the lower limit is -ymax}
+\item{ymax}{Upper limit on y-axis. If used, the lower limit is -ymax.}
 
-\item{text.size}{Text size}
+\item{text.size}{Text size.}
 
-\item{show.legend}{Logical to show legend (colour key)}
+\item{show.legend}{Logical to show legend (colour key).}
 
-\item{plot.grid}{Logical to plot grid}
+\item{plot.grid}{Logical to plot grid.}
 }
 \description{
-Volcano plot from limma results.
+\code{plotVolcano} makes a volcano plot from limma results. Uses \code{\link{stat_binhex}} function
+from ggplo2 to make a hexagonal heatmap.
+}
+\examples{
+ebay <- limmaDE(prodat)
+res <- limmaTable(prodat, ebay)
+plotVolcano(res)
 }

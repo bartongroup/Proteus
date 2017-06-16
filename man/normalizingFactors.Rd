@@ -7,13 +7,20 @@
 normalizingFactors(tab, method = "median")
 }
 \arguments{
-\item{tab}{Intensity table for all conditions.}
+\item{tab}{Data frame with raw intensities. Normally, this is a \code{tab} field
+in the \code{proteusData} object (see examples below).}
 
-\item{method}{Method of normalization, only 'median' at the moment.}
+\item{method}{Method of normalization, only 'median' is available at the moment.}
 }
 \value{
-A vector with normalizing factors.
+A vector with normalizing factors. \code{\link{normalizeTable}} uses these factors to normalize peptide intensities.
 }
 \description{
-Calculate normalizing factors
+\code{normalizingFactors} finds normalizing factors for a given intensity matrix.
+At this moment there is only one method of normalization available: to the median.
+}
+\examples{
+norm.fac <- normalizingFactors(pepdat$tab)
+tab <- normalizeTable(pepdat$tab, norm.fac)
+
 }

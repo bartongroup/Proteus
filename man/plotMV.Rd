@@ -8,7 +8,7 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
   ymin = 7, ymax = 20)
 }
 \arguments{
-\item{pdat}{Intensity data structure.}
+\item{pdat}{Peptide or protein \code{proteusData} object.}
 
 \item{with.loess}{Logical. If true, a loess line will be added.}
 
@@ -23,5 +23,9 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
 \item{ymax}{Upper limit on y-axis}
 }
 \description{
-Plot variance of log-intensity vs mean of log-intensity.
+\code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.
+}
+\examples{
+plotMV(prodat, with.loess=TRUE)
+
 }

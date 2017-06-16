@@ -9,7 +9,7 @@
 evidenceColumns
 }
 \description{
-Columns to be read from the evidence file. This list contains names of columns to be read.
+\code{evidenceColumns} contains default columns to be read from the evidence file.
 The names of list elements are used internally to reference evidence data.
 }
 \keyword{datasets}

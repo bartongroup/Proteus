@@ -7,10 +7,21 @@
 normalizeTable(tab, normfac)
 }
 \arguments{
-\item{tab}{Peptab table.}
+\item{tab}{Data frame with raw intensities. Normally, this is a \code{tab} field in
+the \code{proteusData}
+object (see examples below).}
 
-\item{normfac}{A vector of normalizing factors.}
+\item{normfac}{A vector of normalizing (dividing) factors.}
+}
+\value{
+Normalized intensity table.
 }
 \description{
-Normalize intensity table with normalizing factors. Attributes are retained.
+\code{normalizeTable} normalizes intensity table with normalizing factors, normally obtained with
+\code{\link{normalizingFactors}}.
+}
+\examples{
+norm.fac <- normalizingFactors(pepdat$tab)
+tab <- normalizeTable(pepdat$tab, norm.fac)
+
 }

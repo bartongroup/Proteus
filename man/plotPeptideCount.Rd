@@ -7,13 +7,17 @@
 plotPeptideCount(pdat, x.text.size = 7)
 }
 \arguments{
-\item{pdat}{Peptide data object}
+\item{pdat}{Peptide \code{proteusData} object.}
 
-\item{x.text.size}{Size of text on the x-axis}
+\item{x.text.size}{Size of text on the x-axis.}
 }
 \value{
-A plot of the number of peptides detected in each sample
+A plot of the number of peptides detected in each sample.
 }
 \description{
-Plot peptide count per sample
+\code{plotPeptideCount} makes a plot of peptide count per sample.
+}
+\examples{
+plotPeptideCount(pepdat)
+
 }

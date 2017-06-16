@@ -7,8 +7,12 @@
 plotCorrelationMatrix(pdat)
 }
 \arguments{
-\item{pdat}{Peptide/protein data object}
+\item{pdat}{Peptide or protein \code{proteusData} object.}
 }
 \description{
-Plot correlation matrix for peptide or protein data.
+\code{plotCorrelationMatrix} plots a correlation matrix for peptide or protein data.
+}
+\examples{
+plotCorrelationMatrix(pepdat)
+
 }

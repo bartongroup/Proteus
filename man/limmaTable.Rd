@@ -2,14 +2,14 @@
 % Please edit documentation in R/func.R
 \name{limmaTable}
 \alias{limmaTable}
-\title{Create differential expression result.}
+\title{Create differential expression result}
 \usage{
 limmaTable(pdat, ebay, column = "condition")
 }
 \arguments{
-\item{pdat}{Protein intensity structure.}
+\item{pdat}{Protein \code{proteusData} object.}
 
-\item{ebay}{Output from "limmaDE"}
+\item{ebay}{Output from  \code{\link{limmaDE}}.}
 
 \item{column}{Which column should be used to extract data. The default value is "condition".}
 }
@@ -17,5 +17,11 @@ limmaTable(pdat, ebay, column = "condition")
 A data frame with DE results.
 }
 \description{
-Use limmaDE output to create a table with DE results.
+\code{limmaTable} creates a table with differential expressioni results, using
+an object created with \code{\link{limmaDE}}
+}
+\examples{
+ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+res <- limmaTable(prodat, ebay)
+
 }

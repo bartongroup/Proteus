@@ -5,10 +5,10 @@
 \title{Plot protein(s)}
 \usage{
 plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
-  ymax = as.numeric(NA), text.size = 12, point.size = 3)
+  ymax = as.numeric(NA), text.size = 12, point.size = 3, title = NULL)
 }
 \arguments{
-\item{pdat}{Protein intensity structure.}
+\item{pdat}{Protein \code{proteusData} object.}
 
 \item{protein}{Protein name (string) or a vector with protein names.}
 
@@ -21,8 +21,14 @@ plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
 \item{text.size}{Text size}
 
 \item{point.size}{Point size}
+
+\item{title}{Title of the plot (defaults to protein name)}
 }
 \description{
-Plot protein intensity as a function of the condition and replicate. When
-multiple proteins are entered, the mean and standard error is plotted.
+\code{plotProteins} makes a plot with protein intensity as a function of the condition and
+replicate. When multiple proteins are entered, the mean and standard error is plotted.
+}
+\examples{
+plotProteins(prodat, 'sp|P53059|MNT2_YEAST', log=TRUE, title="MNT2")
+
 }

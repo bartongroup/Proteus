@@ -8,7 +8,7 @@ makeProteinTable(pepdat, hifly = 3, norm = "median", min.peptides = 1,
   verbose = FALSE)
 }
 \arguments{
-\item{pepdat}{Peptide intensity object.}
+\item{pepdat}{A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}}
 
 \item{hifly}{The number of top peptides (high-flyers) to be used for protein intensity.}
 
@@ -17,8 +17,23 @@ makeProteinTable(pepdat, hifly = 3, norm = "median", min.peptides = 1,
 \item{min.peptides}{Minimum number of peptides per protein.}
 }
 \value{
-Protein intensity object.
+A \code{proteusData} object containing protein intensities and metadata.
 }
 \description{
-Create a protein table from the peptide table using high-flyers.
+\code{makeProteinTable} creates a protein table from the peptide table using high-flyers.
+The method used is a follows.
+\enumerate{
+  \item For a given protein find all corresponding peptides.
+  \item In each replicate, order intensities from the highest to the lowest. This is done separetly for each replicate.
+  \item Select n top rows of the ordered table.
+  \item In each replicate, find the mean of these three rows. This is the estimated protein intensity.
+}
+}
+\examples{
+evi <- readEvidenceFile("evidence.txt")
+meta <- read.delim("metadata.txt", header=TRUE)
+meta$sample <- factor(meta$sample, levels=meta$sample)
+pepdat <- makePeptideTable(evi, meta)
+prodat <- makeProteinTable(pepdat)
+
 }

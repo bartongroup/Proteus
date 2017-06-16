@@ -7,12 +7,15 @@
 intensityStats(pdat)
 }
 \arguments{
-\item{pdat}{Intensity dat tructure}
+\item{pdat}{Peptide or protein \code{proteusData} object.}
 }
 \value{
-A data frame with several statistics
+A data frame with several statistics.
 }
 \description{
-Calculate mean, standard deviation, ... for an intensity table (that is peptide or protein,
-for all conditions)
+\code{intensityStats} calculates the mean, variance and number of good data points for peptide or protein intensities.
+}
+\examples{
+stats <- intensityStats(prodat)
+
 }

@@ -559,9 +559,9 @@ limmaTable <- function(pdat, ebay, column="condition") {
   return(res)
 }
 
-#' MA plot
+#' Fold-change intensity (MA) diagram
 #'
-#' log fold change versus log sum plot.
+#' log fold change versus log sum intensity plot.
 #' @param pdat Protein data structure.
 #' @param pair A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.
 #' @param pvalue A vector with corresponding p-values for an interactive plotly plot
@@ -573,7 +573,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' @param text.size Text size
 #' @param show.legend Logical to show legend (colour key)
 #' @param plot.grid Logical to plot grid
-plotMA <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE,
+plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE, classic=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
                    binhex=TRUE) {
   if(is.null(pair)) pair <- levels(pdat$metadata$condition)

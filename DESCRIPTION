@@ -17,3 +17,4 @@ Imports:
     ggExtra,
     dendextend,
     limma
+Suggests: testthat

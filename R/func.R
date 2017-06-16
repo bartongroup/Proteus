@@ -3,6 +3,7 @@
 #'
 #' \code{evidenceColumns} contains default columns to be read from the evidence file.
 #' The names of list elements are used internally to reference evidence data.
+#' @export
 evidenceColumns <- list(
   sequence = 'Sequence',
   modseq = 'Modified sequence',
@@ -50,6 +51,7 @@ simple_theme_grid <- ggplot2::theme_bw() +
 #' @examples
 #' evi <- readEvidenceFile("evidence.txt")
 #'
+#' @export
 readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
   evi <- evi[, as.character(columns)]
@@ -72,6 +74,7 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 #' @examples
 #' pep.tab <- readPeptideFile("peptides.txt")
 #'
+#' @export
 readPeptideFile <- function(file) {
   pep <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
   pep$Reverse[is.na(pep$Reverse)] = ''
@@ -98,6 +101,7 @@ readPeptideFile <- function(file) {
 #' meta$sample <- factor(meta$sample, levels=meta$sample)
 #' pepdat <- makePeptideTable(evi, meta)
 #'
+#' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity") {
 
   if(!(pepseq %in% c("sequence", "modseq"))) stop("Incorrect pepseq. Has to be 'sequence' or 'modseq'.")
@@ -166,6 +170,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' pepdat <- makePeptideTable(evi, meta)
 #' prodat <- makeProteinTable(pepdat)
 #'
+#' @export
 makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
@@ -255,6 +260,7 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
 #' norm.fac <- normalizingFactors(pepdat$tab)
 #' tab <- normalizeTable(pepdat$tab, norm.fac)
 #'
+#' @export
 normalizingFactors <- function(tab, method="median") {
   if(method == 'median') {
     norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
@@ -281,6 +287,7 @@ normalizingFactors <- function(tab, method="median") {
 #' norm.fac <- normalizingFactors(pepdat$tab)
 #' tab <- normalizeTable(pepdat$tab, norm.fac)
 #'
+#' @export
 normalizeTable <- function(tab, normfac) {
   atr <- attributes(tab)
   tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
@@ -298,6 +305,7 @@ normalizeTable <- function(tab, normfac) {
 #' @examples
 #' plotCorrelationMatrix(pepdat)
 #'
+#' @export
 plotCorrelationMatrix <- function(pdat) {
   corr.mat <- cor(pdat$tab, use="complete.obs")
   gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
@@ -313,6 +321,7 @@ plotCorrelationMatrix <- function(pdat) {
 #' @examples
 #' plotClustering(pepdat)
 #'
+#' @export
 plotClustering <- function(pdat) {
   corr.mat <- cor(pdat$tab, use="complete.obs")
   dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
@@ -335,6 +344,7 @@ plotClustering <- function(pdat) {
 #' @examples
 #' plotPeptideCount(pepdat)
 #'
+#' @export
 plotPeptideCount <- function(pdat, x.text.size=7){
   meta <- pdat$meta
   pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
@@ -360,6 +370,7 @@ plotPeptideCount <- function(pdat, x.text.size=7){
 #' @examples
 #' stats <- intensityStats(prodat)
 #'
+#' @export
 intensityStats <- function(pdat) {
   meta <- pdat$metadata
   logflag <- pdat$logflag
@@ -395,6 +406,7 @@ intensityStats <- function(pdat) {
 #' @examples
 #' plotMV(prodat, with.loess=TRUE)
 #'
+#' @export
 plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
@@ -450,6 +462,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @examples
 #' plotProteins(prodat, 'sp|P53059|MNT2_YEAST', log=TRUE, title="MNT2")
 #'
+#' @export
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
                          text.size=12, point.size=3, title=NULL) {
   # without 'as.numeric' it returns logical NA (!!!)
@@ -507,8 +520,9 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
 #' res <- limmaTable(prodat, ebay)
 #'
+#' @export
 limmaDE <- function(pdat, formula="~condition") {
-  design <- limma::model.matrix(as.formula(formula), pdat$metadata)
+  design <- model.matrix(as.formula(formula), pdat$metadata)
   tab <- log10(pdat$tab)
   fit <- limma::lmFit(tab, design)
   ebay <- limma::eBayes(fit)
@@ -528,6 +542,7 @@ limmaDE <- function(pdat, formula="~condition") {
 #' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
 #' res <- limmaTable(prodat, ebay)
 #'
+#' @export
 limmaTable <- function(pdat, ebay, column="condition") {
   # levels from the column (e.g. conditions)
   levs <- levels(factor(pdat$metadata[[column]]))
@@ -560,6 +575,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' g <- plotFID(prodat, pair=c("WT", "KO1"), pvalue=res$adj.P.Val)
 #' ggplotly(g)
 #'
+#' @export
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
                    binhex=TRUE) {
@@ -609,6 +625,7 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' res <- limmaTable(prodat, ebay)
 #' plotPdist(res)
 #'
+#' @export
 plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
   ggplot(res, aes(P.Value, ..density..)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
@@ -634,6 +651,8 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #' ebay <- limmaDE(prodat)
 #' res <- limmaTable(prodat, ebay)
 #' plotVolcano(res)
+#'
+#' @export
 plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
@@ -662,6 +681,8 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #'
 #' @examples
 #' plotProtPeptides(pepdat, 'sp|P53059|MNT2_YEAST', prodat = prodat)
+#'
+#' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   norm <- normalizingFactors(pepdat$tab)
   tab <- normalizeTable(pepdat$tab, norm)

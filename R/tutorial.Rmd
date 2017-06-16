@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-library(PepFunc)
+library(proteus)
 library(knitr)
 library(dplyr)
 library(reshape)
@@ -21,8 +21,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Input data
 
+We need two files for proteus. The MaxQuant evidence file and a manually created metadata file. The metadata file is a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition".
+
 ```{r}
-topDir <- '/Users/mgierlinski/Work/Biology/Paper/GreatProt'
+#topDir <- '/Users/mgierlinski/Work/Biology/Paper/GreatProt'
+topDir <- '/gpfs/mgierlinski/projects/greatprot_matthias/'
 dataDir <- paste0(topDir, '/data')
 
 evidenceFile <- paste0(dataDir, '/1112/evidence.txt')

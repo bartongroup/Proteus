@@ -30,6 +30,8 @@ plotFID(pdat, pair = NULL, pvalue = NULL, bins = 80,
 \item{show.legend}{Logical to show legend (colour key).}
 
 \item{plot.grid}{Logical to plot a grid.}
+
+\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.}
 }
 \description{
 \code{plotFID} makes a log fold change versus log sum intensity plot, usually known as MA plot.

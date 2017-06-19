@@ -96,6 +96,7 @@ readPeptideFile <- function(file, meta) {
 readProteinFile <- function(file, meta) {
   pdat <- readMaxQuantTable(file, "protein", "Protein IDs", meta)
   pdat$stats <- intensityStats(pdat)
+  pdat$proteins <- rownames(pdat$tab)
   return(pdat)
 }
 
@@ -199,16 +200,18 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 
 #' Make protein table
 #'
-#' \code{makeProteinTable} creates a protein table from the peptide table using high-flyers.
-#' The method used is a follows.
+#' \code{makeProteinTable} creates a protein table from the peptide table using high-flyers or sum.
+#' The "hifly" method is a follows.
 #' \enumerate{
 #'   \item For a given protein find all corresponding peptides.
 #'   \item In each replicate, order intensities from the highest to the lowest. This is done separetly for each replicate.
 #'   \item Select n top rows of the ordered table.
 #'   \item In each replicate, find the mean of these three rows. This is the estimated protein intensity.
 #' }
+#' The "sum" method simply adds all intensities.
 #'
 #' @param pepdat A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}
+#' @param method Method to create proteins. Can be "hifly" or "sum".
 #' @param hifly The number of top peptides (high-flyers) to be used for protein intensity.
 #' @param norm Normalization to use on peptides before converting into proteins.
 #' @param min.peptides Minimum number of peptides per protein.
@@ -222,8 +225,9 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' prodat <- makeProteinTable(pepdat)
 #'
 #' @export
-makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
+makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  if(!(method %in% c("hifly", "sum"))) stop(paste0("Unknown method ", method))
 
   meta <- pepdat$metadata
   normfac <- normalizingFactors(pepdat$tab, method=norm)
@@ -243,16 +247,7 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
         # without drop=FALSE it will drop a dimension for one-row selection
         # and all downstream analysis goes to hell
         wp <- w[sel,, drop=FALSE]
-        if(npep > 1) {
-          wp[is.na(wp)] <- 0   # zeroes for sorting only
-          sp <- as.matrix(apply(wp, 2, sort, decreasing=TRUE))
-          sp[sp == 0] <- NA  # put NAs back
-          ntop <- min(npep, hifly)
-          row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
-          row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs
-        } else {
-          row <- wp
-        }
+        row <- makeProtein(wp, method, hifly)
         row <- data.frame(protein=prot, row)
 
         # this was old method using the same three peptides for all samples
@@ -295,7 +290,35 @@ makeProteinTable <- function(pepdat, hifly=3, norm="median", min.peptides=1, ver
   return(prodat)
 }
 
+#' Helper function, not exported
+#'
+#' Make protein from a selection of peptides
+#' @param wp Intensity table with selection of peptides for this protein
+#' @param method Method of creating proteins
+makeProtein <- function(wp, method, hifly=3) {
+  npep <- nrow(wp)
+  if(npep == 0) stop("No peptides to aggregate.")
+  cols <- colnames(wp)
+  if(method == "hifly") {
+    if(npep > 1) {
+      wp[is.na(wp)] <- 0   # zeroes for sorting only
+      sp <- as.matrix(apply(wp, 2, sort, decreasing=TRUE))
+      sp[sp == 0] <- NA  # put NAs back
+      ntop <- min(npep, hifly)
+      row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
+      row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs
+      row <- as.data.frame(row)
+    } else {
+      row <- wp
+    }
+  } else if(method == "sum") {
+    row <- as.data.frame(t(colSums(wp, na.rm=TRUE)))
+    row[row==0] <- NA    # colSums puts zeroes where the column contains only NAs (!!!)
+  } else stop(paste0("Unknown method ", method))
 
+  colnames(row) <- cols
+  return(row)
+}
 
 #' Calculate normalizing factors
 #'
@@ -620,6 +643,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' @param text.size Text size.
 #' @param show.legend Logical to show legend (colour key).
 #' @param plot.grid Logical to plot a grid.
+#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.
 #'
 #' @examples
 #' plotFID(prodat, pair=c("WT", "KO1"))

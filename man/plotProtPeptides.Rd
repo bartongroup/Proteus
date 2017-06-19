@@ -21,4 +21,5 @@ derived protein intensities (if \code{prodat} is provided).
 }
 \examples{
 plotProtPeptides(pepdat, 'sp|P53059|MNT2_YEAST', prodat = prodat)
+
 }

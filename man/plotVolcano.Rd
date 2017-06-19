@@ -30,4 +30,5 @@ from ggplo2 to make a hexagonal heatmap.
 ebay <- limmaDE(prodat)
 res <- limmaTable(prodat, ebay)
 plotVolcano(res)
+
 }

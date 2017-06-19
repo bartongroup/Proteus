@@ -30,6 +30,7 @@ dataDir <- paste0(topDir, '/data')
 
 evidenceFile <- paste0(dataDir, '/1112/evidence.txt')
 peptideFile <- paste0(dataDir, '/1112/peptides.txt')
+proteinFile <- paste0(dataDir, '/1112/proteinGroups.txt')
 metadataFile <- paste0(dataDir, '/m2_metadata.txt')
 ```
 

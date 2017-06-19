@@ -65,21 +65,72 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 
 #' Read MaxQuant's peptide file
 #'
-#' \code{readPeptideFile} reads MaxQuant's peptide file. Contaminants and reverse sequences
-#' are filtered out.
+#' \code{readPeptideFile} reads MaxQuant's peptide file and extracts intensity table.
+#' Contaminants and reverse sequences are filtered out.
 #'
 #' @param file File name.
-#' @return Data frame with selected columns from the evidence file.
+#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
+#' @param pepseq A column name to identify peptides. Can be either "sequence" or "modseq".
+#' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
-#' pep.tab <- readPeptideFile("peptides.txt")
+#' pepMQ <- readPeptideFile("peptides.txt", meta)
 #'
 #' @export
-readPeptideFile <- function(file) {
-  pep <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
-  pep$Reverse[is.na(pep$Reverse)] = ''
-  pep$`Potential contaminant`[is.na(pep$`Potential contaminant`)] = ''
-  pep <- pep[which(pep$`Potential contaminant` != '+' & pep$Reverse != '+'),]
+readPeptideFile <- function(file, meta) {
+  readMaxQuantTable(file, "peptide", "Sequence", meta)
+}
+
+#' Read MaxQuant's protein file
+#'
+#' \code{readPeptideFile} reads MaxQuant's protein file and extracts intensity table.
+#'
+#' @param file File name.
+#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
+#' @return A minimal \code{proteusData} object with peptide intensities.
+#'
+#' @examples
+#' protMQ <- readProteinFile("proteinGroups.txt", meta)
+#'
+#' @export
+readProteinFile <- function(file, meta) {
+  pdat <- readMaxQuantTable(file, "protein", "Protein IDs", meta)
+  pdat$stats <- intensityStats(pdat)
+  return(pdat)
+}
+
+
+#' Read MaxQuant's table
+#'
+#'  \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
+#'  extracts intensity data and creates a minimal \code{proteusData} object.
+#'
+#'  @param file Input file
+#'  @param content Either "peptide" or "protein"
+#'  @param col.id Name of the column with identifiers (e.g. "Sequence")
+#'  @param meta Metadata
+readMaxQuantTable <- function(file, content, col.id, meta) {
+  dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
+  if(content=="peptide") {
+    dat$Reverse[is.na(dat$Reverse)] = ''
+    dat$`Potential contaminant`[is.na(dat$`Potential contaminant`)] = ''
+    dat <- dat[which(dat$`Potential contaminant` != '+' & dat$Reverse != '+'),]
+  }
+  tab <- dat[grepl("Intensity ", names(dat))]
+  tab[tab==0] <- NA
+  colnames(tab) <- meta$sample
+  rownames(tab) <- dat[[col.id]]
+  # create pdat object
+  pdat <- list(
+    tab = tab,
+    content = content,
+    metadata = meta,
+    norm = "none",
+    stats = NULL,
+    logflag = FALSE
+  )
+  class(pdat) <- append(class(pdat), "proteusData")
+  return(pdat)
 }
 
 

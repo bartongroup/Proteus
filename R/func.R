@@ -401,7 +401,7 @@ plotClustering <- function(pdat) {
   dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
   dend <- as.dendrogram(hclust(dis))
   colors_to_use <- as.numeric(pdat$metadata$condition)
-  colors_to_use <- dendextend::colors_to_use[order.dendrogram(dend)]
+  colors_to_use <- colors_to_use[order.dendrogram(dend)]
   labels_colors(dend) <- colors_to_use
   plot(dend)
 }

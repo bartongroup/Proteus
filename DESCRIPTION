@@ -17,4 +17,5 @@ Imports:
     ggExtra,
     dendextend,
     limma
-Suggests: testthat
+Suggests: testthat, knitr, rmarkdown
+VignetteBuilder: knitr

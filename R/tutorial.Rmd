@@ -1,6 +1,10 @@
 ---
-title: "Tutorial"
-output: html_document
+title: "Using proteus R package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using proteus R package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
@@ -10,10 +14,8 @@ library(dplyr)
 library(reshape)
 library(ggplot2)
 library(gplots)
-library(png)
 library(grid)
 require(gridExtra)
-library(nortest)
 library(dendextend)
 options(width = 1000)
 knitr::opts_chunk$set(echo = TRUE)

@@ -316,8 +316,8 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min
     peptides = pepdat$peptides,
     proteins = pepdat$proteins
   )
-  prodat$stats <- intensityStats(prodat)
   class(prodat) <- append(class(prodat), "proteusData")
+  prodat$stats <- intensityStats(prodat)
 
   return(prodat)
 }

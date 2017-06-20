@@ -54,6 +54,12 @@ simple_theme_grid <- ggplot2::theme_bw() +
 #' @export
 readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
+
+  # check if all required columns exist
+  for(col in columns) {
+    if(!(col %in% colnames(evi))) stop(paste0("Column '", col, "' not found in evidence file ", file))
+  }
+
   evi <- evi[, as.character(columns)]
   names(evi) <- names(columns)
   # sometimes there are only NAs and the condition doesn't work
@@ -112,12 +118,34 @@ readProteinFile <- function(file, meta) {
 #'  @param meta Metadata
 readMaxQuantTable <- function(file, content, col.id, meta) {
   dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
+
+  # check if col.id exists
+  if(!(col.id %in% colnames(dat))) stop(paste0("Column '", col.id, "' not found in ", file))
+
+  # filter peptides on reverse and contaminant
   if(content=="peptide") {
-    dat$Reverse[is.na(dat$Reverse)] = ''
-    dat$`Potential contaminant`[is.na(dat$`Potential contaminant`)] = ''
-    dat <- dat[which(dat$`Potential contaminant` != '+' & dat$Reverse != '+'),]
+    test <- TRUE
+    for(col in c("Reverse", "Potential contaminant")) {
+      if(!(col %in% colnames(dat))) {
+        warning(paste0("Column '", col, "' not found in file ", file, "\nCannot filter on contaminants and reverse."))
+        test <- FALSE
+      }
+    }
+    if(test) {
+      dat$Reverse[is.na(dat$Reverse)] = ''
+      dat$`Potential contaminant`[is.na(dat$`Potential contaminant`)] = ''
+      dat <- dat[which(dat$`Potential contaminant` != '+' & dat$Reverse != '+'),]
+    }
   }
-  tab <- dat[grepl("Intensity ", names(dat))]
+
+  # Find intensity columns
+  intensity.cols <- grepl("Intensity ", names(dat))
+  ncol <- length(which(intensity.cols))
+  nsam <- length(meta$sample)
+  if(ncol == 0) stop("No intensity columns found.")
+  if(ncol != nsam) stop(paste0("Wrong number of samples in the input file. Expecting ", nsam, " from metadata, but found ", ncol, "."))
+
+  tab <- dat[intensity.cols]
   tab[tab==0] <- NA
   colnames(tab) <- meta$sample
   rownames(tab) <- dat[[col.id]]
@@ -279,6 +307,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min
     hifly = hifly,
     mmin.peptides = min.peptides,
     norm = norm,
+    normfac = normfac,
     logflag = FALSE,
     pep2prot = pepdat$pep2prot,
     peptides = pepdat$peptides,
@@ -338,7 +367,7 @@ makeProtein <- function(wp, method, hifly=3) {
 normalizingFactors <- function(tab, method="median") {
   if(method == 'median') {
     norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
-    norm <- norm / mean(norm)
+    norm <- norm / mean(norm, na.rm=TRUE)
   } else {
     stop("Unknown normalization method.")
   }
@@ -352,8 +381,7 @@ normalizingFactors <- function(tab, method="median") {
 #' \code{\link{normalizingFactors}}.
 #'
 #' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field in
-#' the \code{proteusData}
-#' object (see examples below).
+#' the \code{proteusData} object (see examples below).
 #' @param normfac A vector of normalizing (dividing) factors.
 #' @return Normalized intensity table.
 #'
@@ -363,6 +391,7 @@ normalizingFactors <- function(tab, method="median") {
 #'
 #' @export
 normalizeTable <- function(tab, normfac) {
+  if(ncol(tab) != length(normfac)) stop(paste0("Number of columns in the table, ", ncol(tab), ", different from the length of the normalizing vector, ", length(normfac)))
   atr <- attributes(tab)
   tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
   attributes(tab) <- atr
@@ -381,6 +410,7 @@ normalizeTable <- function(tab, normfac) {
 #'
 #' @export
 plotCorrelationMatrix <- function(pdat) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
   gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
 }
@@ -397,6 +427,7 @@ plotCorrelationMatrix <- function(pdat) {
 #'
 #' @export
 plotClustering <- function(pdat) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
   dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
   dend <- as.dendrogram(hclust(dis))
@@ -420,6 +451,7 @@ plotClustering <- function(pdat) {
 #'
 #' @export
 plotPeptideCount <- function(pdat, x.text.size=7){
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
   pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
   med.count <- median(pep.count)
@@ -446,6 +478,8 @@ plotPeptideCount <- function(pdat, x.text.size=7){
 #'
 #' @export
 intensityStats <- function(pdat) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
   meta <- pdat$metadata
   logflag <- pdat$logflag
   if(is.null(logflag)) logflag <- FALSE
@@ -482,6 +516,7 @@ intensityStats <- function(pdat) {
 #'
 #' @export
 plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
   conditions <- meta$condition
@@ -541,7 +576,9 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
                          text.size=12, point.size=3, title=NULL) {
   # without 'as.numeric' it returns logical NA (!!!)
 
-    sel <- which(pdat$proteins %in% protein)
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
+  sel <- which(pdat$proteins %in% protein)
   if(length(sel) > 0 && sel > 0) {
     E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
     e <- colMeans(E, na.rm=TRUE)
@@ -596,6 +633,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #'
 #' @export
 limmaDE <- function(pdat, formula="~condition") {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   design <- model.matrix(as.formula(formula), pdat$metadata)
   tab <- log10(pdat$tab)
   fit <- limma::lmFit(tab, design)
@@ -618,6 +656,7 @@ limmaDE <- function(pdat, formula="~condition") {
 #'
 #' @export
 limmaTable <- function(pdat, ebay, column="condition") {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   # levels from the column (e.g. conditions)
   levs <- levels(factor(pdat$metadata[[column]]))
   # coef is the column name + the last level, e.g. "conditionWT"
@@ -759,11 +798,15 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #'
 #' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
+  if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   norm <- normalizingFactors(pepdat$tab)
   tab <- normalizeTable(pepdat$tab, norm)
 
   # all peptides for this protein
-  peps <- pepdat$pep2prot[which(pepdat$pep2prot$protein == protein),'sequence']
+  selprot <- which(pepdat$pep2prot$protein == protein)
+  if(length(selprot) == 0) stop(paste0("Protein '", protein, "' not found."))
+
+  peps <- pepdat$pep2prot[selprot,'sequence']
   mat <- as.matrix(tab[peps,])
   dat <- melt(mat, varnames=c("peptide", "sample"))
   levels(dat$sample) <- pepdat$metadata$sample # melt loses order of sample levels

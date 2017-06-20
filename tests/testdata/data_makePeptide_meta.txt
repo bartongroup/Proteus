@@ -1,0 +1,4 @@
+sample	condition
+WT1	WT
+WT2	WT
+KO1	KO

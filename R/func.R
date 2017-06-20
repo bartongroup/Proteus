@@ -593,6 +593,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
       title <- ifelse(n == 1, protein, paste0("selection of ", n, " proteins."))
     }
 
+    meta <- pdat$metadata
     p <- data.frame(
       expr = e,
       lo = e - s,

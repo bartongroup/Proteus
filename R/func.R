@@ -23,6 +23,10 @@ evidenceColumns <- list(
 )
 
 #' @import ggplot2
+#' @import graphics
+#' @import methods
+#' @import stats
+#' @import utils
 simple_theme <- ggplot2::theme_bw() +
   ggplot2::theme(
     panel.border = ggplot2::element_blank(),
@@ -76,7 +80,6 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 #'
 #' @param file File name.
 #' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
-#' @param pepseq A column name to identify peptides. Can be either "sequence" or "modseq".
 #' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
@@ -109,13 +112,13 @@ readProteinFile <- function(file, meta) {
 
 #' Read MaxQuant's table
 #'
-#'  \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
-#'  extracts intensity data and creates a minimal \code{proteusData} object.
+#' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
+#' extracts intensity data and creates a minimal \code{proteusData} object.
 #'
-#'  @param file Input file
-#'  @param content Either "peptide" or "protein"
-#'  @param col.id Name of the column with identifiers (e.g. "Sequence")
-#'  @param meta Metadata
+#' @param file Input file
+#' @param content Either "peptide" or "protein"
+#' @param col.id Name of the column with identifiers (e.g. "Sequence")
+#' @param meta Metadata
 readMaxQuantTable <- function(file, content, col.id, meta) {
   dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
 
@@ -200,7 +203,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 
   # peptide to protein conversion
   peptides <- rownames(tab)
-  pep2prot <- dplyr::select(evi, sequence, protein)
+  pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
   pep2prot <- unique(pep2prot)
   rownames(pep2prot) <- pep2prot$sequence
   pep2prot <- pep2prot[peptides,]
@@ -253,7 +256,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' prodat <- makeProteinTable(pepdat)
 #'
 #' @export
-makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min.peptides=1, verbose=FALSE) {
+makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min.peptides=1) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(!(method %in% c("hifly", "sum"))) stop(paste0("Unknown method ", method))
 
@@ -324,6 +327,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min
 #' Make protein from a selection of peptides
 #' @param wp Intensity table with selection of peptides for this protein
 #' @param method Method of creating proteins
+#' @param hifly Number of high-fliers
 makeProtein <- function(wp, method, hifly=3) {
   npep <- nrow(wp)
   if(npep == 0) stop("No peptides to aggregate.")
@@ -433,7 +437,7 @@ plotClustering <- function(pdat) {
   dend <- as.dendrogram(hclust(dis))
   colors_to_use <- as.numeric(pdat$metadata$condition)
   colors_to_use <- colors_to_use[order.dendrogram(dend)]
-  labels_colors(dend) <- colors_to_use
+  dendextend::labels_colors(dend) <- colors_to_use
   plot(dend)
 }
 
@@ -619,7 +623,8 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 
 #' Differential expression with limma
 #'
-#' \code(limmaDE} is a simple wrapper around limma differential expression.
+#' \code{limmaDE} is a simple wrapper around limma differential expression. It performs
+#' differential expression on the intensity table.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param formula A string with a formula for building the linear model.
@@ -661,7 +666,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
   levs <- levels(factor(pdat$metadata[[column]]))
   # coef is the column name + the last level, e.g. "conditionWT"
   coef <- paste0(column, levs[-1])
-  res <- topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
+  res <- limma::topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
   res <- cbind(protein=rownames(res), res)
   rownames(res) <- c()
   return(res)
@@ -733,6 +738,7 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' @param res Output table from \code{\link{limmaTable}}.
 #' @param text.size Text size.
 #' @param plot.grid Logical to plot grid.
+#' @param bin.size Bin size for the histogram.
 #'
 #' @examples
 #' ebay <- limmaDE(prodat)
@@ -808,7 +814,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
 
   peps <- pepdat$pep2prot[selprot,'sequence']
   mat <- as.matrix(tab[peps,])
-  dat <- melt(mat, varnames=c("peptide", "sample"))
+  dat <- reshape::melt(mat, varnames=c("peptide", "sample"))
   levels(dat$sample) <- pepdat$metadata$sample # melt loses order of sample levels
   dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers
   dat$intensity <- log10(dat$value)
@@ -838,6 +844,6 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
     theme(legend.position="none") +
     labs(x="Sample", y="log intensity")
   if(!is.null(prodat)) g2 <- g2 + geom_point(aes(x=sample, y=prot.intensity), shape=22, size=3, fill='white')
-  grid.arrange(g1, g2, ncol=1)
+  gridExtra::grid.arrange(g1, g2, ncol=1)
 }
 

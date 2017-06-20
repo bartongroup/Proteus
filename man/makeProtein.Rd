@@ -10,6 +10,8 @@ makeProtein(wp, method, hifly = 3)
 \item{wp}{Intensity table with selection of peptides for this protein}
 
 \item{method}{Method of creating proteins}
+
+\item{hifly}{Number of high-fliers}
 }
 \description{
 Make protein from a selection of peptides

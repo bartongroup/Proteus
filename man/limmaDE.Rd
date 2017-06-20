@@ -16,6 +16,10 @@ limma output from eBays. See limma documentation for more details.
 The output from this function can be used with \code{\link{limmaTable}} to create
 a table with differential expression results.
 }
+\description{
+\code{limmaDE} is a simple wrapper around limma differential expression. It performs
+differential expression on the intensity table.
+}
 \examples{
 ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
 res <- limmaTable(prodat, ebay)

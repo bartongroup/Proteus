@@ -6,13 +6,16 @@
 \usage{
 readMaxQuantTable(file, content, col.id, meta)
 }
+\arguments{
+\item{file}{Input file}
+
+\item{content}{Either "peptide" or "protein"}
+
+\item{col.id}{Name of the column with identifiers (e.g. "Sequence")}
+
+\item{meta}{Metadata}
+}
 \description{
 \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
- extracts intensity data and creates a minimal \code{proteusData} object.
-}
-\details{
-@param file Input file
- @param content Either "peptide" or "protein"
- @param col.id Name of the column with identifiers (e.g. "Sequence")
- @param meta Metadata
+extracts intensity data and creates a minimal \code{proteusData} object.
 }

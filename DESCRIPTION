@@ -15,7 +15,12 @@ Imports:
     ggplot2,
     gplots,
     ggExtra,
+    gridExtra,
     dendextend,
-    limma
+    limma,
+    methods,
+    stats,
+    graphics,
+    utils
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr

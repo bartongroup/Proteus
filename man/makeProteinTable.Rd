@@ -5,7 +5,7 @@
 \title{Make protein table}
 \usage{
 makeProteinTable(pepdat, method = "hifly", hifly = 3, norm = "median",
-  min.peptides = 1, verbose = FALSE)
+  min.peptides = 1)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}}

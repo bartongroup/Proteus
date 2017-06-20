@@ -10,8 +10,6 @@ readPeptideFile(file, meta)
 \item{file}{File name.}
 
 \item{meta}{Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.}
-
-\item{pepseq}{A column name to identify peptides. Can be either "sequence" or "modseq".}
 }
 \value{
 A minimal \code{proteusData} object with peptide intensities.

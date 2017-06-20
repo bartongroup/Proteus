@@ -9,6 +9,8 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 \arguments{
 \item{res}{Output table from \code{\link{limmaTable}}.}
 
+\item{bin.size}{Bin size for the histogram.}
+
 \item{text.size}{Text size.}
 
 \item{plot.grid}{Logical to plot grid.}

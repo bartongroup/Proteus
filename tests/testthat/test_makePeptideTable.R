@@ -26,6 +26,6 @@ test_that("Test makePeptide", {
   expect_equal(pep$content, "peptide")
   expect_equal(pep$intensity, "intensity")
   expect_equal(pep$peptides, row.names(tab))
-  expect_equal(pep$proteins, c("A", "B"))#
+  expect_equal(pep$proteins, c("A", "B"))
   expect_true(is(pep, "proteusData"))
 })

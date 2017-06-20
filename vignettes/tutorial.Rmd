@@ -1,0 +1,231 @@
+---
+title: "Using proteus R package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using proteus R package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+library(proteus)
+library(knitr)
+library(dplyr)
+library(reshape)
+library(ggplot2)
+library(gplots)
+library(grid)
+require(gridExtra)
+library(dendextend)
+options(width = 1000)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Input data
+
+We need two files for proteus. The MaxQuant evidence file and a manually created metadata file. The metadata file is a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition".
+
+```{r}
+evidenceFile <- '../inst/extdata/evidence.txt'
+metadataFile <- '../inst/extdata/metadata.txt'
+```
+
+
+## Columns in evidence file
+
+A named list called `evidenceColumns` contains required column names from the evidence file. It is used by `readEvidenceFile()`. Here is the default list:
+
+```{r}
+str(evidenceColumns)
+```
+
+The list names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are column names in the evidence file and can be adjusted if different naming convention is used. You can also add columns to the list, they will be read by `readEvidenceFile()`.
+
+## Read evidence file
+
+`readEvidenceFile()` reads MaxQuant's evidence file, filters out contaminants and reverse sequences and returns a data frame with selected columns. Columns are renamed for simplicity and easier handling using the `evidenceColumns` list by default. A user-defined list can be provided with the parameter `columns` (as long as it contains all the columns in the default `evidenceColumns` list, see above.)
+
+```{r, eval=FALSE}
+evi <- readEvidenceFile(evidenceFile)
+```
+
+`evi` is a data frame with columns defined in the `evidenceColumns`.
+
+## Metadata
+
+We also need metadata. In our example it is in the file:
+
+```{r, eval=FALSE}
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
+```
+
+It contains the design of our experiment:
+
+```{r}
+meta
+```
+
+Metadata object should be a data frame with at least two columns: `sample` and `condition`. Other columns can be added and used for the downstream analysis.
+
+
+## Peptide data
+
+### Create a peptide dataset
+
+We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [https://cran.r-project.org/web/packages/reshape2/reshape2.pdf](reshape2) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples.
+
+
+```{r, eval=FALSE}
+pepdat <- makePeptideTable(evi, meta)
+```
+
+`pepdat` is an object of class `proteusData`. It consists of the intensity table (`pepdat$tab`) and additional information. The first fife rows and columns from the intensity table are
+
+```{r}
+pepdat$tab[1:5, 1:5]
+```
+
+Here is a list of all fields from the object:
+
+```{r}
+names(pepdat)
+```
+
+### Number of peptides
+
+First, let's check the total number of peptides and proteins.
+
+```{r}
+length(pepdat$peptides)
+length(pepdat$proteins)
+```
+
+Function `plotPeptideCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
+
+```{r, fig.width=5, fig.height=5}
+plotPeptideCount(pepdat)
+```
+
+### Correlation matrix
+
+Function `plotCorrelationMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
+
+```{r, fig.width=7, fig.height=6}
+plotCorrelationMatrix(pepdat)
+```
+
+### Clustering
+
+We can use `plotClustering` to see a dendrogram of the peptide dataset:
+
+```{r, fig.width=6, fig.height=5}
+plotClustering(pepdat)
+```
+
+### Removing bad data
+
+The last sample (BMO-7) looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
+
+Warning: this is only a demonstration. You should excersise caution when removing any of your data.
+
+```{r}
+meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
+```
+
+Now, we create a new "clean" peptide dataset:
+
+```{r, eval=FALSE}
+pepdat.clean <- makePeptideTable(evi, meta.clean)
+```
+
+The new data `pepdat.clean` will contain only samples included in the metadata, that is
+
+```{r}
+as.character(meta.clean$sample)
+```
+
+
+Clustering confirms that the offending sample is gone.
+
+```{r, fig.width=6, fig.height=5}
+plotClustering(pepdat.clean)
+```
+
+
+## Protein data
+
+There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. We quantify protein abundances using a simple, but robust method of high-fliers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
+
+### Create protein dataset
+
+`makeProteinTable()` creates a protein data set from the peptide data. The result is a `proteusData` object containing protein intensity table and other informtaion.
+
+```{r, eval=FALSE}
+prodat <- makeProteinTable(pepdat.clean)
+```
+
+### Mean-variance relationship
+
+Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV` function to plot the mean-variance relationship.
+
+```{r, fig.width=7, fig.height=6, warning=FALSE}
+plotMV(prodat, with.loess=TRUE)
+```
+
+### Protein clustering
+
+We can use the same function `plotClustering` to see the dendrogram for the proteins.
+
+```{r, fig.width=6, fig.height=5}
+plotClustering(prodat)
+```
+
+## Differential expression
+
+We suggest using `limma` package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
+
+```{r}
+ebay <- limmaDE(prodat)
+res <- limmaTable(prodat, ebay)
+```
+
+The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition"). The second function, `limmaTable` creates a simple table with DE results.
+
+```{r}
+head(res)
+```
+
+According to tradition definition of "significance" this is the number of significantly differentially expressed proteins:
+
+```{r}
+significant <- which(res$adj.P.Val <= 0.05)
+length(significant)
+```
+
+Since the number is small, we can just print the whole list:
+
+```{r}
+res[significant,]
+```
+
+### Visualization
+
+`proteus` provides with several functions to visualize protein data and the results of the differential expression.
+
+Fold-change-intensity plot:
+
+```{r, fig.width=5, fig.height=5, warning=FALSE}
+plotFID(prodat, show.legend = FALSE, plot.grid = FALSE)
+```
+
+Volcano plot:
+
+```{r, fig.width=5, fig.height=5, warning=FALSE}
+plotVolcano(res, show.legend = FALSE, plot.grid = FALSE)
+```
+
+P-value distribution plot:
+
+```{r, fig.width=5, fig.height=5, warning=FALSE}
+plotPdist(res, plot.grid = FALSE)
+```

@@ -4,8 +4,8 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(pepdat, method = "hifly", hifly = 3, norm = "median",
-  min.peptides = 1)
+makeProteinTable(pepdat, method = "hifly", hifly = 3,
+  norm.fun = normalizeMedian, min.peptides = 1)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}}
@@ -14,7 +14,7 @@ makeProteinTable(pepdat, method = "hifly", hifly = 3, norm = "median",
 
 \item{hifly}{The number of top peptides (high-flyers) to be used for protein intensity.}
 
-\item{norm}{Normalization to use on peptides before converting into proteins.}
+\item{norm.fun}{A function to normalize intensity matrix.}
 
 \item{min.peptides}{Minimum number of peptides per protein.}
 }
@@ -33,10 +33,6 @@ The "hifly" method is a follows.
 The "sum" method simply adds all intensities.
 }
 \examples{
-evi <- readEvidenceFile("evidence.txt")
-meta <- read.delim("metadata.txt", header=TRUE)
-meta$sample <- factor(meta$sample, levels=meta$sample)
-pepdat <- makePeptideTable(evi, meta)
 prodat <- makeProteinTable(pepdat)
 
 }

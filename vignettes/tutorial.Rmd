@@ -148,7 +148,7 @@ plotCorrelationMatrix(pepdat)
 
 ### Clustering
 
-We can use `plotClustering` to see a dendrogram of the peptide dataset:
+We can use `plotClustering` to see a dendrogram of the peptide data set:
 
 ```{r, fig.width=6, fig.height=5}
 plotClustering(pepdat)
@@ -158,13 +158,13 @@ plotClustering(pepdat)
 
 The last sample (BMO-7) looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
 
-Warning: this is only a demonstration. You should excersise caution when removing any of your data.
+Warning: this is only a demonstration. You should exercise caution when removing any of your data.
 
 ```{r}
 meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
 ```
 
-Now, we create a new "clean" peptide dataset:
+Now, we create a new "clean" peptide data set:
 
 ```{r, eval=FALSE}
 pepdat.clean <- makePeptideTable(evi, meta.clean)
@@ -190,7 +190,7 @@ There are many approaches to aggregating peptides into proteins. For simplicity,
 
 ### Create protein dataset
 
-`makeProteinTable()` creates a protein data set from the peptide data. The result is a `proteusData` object containing protein intensity table and other informtaion.
+`makeProteinTable()` creates a protein data set from the peptide data. The result is a `proteusData` object containing protein intensity table and other information.
 
 ```{r, eval=FALSE}
 prodat <- makeProteinTable(pepdat.clean)

@@ -29,6 +29,6 @@ plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
 replicate. When multiple proteins are entered, the mean and standard error is plotted.
 }
 \examples{
-plotProteins(prodat, 'sp|P53059|MNT2_YEAST', log=TRUE, title="MNT2")
+plotProteins(prodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
 
 }

@@ -788,7 +788,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   dat$intensity <- log10(dat$value)
 
   # add condition column (is there a simpler way?)
-  s2c <- select(pepdat$metadata, condition)
+  s2c <- dplyr::select(pepdat$metadata, condition)
   rownames(s2c) <- pepdat$metadata$sample
   dat$condition <- s2c[dat$sample,]
 

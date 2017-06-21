@@ -20,6 +20,6 @@ The bottom panel shows sample intensity. Each box represents one sample. White b
 derived protein intensities (if \code{prodat} is provided).
 }
 \examples{
-plotProtPeptides(pepdat, 'sp|P53059|MNT2_YEAST', prodat = prodat)
+plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)
 
 }

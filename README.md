@@ -1,12 +1,8 @@
 # Proteus
 
-<<<<<<< HEAD
-This is the repository for the Proteus package.
-=======
 Proteus is an R package to analyse proteomics data from MaxQuant. It starts with the evidence file, can create peptide and protein tables and perform differential expression.
 
 At this stage only unlabelled data are accepted.
->>>>>>> 9fc3400452ba72734b33715ba5de43c6ca95f189
 
 ## Installation
 
@@ -18,11 +14,7 @@ devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth
 
 ## Tutorial
 
-<<<<<<< HEAD
-Proteus conteins a tutorial vignette
-=======
 Proteus contains a tutorial vignette
->>>>>>> 9fc3400452ba72734b33715ba5de43c6ca95f189
 
 ```r
 vignette("tutorial", package="proteus")

@@ -767,6 +767,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #' @param text.size Text size.
 #' @param show.legend Logical to show legend (colour key).
 #' @param plot.grid Logical to plot grid.
+#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.
 #'
 #' @examples
 #' ebay <- limmaDE(prodat)
@@ -774,10 +775,11 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #' plotVolcano(res)
 #'
 #' @export
-plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE) {
+plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE,
+                        plot.grid=TRUE, binhex=TRUE) {
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
-    stat_binhex(bins=bins, show.legend=show.legend) +
+    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=protein))} +
     scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
     geom_vline(colour='red', xintercept=0) +
     theme(text = element_text(size=text.size))

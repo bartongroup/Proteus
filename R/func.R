@@ -541,7 +541,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param title Title of the plot (defaults to protein name)
 #'
 #' @examples
-#' plotProteins(prodat, 'sp|P53059|MNT2_YEAST', log=TRUE, title="MNT2")
+#' plotProteins(prodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
 #'
 #' @export
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
@@ -552,7 +552,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 
   sel <- which(pdat$proteins %in% protein)
   if(length(sel) > 0 && sel > 0) {
-    E <- if(log) log10(pdat$tab[sel,]) else pdat$tab[sel,]
+    E <- if(log) log10(pdat$tab[sel,,drop=FALSE]) else pdat$tab[sel,,drop=FALSE]
     e <- colMeans(E, na.rm=TRUE)
     s <- sapply(E, function(x) sd(x, na.rm=TRUE)/sqrt(length(x)))
     n <- length(sel)
@@ -769,7 +769,7 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #' @param prodat (optional) protein \code{proteusData} object.
 #'
 #' @examples
-#' plotProtPeptides(pepdat, 'sp|P53059|MNT2_YEAST', prodat = prodat)
+#' plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)
 #'
 #' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {

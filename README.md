@@ -12,7 +12,7 @@ devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth
 
 ## Tutorial
 
-Proteus conteins a tutorial vignette
+Proteus contains a tutorial vignette
 
 ```r
 vignette("tutorial", package="proteus")

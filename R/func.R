@@ -53,7 +53,9 @@ simple_theme_grid <- ggplot2::theme_bw() +
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
+#' \dontrun{
 #' evi <- readEvidenceFile("evidence.txt")
+#' }
 #'
 #' @export
 readEvidenceFile <- function(file, columns=evidenceColumns) {
@@ -83,7 +85,9 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 #' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
+#' \dontrun{
 #' pepMQ <- readPeptideFile("peptides.txt", meta)
+#' }
 #'
 #' @export
 readPeptideFile <- function(file, meta) {
@@ -99,8 +103,9 @@ readPeptideFile <- function(file, meta) {
 #' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
+#' \dontrun{
 #' protMQ <- readProteinFile("proteinGroups.txt", meta)
-#'
+#' }
 #' @export
 readProteinFile <- function(file, meta) {
   pdat <- readMaxQuantTable(file, "protein", "Protein IDs", meta)
@@ -179,9 +184,6 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #' @return A \code{proteusData} object, containing peptide intensities and metadata.
 #'
 #' @examples
-#' evi <- readEvidenceFile("evidence.txt")
-#' meta <- read.delim("metadata.txt", header=TRUE)
-#' meta$sample <- factor(meta$sample, levels=meta$sample)
 #' pepdat <- makePeptideTable(evi, meta)
 #'
 #' @export
@@ -192,17 +194,17 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
   # cast evidence data (long format) into peptide table (wide format)
   form <- as.formula(paste0(pepseq, " ~ experiment"))
   tab <- reshape::cast(evi, form, sum, value = intensity)
+  peptides <- as.character(tab[,1])
+  samples <- colnames(tab)[2:ncol(tab)]
+  tab <- as.matrix(tab[,2:ncol(tab)])
+  colnames(tab) <- samples
+  rownames(tab) <- peptides
   tab[tab == 0] <- NA
-  rownames(tab) <- tab[,1]
-  tab <- tab[,2:ncol(tab)]
-  # cast creates a 'cast_data_frame' or something and this screws things up; need data frame
-  tab <- as.data.frame(tab)
   # keep only columns from the metadata file
   # you can remove bad replicates
   tab <- tab[,as.character(meta$sample)]
 
   # peptide to protein conversion
-  peptides <- rownames(tab)
   pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
   pep2prot <- unique(pep2prot)
   rownames(pep2prot) <- pep2prot$sequence
@@ -244,25 +246,20 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' @param pepdat A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}
 #' @param method Method to create proteins. Can be "hifly" or "sum".
 #' @param hifly The number of top peptides (high-flyers) to be used for protein intensity.
-#' @param norm Normalization to use on peptides before converting into proteins.
+#' @param norm.fun A function to normalize intensity matrix.
 #' @param min.peptides Minimum number of peptides per protein.
 #' @return A \code{proteusData} object containing protein intensities and metadata.
 #'
 #' @examples
-#' evi <- readEvidenceFile("evidence.txt")
-#' meta <- read.delim("metadata.txt", header=TRUE)
-#' meta$sample <- factor(meta$sample, levels=meta$sample)
-#' pepdat <- makePeptideTable(evi, meta)
 #' prodat <- makeProteinTable(pepdat)
 #'
 #' @export
-makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min.peptides=1) {
+makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm.fun=normalizeMedian, min.peptides=1) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(!(method %in% c("hifly", "sum"))) stop(paste0("Unknown method ", method))
 
   meta <- pepdat$metadata
-  normfac <- normalizingFactors(pepdat$tab, method=norm)
-  tab <- normalizeTable(pepdat$tab, normfac)
+  tab <- norm.fun(pepdat$tab)
 
   protlist <- list()
   for(cond in levels(meta$condition)) {
@@ -297,9 +294,11 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min
   }
 
   # dplyr join all tables
-  protlist %>% Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), .) -> protab
-  rownames(protab) <- protab$protein
-  protab <- protab[,2:ncol(protab)]
+  protab <- Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), protlist)
+
+  proteins <- protab$protein
+  protab <- as.matrix(protab[,2:ncol(protab)])
+  rownames(protab) <- proteins
   prodat <- list(
     tab = protab,
     content = "protein",
@@ -309,8 +308,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm="median", min
     metadata = meta,
     hifly = hifly,
     mmin.peptides = min.peptides,
-    norm = norm,
-    normfac = normfac,
+    norm.fun = deparse(substitute(norm.fun)),
     logflag = FALSE,
     pep2prot = pepdat$pep2prot,
     peptides = pepdat$peptides,
@@ -353,52 +351,22 @@ makeProtein <- function(wp, method, hifly=3) {
   return(row)
 }
 
-#' Calculate normalizing factors
+#' Normalize intensity table to medians
 #'
-#' \code{normalizingFactors} finds normalizing factors for a given intensity matrix.
-#' At this moment there is only one method of normalization available: to the median.
-#'
-#' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field
-#' in the \code{proteusData} object (see examples below).
-#' @param method Method of normalization, only 'median' is available at the moment.
-#' @return A vector with normalizing factors. \code{\link{normalizeTable}} uses these factors to normalize peptide intensities.
-#'
-#' @examples
-#' norm.fac <- normalizingFactors(pepdat$tab)
-#' tab <- normalizeTable(pepdat$tab, norm.fac)
-#'
-#' @export
-normalizingFactors <- function(tab, method="median") {
-  if(method == 'median') {
-    norm <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
-    norm <- norm / mean(norm, na.rm=TRUE)
-  } else {
-    stop("Unknown normalization method.")
-  }
-  return(norm)
-}
-
-
-#' Normalize intensity table
-#'
-#' \code{normalizeTable} normalizes intensity table with normalizing factors, normally obtained with
-#' \code{\link{normalizingFactors}}.
+#' \code{normalizeMedian} normalizes intensity table to equalize medians of each sample (column).
 #'
 #' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field in
 #' the \code{proteusData} object (see examples below).
-#' @param normfac A vector of normalizing (dividing) factors.
 #' @return Normalized intensity table.
 #'
 #' @examples
-#' norm.fac <- normalizingFactors(pepdat$tab)
-#' tab <- normalizeTable(pepdat$tab, norm.fac)
+#' tab <- normalizeMedian(pepdat$tab)
 #'
 #' @export
-normalizeTable <- function(tab, normfac) {
-  if(ncol(tab) != length(normfac)) stop(paste0("Number of columns in the table, ", ncol(tab), ", different from the length of the normalizing vector, ", length(normfac)))
-  atr <- attributes(tab)
-  tab <- data.frame(t(t(tab) / normfac))  # this clears all attributes!
-  attributes(tab) <- atr
+normalizeMedian <- function(tab) {
+  norm.fac <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
+  norm.fac <- norm.fac / mean(norm.fac, na.rm=TRUE)
+  tab <- t(t(tab) / norm.fac)
   return(tab)
 }
 
@@ -634,7 +602,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #' a table with differential expression results.
 #'
 #' @examples
-#' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+#' ebay <- limmaDE(prodat, formula="~condition")
 #' res <- limmaTable(prodat, ebay)
 #'
 #' @export
@@ -657,7 +625,7 @@ limmaDE <- function(pdat, formula="~condition") {
 #' @return A data frame with DE results.
 #'
 #' @examples
-#' ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+#' ebay <- limmaDE(prodat, formula="~condition")
 #' res <- limmaTable(prodat, ebay)
 #'
 #' @export
@@ -691,9 +659,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.
 #'
 #' @examples
-#' plotFID(prodat, pair=c("WT", "KO1"))
-#' g <- plotFID(prodat, pair=c("WT", "KO1"), pvalue=res$adj.P.Val)
-#' ggplotly(g)
+#' plotFID(prodat)
 #'
 #' @export
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
@@ -808,8 +774,7 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  norm <- normalizingFactors(pepdat$tab)
-  tab <- normalizeTable(pepdat$tab, norm)
+  tab <- normalizeMedian(pepdat$tab)
 
   # all peptides for this protein
   selprot <- which(pepdat$pep2prot$protein == protein)

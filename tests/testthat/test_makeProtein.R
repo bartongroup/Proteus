@@ -1,7 +1,7 @@
 library(testthat)
 
 cols <- c("R1", "R2", "R3", "R4")
-test_wp <- as.data.frame(rbind(
+test_wp <- as.matrix(rbind(
   c(NA, NA, NA, 1),
   c(NA, 10, 10, 5),
   c(NA, NA, 9, 10),
@@ -41,6 +41,6 @@ test_that("Test makeProtein hifly one", {
 })
 
 test_that("Test makeProtein no peptides",{
-  wp <- test_wp[which(test_wp$R1 == 100),]
+  wp <- test_wp[integer(0),]
   expect_error(makeProtein())
 })

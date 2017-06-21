@@ -19,6 +19,8 @@ A minimal \code{proteusData} object with peptide intensities.
 Contaminants and reverse sequences are filtered out.
 }
 \examples{
+\dontrun{
 pepMQ <- readPeptideFile("peptides.txt", meta)
+}
 
 }

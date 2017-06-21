@@ -18,6 +18,7 @@ A minimal \code{proteusData} object with peptide intensities.
 \code{readPeptideFile} reads MaxQuant's protein file and extracts intensity table.
 }
 \examples{
+\dontrun{
 protMQ <- readProteinFile("proteinGroups.txt", meta)
-
+}
 }

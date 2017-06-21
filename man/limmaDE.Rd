@@ -21,7 +21,7 @@ a table with differential expression results.
 differential expression on the intensity table.
 }
 \examples{
-ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+ebay <- limmaDE(prodat, formula="~condition")
 res <- limmaTable(prodat, ebay)
 
 }

@@ -37,8 +37,6 @@ plotFID(pdat, pair = NULL, pvalue = NULL, bins = 80,
 \code{plotFID} makes a log fold change versus log sum intensity plot, usually known as MA plot.
 }
 \examples{
-plotFID(prodat, pair=c("WT", "KO1"))
-g <- plotFID(prodat, pair=c("WT", "KO1"), pvalue=res$adj.P.Val)
-ggplotly(g)
+plotFID(prodat)
 
 }

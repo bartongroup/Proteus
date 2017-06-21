@@ -24,9 +24,6 @@ rows corresponding to peptides. Each cell is a sum of all intensities for this s
 in the input evidence data.
 }
 \examples{
-evi <- readEvidenceFile("evidence.txt")
-meta <- read.delim("metadata.txt", header=TRUE)
-meta$sample <- factor(meta$sample, levels=meta$sample)
 pepdat <- makePeptideTable(evi, meta)
 
 }

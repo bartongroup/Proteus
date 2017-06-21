@@ -5,7 +5,7 @@
 \title{Volcano plot}
 \usage{
 plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
-  show.legend = TRUE, plot.grid = TRUE)
+  show.legend = TRUE, plot.grid = TRUE, binhex = TRUE)
 }
 \arguments{
 \item{res}{Result table from  \code{\link{limmaTable}}.}
@@ -21,6 +21,8 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
 \item{show.legend}{Logical to show legend (colour key).}
 
 \item{plot.grid}{Logical to plot grid.}
+
+\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.}
 }
 \description{
 \code{plotVolcano} makes a volcano plot from limma results. Uses \code{\link{stat_binhex}} function

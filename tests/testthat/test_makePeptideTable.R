@@ -2,14 +2,12 @@ library(testthat)
 
 # expected result
 tab <- structure(
-  list(
-    WT1 = c(3, 7, 7, 2, 5, 5, 5, 5, 8, 7),
-    WT2 = c(8, NA, 2, 4, 4, 9, 2, 2, NA, NA),
-    KO1 = c(9, 5, 4, NA, 7, NA, 2, 4, 5, 3)
-  ),
-  .Names = c("WT1", "WT2", "KO1"),
-  row.names = c("AA", "AB", "AC", "AD", "AE", "BA", "BB", "BC", "BD", "BE"),
-  class = "data.frame"
+  c(3, 7, 7, 2, 5, 5, 5, 5, 8, 7, 8, NA, 2, 4, 4, 9, 2, 2, NA, NA, 9, 5, 4, NA, 7, NA, 2, 4, 5, 3),
+  .Dim = c(10L, 3L),
+  .Dimnames = list(
+    c("AA", "AB", "AC", "AD", "AE", "BA", "BB", "BC", "BD", "BE"),
+    c("WT1", "WT2", "KO1")
+  )
 )
 
 # input data:

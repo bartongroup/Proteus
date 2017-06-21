@@ -19,6 +19,8 @@ Data frame with selected columns from the evidence file.
 are filtered out. It can read only one intensity column (specifed by \code{columns} parameter).
 }
 \examples{
+\dontrun{
 evi <- readEvidenceFile("evidence.txt")
+}
 
 }

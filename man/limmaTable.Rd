@@ -21,7 +21,7 @@ A data frame with DE results.
 an object created with \code{\link{limmaDE}}
 }
 \examples{
-ebay <- limmaDE(prodat, formula="~condition + batch + condition:batch")
+ebay <- limmaDE(prodat, formula="~condition")
 res <- limmaTable(prodat, ebay)
 
 }

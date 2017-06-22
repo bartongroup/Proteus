@@ -11,14 +11,15 @@ limmaTable(pdat, ebay, column = "condition")
 
 \item{ebay}{Output from  \code{\link{limmaDE}}.}
 
-\item{column}{Which column should be used to extract data. The default value is "condition".}
+\item{column}{Which column should be used to extract data. The default value
+is "condition".}
 }
 \value{
 A data frame with DE results.
 }
 \description{
-\code{limmaTable} creates a table with differential expressioni results, using
-an object created with \code{\link{limmaDE}}
+\code{limmaTable} creates a table with differential expressioni results,
+using an object created with \code{\link{limmaDE}}
 }
 \examples{
 ebay <- limmaDE(prodat, formula="~condition")

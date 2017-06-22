@@ -14,10 +14,11 @@ plotProtPeptides(pepdat, protein, prodat = NULL)
 \item{prodat}{(optional) protein \code{proteusData} object.}
 }
 \description{
-\code{plotProtPeptides} creates a plot consisting of two panels. The top panel shows peptide log
-intensity. Each box represents one peptide, peptide numbering follows alphabetical sequence order.
-The bottom panel shows sample intensity. Each box represents one sample. White boxes show
-derived protein intensities (if \code{prodat} is provided).
+\code{plotProtPeptides} creates a plot consisting of two panels. The top
+panel shows peptide log intensity. Each box represents one peptide, peptide
+numbering follows alphabetical sequence order. The bottom panel shows sample
+intensity. Each box represents one sample. White boxes show derived protein
+intensities (if \code{prodat} is provided).
 }
 \examples{
 plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)

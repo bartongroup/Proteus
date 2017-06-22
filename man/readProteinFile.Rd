@@ -9,13 +9,15 @@ readProteinFile(file, meta)
 \arguments{
 \item{file}{File name.}
 
-\item{meta}{Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.}
+\item{meta}{Data frame with metadata. As a minimum, it should contain
+"sample" and "condition" columns.}
 }
 \value{
 A minimal \code{proteusData} object with peptide intensities.
 }
 \description{
-\code{readPeptideFile} reads MaxQuant's protein file and extracts intensity table.
+\code{readPeptideFile} reads MaxQuant's protein file and extracts intensity
+table.
 }
 \examples{
 \dontrun{

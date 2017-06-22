@@ -16,6 +16,7 @@ readMaxQuantTable(file, content, col.id, meta)
 \item{meta}{Metadata}
 }
 \description{
-\code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
-extracts intensity data and creates a minimal \code{proteusData} object.
+\code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or
+proteinGroups), extracts intensity data and creates a minimal
+\code{proteusData} object.
 }

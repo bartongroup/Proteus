@@ -11,9 +11,11 @@ plotFID(pdat, pair = NULL, pvalue = NULL, bins = 80,
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
 
-\item{pair}{A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.}
+\item{pair}{A two-element vector containing the pair of conditions to use.
+Can be skipped if there are only two conditions.}
 
-\item{pvalue}{An optional vector with corresponding p-values to be used with an interactive plotly plot.}
+\item{pvalue}{An optional vector with corresponding p-values to be used with
+an interactive plotly plot.}
 
 \item{bins}{Number of bins for binhex.}
 
@@ -31,10 +33,12 @@ plotFID(pdat, pair = NULL, pvalue = NULL, bins = 80,
 
 \item{plot.grid}{Logical to plot a grid.}
 
-\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.}
+\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+is a simple point plot.}
 }
 \description{
-\code{plotFID} makes a log fold change versus log sum intensity plot, usually known as MA plot.
+\code{plotFID} makes a log fold change versus log sum intensity plot, usually
+known as MA plot.
 }
 \examples{
 plotFID(prodat)

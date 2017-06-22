@@ -15,8 +15,9 @@ readEvidenceFile(file, columns = evidenceColumns)
 Data frame with selected columns from the evidence file.
 }
 \description{
-\code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and reverse sequences
-are filtered out. It can read only one intensity column (specifed by \code{columns} parameter).
+\code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and
+reverse sequences are filtered out. It can read only one intensity column
+(specifed by \code{columns} parameter).
 }
 \examples{
 \dontrun{

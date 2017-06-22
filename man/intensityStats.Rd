@@ -13,7 +13,8 @@ intensityStats(pdat)
 A data frame with several statistics.
 }
 \description{
-\code{intensityStats} calculates the mean, variance and number of good data points for peptide or protein intensities.
+\code{intensityStats} calculates the mean, variance and number of good data
+points for peptide or protein intensities.
 }
 \examples{
 stats <- intensityStats(prodat)

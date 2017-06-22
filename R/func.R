@@ -45,8 +45,9 @@ simple_theme_grid <- ggplot2::theme_bw() +
 
 #' Read MaxQuant's evidence file
 #'
-#' \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and reverse sequences
-#' are filtered out. It can read only one intensity column (specifed by \code{columns} parameter).
+#' \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and
+#' reverse sequences are filtered out. It can read only one intensity column
+#' (specifed by \code{columns} parameter).
 #'
 #' @param file File name.
 #' @param columns Named list with columns to read.
@@ -77,11 +78,12 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
 
 #' Read MaxQuant's peptide file
 #'
-#' \code{readPeptideFile} reads MaxQuant's peptide file and extracts intensity table.
-#' Contaminants and reverse sequences are filtered out.
+#' \code{readPeptideFile} reads MaxQuant's peptide file and extracts intensity
+#' table. Contaminants and reverse sequences are filtered out.
 #'
 #' @param file File name.
-#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
+#' @param meta Data frame with metadata. As a minimum, it should contain
+#'   "sample" and "condition" columns.
 #' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
@@ -96,10 +98,12 @@ readPeptideFile <- function(file, meta) {
 
 #' Read MaxQuant's protein file
 #'
-#' \code{readPeptideFile} reads MaxQuant's protein file and extracts intensity table.
+#' \code{readPeptideFile} reads MaxQuant's protein file and extracts intensity
+#' table.
 #'
 #' @param file File name.
-#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
+#' @param meta Data frame with metadata. As a minimum, it should contain
+#'   "sample" and "condition" columns.
 #' @return A minimal \code{proteusData} object with peptide intensities.
 #'
 #' @examples
@@ -117,8 +121,9 @@ readProteinFile <- function(file, meta) {
 
 #' Read MaxQuant's table
 #'
-#' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or proteinGroups),
-#' extracts intensity data and creates a minimal \code{proteusData} object.
+#' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or
+#' proteinGroups), extracts intensity data and creates a minimal
+#' \code{proteusData} object.
 #'
 #' @param file Input file
 #' @param content Either "peptide" or "protein"
@@ -173,15 +178,19 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 
 #' Create peptide table from evidence data
 #'
-#' \code{makePeptideTable} creates a table with columns corresponding to samples (experiments) and
-#' rows corresponding to peptides. Each cell is a sum of all intensities for this sample/peptide
-#' in the input evidence data.
+#' \code{makePeptideTable} creates a table with columns corresponding to samples
+#' (experiments) and rows corresponding to peptides. Each cell is a sum of all
+#' intensities for this sample/peptide in the input evidence data.
 #'
 #' @param evi Evidence table created with readEvidenceFile.
-#' @param meta Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.
-#' @param pepseq A column name to identify peptides. Can be either "sequence" or "modseq".
-#' @param intensity A column name to use for results. The default is "intensity".
-#' @return A \code{proteusData} object, containing peptide intensities and metadata.
+#' @param meta Data frame with metadata. As a minimum, it should contain
+#'   "sample" and "condition" columns.
+#' @param pepseq A column name to identify peptides. Can be either "sequence" or
+#'   "modseq".
+#' @param intensity A column name to use for results. The default is
+#'   "intensity".
+#' @return A \code{proteusData} object, containing peptide intensities and
+#'   metadata.
 #'
 #' @examples
 #' pepdat <- makePeptideTable(evi, meta)
@@ -233,22 +242,23 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 
 #' Make protein table
 #'
-#' \code{makeProteinTable} creates a protein table from the peptide table using high-flyers or sum.
-#' The "hifly" method is a follows.
-#' \enumerate{
-#'   \item For a given protein find all corresponding peptides.
-#'   \item In each replicate, order intensities from the highest to the lowest. This is done separetly for each replicate.
-#'   \item Select n top rows of the ordered table.
-#'   \item In each replicate, find the mean of these three rows. This is the estimated protein intensity.
-#' }
-#' The "sum" method simply adds all intensities.
+#' \code{makeProteinTable} creates a protein table from the peptide table using
+#' high-flyers or sum. The "hifly" method is a follows. \enumerate{ \item For a
+#' given protein find all corresponding peptides. \item In each replicate, order
+#' intensities from the highest to the lowest. This is done separetly for each
+#' replicate. \item Select n top rows of the ordered table. \item In each
+#' replicate, find the mean of these three rows. This is the estimated protein
+#' intensity. } The "sum" method simply adds all intensities.
 #'
-#' @param pepdat A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}
+#' @param pepdat A \code{proteusData} object containing peptide data, normally
+#'   created by \code{\link{makePeptideTable}}
 #' @param method Method to create proteins. Can be "hifly" or "sum".
-#' @param hifly The number of top peptides (high-flyers) to be used for protein intensity.
+#' @param hifly The number of top peptides (high-flyers) to be used for protein
+#'   intensity.
 #' @param norm.fun A function to normalize intensity matrix.
 #' @param min.peptides Minimum number of peptides per protein.
-#' @return A \code{proteusData} object containing protein intensities and metadata.
+#' @return A \code{proteusData} object containing protein intensities and
+#'   metadata.
 #'
 #' @examples
 #' prodat <- makeProteinTable(pepdat)
@@ -353,10 +363,11 @@ makeProtein <- function(wp, method, hifly=3) {
 
 #' Normalize intensity table to medians
 #'
-#' \code{normalizeMedian} normalizes intensity table to equalize medians of each sample (column).
+#' \code{normalizeMedian} normalizes intensity table to equalize medians of each
+#' sample (column).
 #'
-#' @param tab Data frame with raw intensities. Normally, this is a \code{tab} field in
-#' the \code{proteusData} object (see examples below).
+#' @param tab Data frame with raw intensities. Normally, this is a \code{tab}
+#'   field in the \code{proteusData} object (see examples below).
 #' @return Normalized intensity table.
 #'
 #' @examples
@@ -373,7 +384,8 @@ normalizeMedian <- function(tab) {
 
 #' Plot correlation matrix
 #'
-#' \code{plotCorrelationMatrix} plots a correlation matrix for peptide or protein data.
+#' \code{plotCorrelationMatrix} plots a correlation matrix for peptide or
+#' protein data.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #'
@@ -390,7 +402,8 @@ plotCorrelationMatrix <- function(pdat) {
 
 #' Plot clustering dendrogram
 #'
-#' \code{plotClustering} plots a dendrogram of intensity data, using hierarchical clustering.
+#' \code{plotClustering} plots a dendrogram of intensity data, using
+#' hierarchical clustering.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #'
@@ -440,7 +453,8 @@ plotPeptideCount <- function(pdat, x.text.size=7){
 
 #' Statistics for an intensity table
 #'
-#' \code{intensityStats} calculates the mean, variance and number of good data points for peptide or protein intensities.
+#' \code{intensityStats} calculates the mean, variance and number of good data
+#' points for peptide or protein intensities.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #' @return A data frame with several statistics.
@@ -528,8 +542,9 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 
 #' Plot protein(s)
 #'
-#' \code{plotProteins} makes a plot with protein intensity as a function of the condition and
-#' replicate. When multiple proteins are entered, the mean and standard error is plotted.
+#' \code{plotProteins} makes a plot with protein intensity as a function of the
+#' condition and replicate. When multiple proteins are entered, the mean and
+#' standard error is plotted.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param protein Protein name (string) or a vector with protein names.
@@ -592,14 +607,14 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 
 #' Differential expression with limma
 #'
-#' \code{limmaDE} is a simple wrapper around limma differential expression. It performs
-#' differential expression on the intensity table.
+#' \code{limmaDE} is a simple wrapper around limma differential expression. It
+#' performs differential expression on the intensity table.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param formula A string with a formula for building the linear model.
 #' @return limma output from eBays. See limma documentation for more details.
-#' The output from this function can be used with \code{\link{limmaTable}} to create
-#' a table with differential expression results.
+#'   The output from this function can be used with \code{\link{limmaTable}} to
+#'   create a table with differential expression results.
 #'
 #' @examples
 #' ebay <- limmaDE(prodat, formula="~condition")
@@ -616,12 +631,13 @@ limmaDE <- function(pdat, formula="~condition") {
 
 #' Create differential expression result
 #'
-#' \code{limmaTable} creates a table with differential expressioni results, using
-#' an object created with \code{\link{limmaDE}}
+#' \code{limmaTable} creates a table with differential expressioni results,
+#' using an object created with \code{\link{limmaDE}}
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param ebay Output from  \code{\link{limmaDE}}.
-#' @param column Which column should be used to extract data. The default value is "condition".
+#' @param column Which column should be used to extract data. The default value
+#'   is "condition".
 #' @return A data frame with DE results.
 #'
 #' @examples
@@ -643,11 +659,14 @@ limmaTable <- function(pdat, ebay, column="condition") {
 
 #' Fold-change intensity diagram
 #'
-#' \code{plotFID} makes a log fold change versus log sum intensity plot, usually known as MA plot.
+#' \code{plotFID} makes a log fold change versus log sum intensity plot, usually
+#' known as MA plot.
 #'
 #' @param pdat Protein \code{proteusData} object.
-#' @param pair A two-element vector containing the pair of conditions to use. Can be skipped if there are only two conditions.
-#' @param pvalue An optional vector with corresponding p-values to be used with an interactive plotly plot.
+#' @param pair A two-element vector containing the pair of conditions to use.
+#'   Can be skipped if there are only two conditions.
+#' @param pvalue An optional vector with corresponding p-values to be used with
+#'   an interactive plotly plot.
 #' @param bins Number of bins for binhex.
 #' @param marginal.histograms A logical to add marginal histograms.
 #' @param xmin Lower limit on x-axis.
@@ -656,7 +675,8 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #' @param text.size Text size.
 #' @param show.legend Logical to show legend (colour key).
 #' @param plot.grid Logical to plot a grid.
-#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.
+#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+#'   is a simple point plot.
 #'
 #' @examples
 #' plotFID(prodat)
@@ -700,7 +720,8 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 
 #' Plot p-value distribution
 #'
-#' \code{plotPdist} makes a plot with distribution of raw p-values, obtained by \code{\link{limmaDE}}.
+#' \code{plotPdist} makes a plot with distribution of raw p-values, obtained by
+#' \code{\link{limmaDE}}.
 #'
 #' @param res Output table from \code{\link{limmaTable}}.
 #' @param text.size Text size.
@@ -721,26 +742,27 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
     theme(text = element_text(size=text.size))
 }
 
-#' Volcano plot
+#'Volcano plot
 #'
-#' \code{plotVolcano} makes a volcano plot from limma results. Uses \code{\link{stat_binhex}} function
-#'from ggplo2 to make a hexagonal heatmap.
+#'\code{plotVolcano} makes a volcano plot from limma results. Uses
+#'\code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 #'
-#' @param res Result table from  \code{\link{limmaTable}}.
-#' @param bins Number of bins for binhex.
-#' @param xmax Upper limit on x-axis. If used, the lower limit is -xmax.
-#' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
-#' @param text.size Text size.
-#' @param show.legend Logical to show legend (colour key).
-#' @param plot.grid Logical to plot grid.
-#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.
+#'@param res Result table from  \code{\link{limmaTable}}.
+#'@param bins Number of bins for binhex.
+#'@param xmax Upper limit on x-axis. If used, the lower limit is -xmax.
+#'@param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
+#'@param text.size Text size.
+#'@param show.legend Logical to show legend (colour key).
+#'@param plot.grid Logical to plot grid.
+#'@param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+#'  is a simple point plot.
 #'
 #' @examples
 #' ebay <- limmaDE(prodat)
 #' res <- limmaTable(prodat, ebay)
 #' plotVolcano(res)
 #'
-#' @export
+#'@export
 plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE,
                         plot.grid=TRUE, binhex=TRUE) {
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
@@ -759,10 +781,11 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 
 #' Protein-peptide plot
 #'
-#' \code{plotProtPeptides} creates a plot consisting of two panels. The top panel shows peptide log
-#' intensity. Each box represents one peptide, peptide numbering follows alphabetical sequence order.
-#' The bottom panel shows sample intensity. Each box represents one sample. White boxes show
-#' derived protein intensities (if \code{prodat} is provided).
+#' \code{plotProtPeptides} creates a plot consisting of two panels. The top
+#' panel shows peptide log intensity. Each box represents one peptide, peptide
+#' numbering follows alphabetical sequence order. The bottom panel shows sample
+#' intensity. Each box represents one sample. White boxes show derived protein
+#' intensities (if \code{prodat} is provided).
 #'
 #' @param pepdat Peptide \code{proteusData} object.
 #' @param protein Protein name.

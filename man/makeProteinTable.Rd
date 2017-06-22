@@ -8,29 +8,30 @@ makeProteinTable(pepdat, method = "hifly", hifly = 3,
   norm.fun = normalizeMedian, min.peptides = 1)
 }
 \arguments{
-\item{pepdat}{A \code{proteusData} object containing peptide data, normally created by \code{\link{makePeptideTable}}}
+\item{pepdat}{A \code{proteusData} object containing peptide data, normally
+created by \code{\link{makePeptideTable}}}
 
 \item{method}{Method to create proteins. Can be "hifly" or "sum".}
 
-\item{hifly}{The number of top peptides (high-flyers) to be used for protein intensity.}
+\item{hifly}{The number of top peptides (high-flyers) to be used for protein
+intensity.}
 
 \item{norm.fun}{A function to normalize intensity matrix.}
 
 \item{min.peptides}{Minimum number of peptides per protein.}
 }
 \value{
-A \code{proteusData} object containing protein intensities and metadata.
+A \code{proteusData} object containing protein intensities and
+  metadata.
 }
 \description{
-\code{makeProteinTable} creates a protein table from the peptide table using high-flyers or sum.
-The "hifly" method is a follows.
-\enumerate{
-  \item For a given protein find all corresponding peptides.
-  \item In each replicate, order intensities from the highest to the lowest. This is done separetly for each replicate.
-  \item Select n top rows of the ordered table.
-  \item In each replicate, find the mean of these three rows. This is the estimated protein intensity.
-}
-The "sum" method simply adds all intensities.
+\code{makeProteinTable} creates a protein table from the peptide table using
+high-flyers or sum. The "hifly" method is a follows. \enumerate{ \item For a
+given protein find all corresponding peptides. \item In each replicate, order
+intensities from the highest to the lowest. This is done separetly for each
+replicate. \item Select n top rows of the ordered table. \item In each
+replicate, find the mean of these three rows. This is the estimated protein
+intensity. } The "sum" method simply adds all intensities.
 }
 \examples{
 prodat <- makeProteinTable(pepdat)

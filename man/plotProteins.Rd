@@ -25,8 +25,9 @@ plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
 \item{title}{Title of the plot (defaults to protein name)}
 }
 \description{
-\code{plotProteins} makes a plot with protein intensity as a function of the condition and
-replicate. When multiple proteins are entered, the mean and standard error is plotted.
+\code{plotProteins} makes a plot with protein intensity as a function of the
+condition and replicate. When multiple proteins are entered, the mean and
+standard error is plotted.
 }
 \examples{
 plotProteins(prodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")

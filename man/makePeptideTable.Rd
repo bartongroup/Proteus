@@ -9,19 +9,23 @@ makePeptideTable(evi, meta, pepseq = "sequence", intensity = "intensity")
 \arguments{
 \item{evi}{Evidence table created with readEvidenceFile.}
 
-\item{meta}{Data frame with metadata. As a minimum, it should contain "sample" and "condition" columns.}
+\item{meta}{Data frame with metadata. As a minimum, it should contain
+"sample" and "condition" columns.}
 
-\item{pepseq}{A column name to identify peptides. Can be either "sequence" or "modseq".}
+\item{pepseq}{A column name to identify peptides. Can be either "sequence" or
+"modseq".}
 
-\item{intensity}{A column name to use for results. The default is "intensity".}
+\item{intensity}{A column name to use for results. The default is
+"intensity".}
 }
 \value{
-A \code{proteusData} object, containing peptide intensities and metadata.
+A \code{proteusData} object, containing peptide intensities and
+  metadata.
 }
 \description{
-\code{makePeptideTable} creates a table with columns corresponding to samples (experiments) and
-rows corresponding to peptides. Each cell is a sum of all intensities for this sample/peptide
-in the input evidence data.
+\code{makePeptideTable} creates a table with columns corresponding to samples
+(experiments) and rows corresponding to peptides. Each cell is a sum of all
+intensities for this sample/peptide in the input evidence data.
 }
 \examples{
 pepdat <- makePeptideTable(evi, meta)

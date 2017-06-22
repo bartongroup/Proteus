@@ -10,7 +10,8 @@ plotClustering(pdat)
 \item{pdat}{Peptide or protein \code{proteusData} object.}
 }
 \description{
-\code{plotClustering} plots a dendrogram of intensity data, using hierarchical clustering.
+\code{plotClustering} plots a dendrogram of intensity data, using
+hierarchical clustering.
 }
 \examples{
 plotClustering(pepdat)

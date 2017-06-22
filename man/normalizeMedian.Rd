@@ -7,14 +7,15 @@
 normalizeMedian(tab)
 }
 \arguments{
-\item{tab}{Data frame with raw intensities. Normally, this is a \code{tab} field in
-the \code{proteusData} object (see examples below).}
+\item{tab}{Data frame with raw intensities. Normally, this is a \code{tab}
+field in the \code{proteusData} object (see examples below).}
 }
 \value{
 Normalized intensity table.
 }
 \description{
-\code{normalizeMedian} normalizes intensity table to equalize medians of each sample (column).
+\code{normalizeMedian} normalizes intensity table to equalize medians of each
+sample (column).
 }
 \examples{
 tab <- normalizeMedian(pepdat$tab)

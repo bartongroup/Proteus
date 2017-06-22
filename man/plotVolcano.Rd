@@ -22,11 +22,12 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
 
 \item{plot.grid}{Logical to plot grid.}
 
-\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it is a simple point plot.}
+\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+is a simple point plot.}
 }
 \description{
-\code{plotVolcano} makes a volcano plot from limma results. Uses \code{\link{stat_binhex}} function
-from ggplo2 to make a hexagonal heatmap.
+\code{plotVolcano} makes a volcano plot from limma results. Uses
+\code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 }
 \examples{
 ebay <- limmaDE(prodat)

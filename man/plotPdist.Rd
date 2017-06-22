@@ -16,7 +16,8 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 \item{plot.grid}{Logical to plot grid.}
 }
 \description{
-\code{plotPdist} makes a plot with distribution of raw p-values, obtained by \code{\link{limmaDE}}.
+\code{plotPdist} makes a plot with distribution of raw p-values, obtained by
+\code{\link{limmaDE}}.
 }
 \examples{
 ebay <- limmaDE(prodat)

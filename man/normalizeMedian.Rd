@@ -2,7 +2,7 @@
 % Please edit documentation in R/func.R
 \name{normalizeMedian}
 \alias{normalizeMedian}
-\title{Normalize intensity table to medians}
+\title{Normalize columns of a matrix to medians}
 \usage{
 normalizeMedian(tab)
 }
@@ -11,13 +11,13 @@ normalizeMedian(tab)
 field in the \code{proteusData} object (see examples below).}
 }
 \value{
-Normalized intensity table.
+Normalized matrix.
 }
 \description{
-\code{normalizeMedian} normalizes intensity table to equalize medians of each
-sample (column).
+\code{normalizeMedian} normalizes the columns of a matrix to have the same
+medians. It should be used with \code{\link{normalizeData}} function.
 }
 \examples{
-tab <- normalizeMedian(pepdat$tab)
+protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
 
 }

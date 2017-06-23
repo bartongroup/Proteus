@@ -4,8 +4,7 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(pepdat, method = "hifly", hifly = 3,
-  norm.fun = normalizeMedian, min.peptides = 1)
+makeProteinTable(pepdat, method = "hifly", hifly = 3, min.peptides = 1)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
@@ -15,8 +14,6 @@ created by \code{\link{makePeptideTable}}}
 
 \item{hifly}{The number of top peptides (high-flyers) to be used for protein
 intensity.}
-
-\item{norm.fun}{A function to normalize intensity matrix.}
 
 \item{min.peptides}{Minimum number of peptides per protein.}
 }

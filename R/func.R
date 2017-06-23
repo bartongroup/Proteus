@@ -255,7 +255,6 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' @param method Method to create proteins. Can be "hifly" or "sum".
 #' @param hifly The number of top peptides (high-flyers) to be used for protein
 #'   intensity.
-#' @param norm.fun A function to normalize intensity matrix.
 #' @param min.peptides Minimum number of peptides per protein.
 #' @return A \code{proteusData} object containing protein intensities and
 #'   metadata.
@@ -264,12 +263,12 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
 #' prodat <- makeProteinTable(pepdat)
 #'
 #' @export
-makeProteinTable <- function(pepdat, method="hifly", hifly=3, norm.fun=normalizeMedian, min.peptides=1) {
+makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(!(method %in% c("hifly", "sum"))) stop(paste0("Unknown method ", method))
 
   meta <- pepdat$metadata
-  tab <- norm.fun(pepdat$tab)
+  tab <- pepdat$tab
 
   protlist <- list()
   for(cond in levels(meta$condition)) {
@@ -361,17 +360,17 @@ makeProtein <- function(wp, method, hifly=3) {
   return(row)
 }
 
-#' Normalize intensity table to medians
+#' Normalize columns of a matrix to medians
 #'
-#' \code{normalizeMedian} normalizes intensity table to equalize medians of each
-#' sample (column).
+#' \code{normalizeMedian} normalizes the columns of a matrix to have the same
+#' medians. It should be used with \code{\link{normalizeData}} function.
 #'
 #' @param tab Data frame with raw intensities. Normally, this is a \code{tab}
 #'   field in the \code{proteusData} object (see examples below).
-#' @return Normalized intensity table.
+#' @return Normalized matrix.
 #'
 #' @examples
-#' tab <- normalizeMedian(pepdat$tab)
+#' protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
 #'
 #' @export
 normalizeMedian <- function(tab) {
@@ -379,6 +378,30 @@ normalizeMedian <- function(tab) {
   norm.fac <- norm.fac / mean(norm.fac, na.rm=TRUE)
   tab <- t(t(tab) / norm.fac)
   return(tab)
+}
+
+
+#' Normalize proteus data
+#'
+#' \code{normalizeData} normalized the intensity table in a \code{proteusData}
+#' object, using the provided normalizig function.
+#'
+#' @param pdat A \code{proteusData} object with peptide or protein intensities.
+#' @param norm.fun A normalizing function.
+#' @return A \code{proteusData} object with normalized intensities.
+#'
+#' @examples
+#' protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
+#'
+#' @export
+normalizeData <- function(pdat, norm.fun=normalizeMedian) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  if(class(norm.fun) != "function") stop ("'norm.fun' has to be a function.")
+
+  pdat$tab <- norm.fun(pdat$tab)
+  pdat$norm.fun <- norm.fun
+  pdat$stats <- intensityStats(pdat)  # need to recalculate stats!
+  return(pdat)
 }
 
 
@@ -438,7 +461,7 @@ plotClustering <- function(pdat) {
 plotPeptideCount <- function(pdat, x.text.size=7){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
-  pep.count <- sapply(pdat$tab, function(x) sum(!is.na(x)))
+  pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
   med.count <- median(pep.count)
   df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
   ggplot(df, aes(x=x,y=y,fill=condition)) +
@@ -509,7 +532,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 
   stats <- pdat$stats
   if(is.null(stats)) stats <- intensityStats(pdat)
-  stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance)),]
+  stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance) & stats$mean > 0 & stats$variance > 0),]
   stats$mean <- log10(stats$mean)
   stats$variance <- log10(stats$variance)
   protnum <- as.data.frame(table(stats$condition))  #number of proteins in each condition

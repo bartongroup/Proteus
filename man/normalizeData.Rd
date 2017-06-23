@@ -16,7 +16,7 @@ A \code{proteusData} object with normalized intensities.
 }
 \description{
 \code{normalizeData} normalizes the intensity table in a \code{proteusData}
-object, using the provided normalizig function.
+object, using the provided normalizing function.
 }
 \details{
 The normalizng function, specified by \code{norm.fun} needs to

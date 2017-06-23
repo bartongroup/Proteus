@@ -285,7 +285,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
         # and all downstream analysis goes to hell
         wp <- w[sel,, drop=FALSE]
         row <- makeProtein(wp, method, hifly)
-        row <- data.frame(protein=prot, row)
+        row <- data.frame(protein=prot, npep=npep, row)
 
         # this was old method using the same three peptides for all samples
         # but it doesn't work well, missing a lot of data
@@ -298,7 +298,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
         protint <- rbind(protint, row)
       }
     }
-    colnames(protint) <- c("protein", samples)
+    colnames(protint) <- c("protein", "npep", samples)
     protlist[[cond]] <- protint
   }
 
@@ -306,7 +306,9 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   protab <- Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), protlist)
 
   proteins <- protab$protein
-  protab <- as.matrix(protab[,2:ncol(protab)])
+  npep <- data.frame(npep=protab$npep.x)   # join split npep into npep.x, npep.y, ... for conditions
+  rownames(npep) <- proteins            # a bit redundant, but might be useful
+  protab <- as.matrix(protab[,3:ncol(protab)])
   rownames(protab) <- proteins
   prodat <- list(
     tab = protab,
@@ -321,7 +323,8 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
     logflag = FALSE,
     pep2prot = pepdat$pep2prot,
     peptides = pepdat$peptides,
-    proteins = pepdat$proteins
+    proteins = pepdat$proteins,
+    npep = npep
   )
   class(prodat) <- append(class(prodat), "proteusData")
   prodat$stats <- intensityStats(prodat)

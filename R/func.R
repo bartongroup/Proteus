@@ -63,9 +63,12 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
 
   # check if all required columns exist
+  missing <- NULL
   for(col in columns) {
-    if(!(col %in% colnames(evi))) stop(paste0("Column '", col, "' not found in evidence file ", file))
+    if(!(col %in% colnames(evi))) missing <- c(missing, paste0("'", col, "'"))
   }
+  if(!is.null(missing))
+    stop(paste0("Column(s) ", paste0(missing, collapse=", "), " not found in evidence file ", file))
 
   evi <- evi[, as.character(columns)]
   names(evi) <- names(columns)
@@ -187,8 +190,8 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #'   "sample" and "condition" columns.
 #' @param pepseq A column name to identify peptides. Can be either "sequence" or
 #'   "modseq".
-#' @param intensity A column name to use for results. The default is
-#'   "intensity".
+#' @param value A column name to use for aggregated results.
+#' @param aggregate.fun A function to aggregate pepetides with the same sequence/sample.
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'
@@ -196,13 +199,13 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #' pepdat <- makePeptideTable(evi, meta)
 #'
 #' @export
-makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity") {
+makePeptideTable <- function(evi, meta, pepseq="sequence", value="intensity", aggregate.fun=sum) {
 
   if(!(pepseq %in% c("sequence", "modseq"))) stop("Incorrect pepseq. Has to be 'sequence' or 'modseq'.")
 
   # cast evidence data (long format) into peptide table (wide format)
   form <- as.formula(paste0(pepseq, " ~ experiment"))
-  tab <- reshape::cast(evi, form, sum, value = intensity)
+  tab <- reshape::cast(evi, form, aggregate.fun, value = value)
   peptides <- as.character(tab[,1])
   samples <- colnames(tab)[2:ncol(tab)]
   tab <- as.matrix(tab[,2:ncol(tab)])
@@ -230,7 +233,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", intensity="intensity"
     stats = NULL,
     logflag = FALSE,
     pepseq = pepseq,
-    intensity = intensity,
+    value = value,
     pep2prot = pep2prot,
     peptides = peptides,
     proteins = proteins

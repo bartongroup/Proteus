@@ -10,6 +10,10 @@ tab <- structure(
   )
 )
 
+# median of 3 and 4 is 3.5
+tab.med <- tab
+tab.med['AC', 'WT1'] <- 3.5
+
 # input data:
 evi <- read.table("../testdata/data_makePeptide_evi.txt", header=TRUE, sep="\t")
 meta <- read.table("../testdata/data_makePeptide_meta.txt", header=TRUE, sep="\t")
@@ -22,8 +26,14 @@ test_that("Test makePeptide", {
   expect_equal(pep$tab, tab)
   expect_equal(pep$metadata, meta)
   expect_equal(pep$content, "peptide")
-  expect_equal(pep$intensity, "intensity")
+  expect_equal(pep$value, "intensity")
   expect_equal(pep$peptides, row.names(tab))
   expect_equal(pep$proteins, c("A", "B"))
   expect_true(is(pep, "proteusData"))
+})
+
+test_that("Test makePeptide SILAC", {
+  pep <- makePeptideTable(evi, meta, aggregate.fun = median, value="ratio")
+  expect_equal(pep$tab, tab.med)
+  expect_equal(pep$value, "ratio")
 })

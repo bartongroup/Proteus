@@ -4,7 +4,8 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi, meta, pepseq = "sequence", intensity = "intensity")
+makePeptideTable(evi, meta, pepseq = "sequence", value = "intensity",
+  aggregate.fun = sum)
 }
 \arguments{
 \item{evi}{Evidence table created with readEvidenceFile.}
@@ -15,8 +16,9 @@ makePeptideTable(evi, meta, pepseq = "sequence", intensity = "intensity")
 \item{pepseq}{A column name to identify peptides. Can be either "sequence" or
 "modseq".}
 
-\item{intensity}{A column name to use for results. The default is
-"intensity".}
+\item{value}{A column name to use for aggregated results.}
+
+\item{aggregate.fun}{A function to aggregate pepetides with the same sequence/sample.}
 }
 \value{
 A \code{proteusData} object, containing peptide intensities and

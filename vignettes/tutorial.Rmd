@@ -196,6 +196,23 @@ There are many approaches to aggregating peptides into proteins. For simplicity,
 prodat <- makeProteinTable(pepdat.clean)
 ```
 
+
+### Normalization
+
+Finally, we need to normalize data. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median:
+
+```{r, normalize_proteins}
+prodat <- normalizeData(prodat)
+```
+
+The second parameter to `normalizeData()` is `norm.fun` and it points to a normalizing function. By default, this is `normalizeMedian`, but other normalizations can be used. For example, it works with `normalizeQuantiles` from `limma` package:
+
+```{r, normalize_proteins_quantiles, eval=FALSE}
+prodat <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
+```
+
+
+
 ### Mean-variance relationship
 
 Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV` function to plot the mean-variance relationship.

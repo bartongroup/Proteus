@@ -15,8 +15,16 @@ normalizeData(pdat, norm.fun = normalizeMedian)
 A \code{proteusData} object with normalized intensities.
 }
 \description{
-\code{normalizeData} normalized the intensity table in a \code{proteusData}
+\code{normalizeData} normalizes the intensity table in a \code{proteusData}
 object, using the provided normalizig function.
+}
+\details{
+The normalizng function, specified by \code{norm.fun} needs to
+  normalize columns of a numerical matrix. The input is a matrix and the
+  output is a normalized matrix. The default value points to
+  \code{\link{normalizeMedian}}, Proteus's function normalizing each column
+  to its median. Other functions can be used, for example
+  \code{normalizeQuantiles} from the \code{limma} package.
 }
 \examples{
 protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)

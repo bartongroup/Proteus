@@ -4,7 +4,7 @@
 \alias{plotPeptideCount}
 \title{Plot peptide count per sample}
 \usage{
-plotPeptideCount(pdat, x.text.size = 7)
+plotPeptideCount(pdat, x.text.size = 10)
 }
 \arguments{
 \item{pdat}{Peptide \code{proteusData} object.}

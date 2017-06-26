@@ -134,6 +134,7 @@ summary.proteusData <- function(pdat) {
   cat("\n*** Data processing ***\n\n")
   cat(paste0("  evidence columns used = ", paste0(pdat$values, collapse = ", "), "\n"))
   cat(paste0("  sequence = '", ifelse(pdat$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
+  cat(paste0("  normalization = ", pdat$norm.fun, "\n"))
 
   if(pdat$content == "protein") {
     cat("\n*** Protein data ***\n\n")
@@ -485,7 +486,7 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
   if(class(norm.fun) != "function") stop ("'norm.fun' has to be a function.")
 
   pdat$tab <- norm.fun(pdat$tab)
-  pdat$norm.fun <- norm.fun
+  pdat$norm.fun <- deparse(substitute(norm.fun))
   pdat$stats <- intensityStats(pdat)  # need to recalculate stats!
   return(pdat)
 }

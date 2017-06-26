@@ -544,7 +544,7 @@ plotClustering <- function(pdat) {
 #' plotPeptideCount(pepdat)
 #'
 #' @export
-plotPeptideCount <- function(pdat, x.text.size=7){
+plotPeptideCount <- function(pdat, x.text.size=10){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
   pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
@@ -559,6 +559,50 @@ plotPeptideCount <- function(pdat, x.text.size=7){
     labs(title = paste0("Median peptide count = ", med.count)) +
     theme(plot.title=element_text(hjust=0, size=12))
 }
+
+
+#' Plot distribution of intensities/ratios for each sample
+#'
+#' \code{plotIntensityDistributions} makes a boxplot with intensity/ratio distribution for each sample.
+#'
+#' @param pdat A \code{proteusData} object with peptide/protein intensities.
+#' @param title Title of the plot.
+#' @param x.text.size Text size in x-axis
+#' @param x.text.angle Text angle in x-axis
+#' @param ymin Lower bound on y-axis
+#' @param ymax Upper bound on y-axis
+#' @param logbase Base of the logarith which will be applied to data
+#' @param fill A metadata column to use for the fill of boxes
+#' @param colour A metadata column to use for the outline colour of boxes
+#' @param vline Logical, if true a horizontal line at zero is added
+#'
+#' @export
+#'
+#' @examples
+#' plotIntensityDistributions(prodat)
+#' plotIntensityDistributions(normalizeMedian(prodat))
+plotIntensityDistributions <- function(pdat, title="Intensity distributions", x.text.size=7,
+                                       x.text.angle=90, ymin=as.numeric(NA), ymax=as.numeric(NA),
+                                       logbase=10, fill=NULL, colour=NULL, vline=FALSE) {
+  m <- melt(pdat$tab, varnames=c("ID", "sample"))
+  mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
+  if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
+  if(!is.null(colour)) m[['colour']] <- mt[m$sample, colour]
+
+  m$value <- log(m$value, base=logbase)
+
+  g <- ggplot(m, aes(x=sample, y=value)) +
+    simple_theme +
+    geom_boxplot(outlier.shape=NA, na.rm=TRUE) +
+    ylim(ymin,ymax) +
+    theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
+    labs(title=title, x="sample", y=paste0("log", logbase, " value"))
+  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_discrete(name=fill)
+  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_discrete(name=colour)
+  if(vline) g <- g + geom_hline(yintercept=0)
+  g
+}
+
 
 #' Statistics for an intensity table
 #'

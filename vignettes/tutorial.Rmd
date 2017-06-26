@@ -127,7 +127,7 @@ summary(pepdat)
 
 Function `plotPeptideCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
 
-```{r, fig.width=5, fig.height=5}
+```{r, fig.width=5, fig.height=4}
 plotPeptideCount(pepdat)
 ```
 
@@ -135,7 +135,7 @@ plotPeptideCount(pepdat)
 
 Function `plotCorrelationMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
 
-```{r, fig.width=7, fig.height=6}
+```{r, fig.width=6, fig.height=5}
 plotCorrelationMatrix(pepdat)
 ```
 
@@ -189,6 +189,11 @@ There are many approaches to aggregating peptides into proteins. For simplicity,
 prodat <- makeProteinTable(pepdat.clean)
 ```
 
+Again, we can use a generic `summary` function to see its properties.
+
+```{r}
+summary(prodat)
+```
 
 ### Normalization
 
@@ -203,6 +208,21 @@ The second parameter to `normalizeData()` is `norm.fun` and it points to a norma
 ```{r, normalize_proteins_quantiles}
 prodat.quant <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
 ```
+
+The function `plotIntensityDistributions` can be used to compare intensity distributions for each normalization.
+
+```{r, intensity_distributions_1, fig.width=5, fig.height=4}
+plotIntensityDistributions(prodat, title="Not normalized", fill="condition")
+```
+
+```{r, intensity_distributions_2, fig.width=5, fig.height=4}
+plotIntensityDistributions(prodat.med, title="Median normalization", fill="condition")
+```
+
+```{r, intensity_distributions_3, fig.width=5, fig.height=4}
+plotIntensityDistributions(prodat.quant, title="Quantile normalization", fill="condition")
+```
+
 
 
 

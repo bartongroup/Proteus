@@ -43,6 +43,109 @@ simple_theme_grid <- ggplot2::theme_bw() +
   )
 
 
+#' \code{proteusData} constructor
+#'
+#' @param tab A matrix with data, rows are peptides/proteins, columns are samples
+#' @param metadata A data frame with metadata, needs at least two columns: "sample" and "condition"
+#' @param content Either "peptides" or "proteins"
+#' @param pep2prot A data frame with two columns: "sequence" and "protein"
+#' @param peptides A character vector with peptide sequences
+#' @param proteins A character vector with protein names
+#' @param values A character vector with names of intensity and/or ratio columns
+#' @param type Type of experiment: "unlabelled" or "SILAC"
+#' @param npep A data frame with number of peptides per protein
+#' @param pepseq Name of the sequence used, either "sequence" or "modseq"
+#' @param hifly Number of high-flyers
+#' @param min.peptides Integer, minimum number of peptides to combine into a protein
+#' @param norm.fun Normalizing function
+#' @param protein.method Name of the method with which proteins were quantified
+#'
+#' @return A \code{proteusData} object.
+#' @export
+proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, values,
+                        npep=NULL, type="unlabelled", pepseq="sequence", hifly=NULL,
+                        min.peptides=NULL, norm.fun=identity, protein.method=NULL) {
+  stopifnot(
+    ncol(tab) == nrow(metadata),
+    content %in% c("peptide", "protein"),
+    type %in% c("unlabelled", "SILAC"),
+    pepseq %in% c("sequence", "modseq")
+  )
+
+  colnames(tab) <- metadata$sample
+  if(content == "peptide") {
+    stopifnot(nrow(tab) == length(peptides))
+    rownames(tab) <- peptides
+  } else if(content == "protein") {
+    stopifnot(
+      nrow(tab) == length(proteins),
+      is.numeric(hifly),
+      is.numeric(min.peptides),
+      !is.null(protein.method)
+    )
+    rownames(tab) <- proteins
+  }
+
+  if(!is.null(npep)) {
+    stopifnot(nrow(npep) == nrow(tab))
+  }
+
+  pdat <- list(
+    tab = tab,
+    metadata = metadata,
+    content = content,
+    type = type,
+    values = values,
+    pepseq = pepseq,
+    hifly = hifly,
+    min.peptides = min.peptides,
+    norm.fun = deparse(substitute(norm.fun)),
+    pep2prot = pep2prot,
+    peptides = peptides,
+    proteins = proteins,
+    npep = npep,
+    protein.method = protein.method
+  )
+  class(pdat) <- append(class(pdat), "proteusData")
+  pdat$stats <- intensityStats(pdat)
+
+  return(pdat)
+}
+
+
+#' Summary of \code{proteusData} object
+#'
+#' @param pdat \code{proteusData} object
+#'
+#' @export
+#'
+#' @examples
+#' summary(protab)
+summary.proteusData <- function(pdat) {
+  cat("\n*** Basic statistics ***\n\n")
+  cat(paste0("  content = ", pdat$content, "\n"))
+  cat(paste0("  experiment type = ", pdat$type, "\n"))
+  cat(paste0("  number of samples = ", nrow(pdat$metadata), "\n"))
+  cat(paste0("  number of conditions = ", length(levels(pdat$metadata$condition)), "\n"))
+  cat(paste0("  number of ", pdat$content, "s = ", nrow(pdat$tab), "\n"))
+  cat(paste0("  samples = ", paste0(pdat$metadata$sample, collapse = ", "), "\n"))
+  cat(paste0("  conditions = ", paste0(levels(pdat$metadata$condition), collapse = ", "), "\n"))
+
+  cat("\n*** Data processing ***\n\n")
+  cat(paste0("  evidence columns used = ", paste0(pdat$values, collapse = ", "), "\n"))
+  cat(paste0("  sequence = '", ifelse(pdat$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
+
+  if(pdat$content == "protein") {
+    cat("\n*** Protein data ***\n\n")
+    cat(paste0("  quantification method = ", pdat$protein.method, "\n"))
+    if(pdat$protein.method == "hifly") {
+      cat(paste0("  number of high-flyers = ", pdat$hifly, "\n"))
+    }
+    cat(paste0("  minimum number of peptides per protein = ", pdat$min.peptides, "\n"))
+  }
+}
+
+
 #' Read MaxQuant's evidence file
 #'
 #' \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and
@@ -201,17 +304,14 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", value="intensity", aggregate.fun=sum) {
 
-  if(!(pepseq %in% c("sequence", "modseq"))) stop("Incorrect pepseq. Has to be 'sequence' or 'modseq'.")
-
   # cast evidence data (long format) into peptide table (wide format)
   form <- as.formula(paste0(pepseq, " ~ experiment"))
   tab <- reshape::cast(evi, form, aggregate.fun, value = value)
   peptides <- as.character(tab[,1])
   samples <- colnames(tab)[2:ncol(tab)]
   tab <- as.matrix(tab[,2:ncol(tab)])
-  colnames(tab) <- samples
-  rownames(tab) <- peptides
   tab[tab == 0] <- NA
+  colnames(tab) <- samples
   # keep only columns from the metadata file
   # you can remove bad replicates
   tab <- tab[,as.character(meta$sample)]
@@ -224,22 +324,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", value="intensity", ag
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- list(
-    tab = tab,
-    content = 'peptide',
-    type = 'unlabelled',
-    metadata = meta,
-    norm = "none",
-    stats = NULL,
-    logflag = FALSE,
-    pepseq = pepseq,
-    value = value,
-    pep2prot = pep2prot,
-    peptides = peptides,
-    proteins = proteins
-  )
-  class(pdat) <- append(class(pdat), "proteusData")
-  return(pdat)
+  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, c(value))
 }
 
 
@@ -309,29 +394,17 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   protab <- Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), protlist)
 
   proteins <- protab$protein
-  npep <- data.frame(npep=protab$npep.x)   # join split npep into npep.x, npep.y, ... for conditions
-  rownames(npep) <- proteins            # a bit redundant, but might be useful
-  protab <- as.matrix(protab[,3:ncol(protab)])
-  rownames(protab) <- proteins
-  prodat <- list(
-    tab = protab,
-    content = "protein",
-    type = pepdat$type,
-    pepseq = pepdat$pepseq,
-    intensity = pepdat$intensity,
-    metadata = meta,
-    hifly = hifly,
-    mmin.peptides = min.peptides,
-    norm.fun = deparse(substitute(norm.fun)),
-    logflag = FALSE,
-    pep2prot = pepdat$pep2prot,
-    peptides = pepdat$peptides,
-    proteins = pepdat$proteins,
-    npep = npep
-  )
-  class(prodat) <- append(class(prodat), "proteusData")
-  prodat$stats <- intensityStats(prodat)
+  npep <- data.frame(npep=protab$npep.x)     # join split npep into npep.x, npep.y, ... for conditions
+  rownames(npep) <- proteins                 # a bit redundant, but might be useful
+  protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
+  prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides, pepdat$proteins, pepdat$values,
+                        type = pepdat$type,
+                        pepseq = pepdat$pepseq,
+                        hifly = hifly,
+                        min.peptides = min.peptides,
+                        protein.method = method,
+                        npep = npep)
   return(prodat)
 }
 
@@ -731,7 +804,7 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
   m1 <- log10(stats[which(stats$condition == c1),]$mean)
   m2 <- log10(stats[which(stats$condition == c2),]$mean)
   d <- data.frame(x = (m1 + m2) / 2, y = m2 - m1)
-  d$id <- pdat$proteins
+  d$id <- rownames(pdat$tab)
   n <- length(m1)
   if(is.null(pvalue)) {
     d$p <- rep('NA', n)

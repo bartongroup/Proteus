@@ -117,20 +117,13 @@ pepdat <- makePeptideTable(evi, meta)
 pepdat$tab[1:5, 1:5]
 ```
 
-Here is a list of all fields from the object:
+We can use generic `summary` function to see more information about `pepdat`.
 
 ```{r}
-names(pepdat)
+summary(pepdat)
 ```
 
 ### Number of peptides
-
-First, let's check the total number of peptides and proteins.
-
-```{r}
-length(pepdat$peptides)
-length(pepdat$proteins)
-```
 
 Function `plotPeptideCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
 
@@ -202,13 +195,13 @@ prodat <- makeProteinTable(pepdat.clean)
 Finally, we need to normalize data. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median:
 
 ```{r, normalize_proteins}
-prodat <- normalizeData(prodat)
+prodat.med <- normalizeData(prodat)
 ```
 
 The second parameter to `normalizeData()` is `norm.fun` and it points to a normalizing function. By default, this is `normalizeMedian`, but other normalizations can be used. For example, it works with `normalizeQuantiles` from `limma` package:
 
-```{r, normalize_proteins_quantiles, eval=FALSE}
-prodat <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
+```{r, normalize_proteins_quantiles}
+prodat.quant <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
 ```
 
 
@@ -218,7 +211,7 @@ prodat <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
 Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV` function to plot the mean-variance relationship.
 
 ```{r, fig.width=7, fig.height=6, warning=FALSE}
-plotMV(prodat, with.loess=TRUE)
+plotMV(prodat.med, with.loess=TRUE)
 ```
 
 ### Protein clustering
@@ -226,7 +219,7 @@ plotMV(prodat, with.loess=TRUE)
 We can use the same function `plotClustering` to see the dendrogram for the proteins.
 
 ```{r, fig.width=6, fig.height=5}
-plotClustering(prodat)
+plotClustering(prodat.med)
 ```
 
 ## Differential expression
@@ -234,8 +227,8 @@ plotClustering(prodat)
 We suggest using `limma` package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
 
 ```{r, warning=FALSE}
-ebay <- limmaDE(prodat)
-res <- limmaTable(prodat, ebay)
+ebay <- limmaDE(prodat.med)
+res <- limmaTable(prodat.med, ebay)
 ```
 
 The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition"). The second function, `limmaTable` creates a simple table with DE results.
@@ -264,7 +257,7 @@ res[significant,]
 Fold-change-intensity plot:
 
 ```{r, fig.width=5, fig.height=5, warning=FALSE}
-plotFID(prodat)
+plotFID(prodat.med)
 ```
 
 Volcano plot:
@@ -285,11 +278,11 @@ plotPdist(res)
 We can also look at individual protein. The function `plotProteins` plots intensities of individual samples per condition, or other selected quantity (e.g. batch). Here is one of the up-regulated proteins.
 
 ```{r, fig.width=4, fig.height=4, warning=FALSE}
-plotProteins(prodat, protein='sp|P26263|PDC6_YEAST', log=TRUE)
+plotProteins(prodat.med, protein='sp|P26263|PDC6_YEAST', log=TRUE)
 ```
 
 A better understanding of the protein's behaviour might be gained via function `plotProtPeptides`, which shows intensities of individual peptides and replicates for the given protein.
 
 ```{r, fig.width=7, fig.height=6, warning=FALSE}
-plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat)
+plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 ```

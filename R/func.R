@@ -576,14 +576,11 @@ intensityStats <- function(pdat) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pdat$metadata
-  logflag <- pdat$logflag
-  if(is.null(logflag)) logflag <- FALSE
 
   conditions <- levels(meta$condition)
   stats <- NULL
   for(cond in conditions) {
-    w <- pdat$tab[,which(meta$condition == cond)]
-    if(logflag) w <- 10^w
+    w <- pdat$tab[,which(meta$condition == cond), drop=FALSE]
     m <- rowMeans(w, na.rm=TRUE)
     m[which(is.nan(m))] <- NA
     v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)

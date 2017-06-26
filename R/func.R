@@ -289,8 +289,8 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #'   "sample" and "condition" columns.
 #' @param pepseq A column name to identify peptides. Can be either "sequence" or
 #'   "modseq".
-#' @param value A column name to use for aggregated results.
-#' @param aggregate.fun A function to aggregate pepetides with the same sequence/sample.
+#' @param values A vector of names (or one name) of column(s) with intensity/ratio data to be used.
+#' @param fun.aggregate A function to aggregate pepetides with the same sequence/sample.
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'
@@ -298,19 +298,49 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 #' pepdat <- makePeptideTable(evi, meta)
 #'
 #' @export
-makePeptideTable <- function(evi, meta, pepseq="sequence", value="intensity", aggregate.fun=sum) {
+makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
+                             fun.aggregate=sum, experiment.type="unlabelled") {
 
-  # cast evidence data (long format) into peptide table (wide format)
-  form <- as.formula(paste0(pepseq, " ~ experiment"))
-  tab <- reshape::cast(evi, form, aggregate.fun, value = value)
+  # check it ratios are in evidence data
+  for(col in values) {
+    if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
+  }
+
+  # melt and recast evidence data
+  eviMeasured <- evi[,c(pepseq, "experiment", values)]
+  eviMelted <- reshape2::melt(eviMeasured, id.vars = c(pepseq, "experiment"))
+  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ experiment + variable"), fun.aggregate=fun.aggregate)
   peptides <- as.character(tab[,1])
-  samples <- colnames(tab)[2:ncol(tab)]
   tab <- as.matrix(tab[,2:ncol(tab)])
   tab[tab == 0] <- NA
-  colnames(tab) <- samples
+  rownames(tab) <- peptides
+
+
+  # dcast created columns with merged names, these are our new samples
+  # (e.g. samp1_ratio.HL, samp1_ratio.ML, samp2_ratio.HL, ...)
+  # need to create new metadata for new samples
+
+  # combine all pairs sample-value
+  pairs <- expand.grid(meta$sample, values)
+  colnames(pairs) <- c("sample.original", "value")
+  # replicate naming convention from dcast (merge by "_")
+  pairs$sample <- apply(pairs, 1, function(x) paste0(x, collapse="_"))
+  # new metadata
+  meta <- merge(pairs, meta, by.x="sample.original", by.y="sample")
+  selection <- meta$sample
+
+  # special case of just one value (usually "intensity")
+  # in such case we want to keep original sample names, that is samp1, samp2, ...
+  # instead of samp1_intensity, samp2_intensity
+  if(length(values) == 1) {
+    meta$sample <- meta$sample.original
+    meta$sample.original <- NULL
+  }
+
   # keep only columns from the metadata file
   # you can remove bad replicates
-  tab <- tab[,as.character(meta$sample)]
+  tab <- tab[,as.character(selection)]
+  colnames(tab) <- meta$sample
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
@@ -320,8 +350,12 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", value="intensity", ag
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, c(value))
+  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, values,
+                      type = experiment.type)
+
+  return(pdat)
 }
+
 
 
 #' Make protein table

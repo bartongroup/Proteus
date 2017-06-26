@@ -4,7 +4,7 @@
 \name{evidenceColumns}
 \alias{evidenceColumns}
 \title{Evidence columns}
-\format{An object of class \code{list} of length 15.}
+\format{An object of class \code{list} of length 10.}
 \usage{
 evidenceColumns
 }

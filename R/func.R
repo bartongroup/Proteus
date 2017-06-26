@@ -10,13 +10,8 @@ evidenceColumns <- list(
   modifications = 'Modifications',
   proteins = 'Proteins',
   protein = 'Leading razor protein',
-  type = 'Type',
   experiment = 'Experiment',
   charge = 'Charge',
-  numpoints = 'Number of data points',
-  numscans = 'Number of scans',
-  pep = 'PEP',
-  score = 'Score',
   intensity = 'Intensity',
   reverse = 'Reverse',
   contaminant = 'Potential contaminant'

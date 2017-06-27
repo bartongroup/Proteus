@@ -89,6 +89,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
     tab = tab,
     metadata = metadata,
     content = content,
+    conditions = levels(as.factor(metadata$condition)),
     type = type,
     values = values,
     pepseq = pepseq,
@@ -121,10 +122,10 @@ summary.proteusData <- function(pdat) {
   cat(paste0("  content = ", pdat$content, "\n"))
   cat(paste0("  experiment type = ", pdat$type, "\n"))
   cat(paste0("  number of samples = ", nrow(pdat$metadata), "\n"))
-  cat(paste0("  number of conditions = ", length(levels(pdat$metadata$condition)), "\n"))
+  cat(paste0("  number of conditions = ", length(pdat$conditions), "\n"))
   cat(paste0("  number of ", pdat$content, "s = ", nrow(pdat$tab), "\n"))
   cat(paste0("  samples = ", paste0(pdat$metadata$sample, collapse = ", "), "\n"))
-  cat(paste0("  conditions = ", paste0(levels(pdat$metadata$condition), collapse = ", "), "\n"))
+  cat(paste0("  conditions = ", paste0(pdat$conditions, collapse = ", "), "\n"))
 
   cat("\n*** Data processing ***\n\n")
   cat(paste0("  evidence columns used = ", paste0(pdat$values, collapse = ", "), "\n"))
@@ -425,7 +426,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   tab <- pepdat$tab
 
   protlist <- list()
-  for(cond in levels(meta$condition)) {
+  for(cond in pepdat$conditions) {
     w <- tab[,which(meta$condition == cond)]
     samples <- colnames(w)
     protint <- NULL
@@ -687,9 +688,8 @@ intensityStats <- function(pdat) {
 
   meta <- pdat$metadata
 
-  conditions <- levels(meta$condition)
   stats <- NULL
-  for(cond in conditions) {
+  for(cond in pdat$conditions) {
     w <- pdat$tab[,which(meta$condition == cond), drop=FALSE]
     m <- rowMeans(w, na.rm=TRUE)
     m[which(is.nan(m))] <- NA
@@ -721,7 +721,6 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
-  conditions <- meta$condition
 
   stats <- pdat$stats
   if(is.null(stats)) stats <- intensityStats(pdat)
@@ -734,7 +733,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   # has to be calculated for each condition separately
   if(with.loess) {
     ldf <- NULL
-    for(cond in levels(conditions))
+    for(cond in pdat$conditions)
     {
       st <- stats[which(stats$condition == cond),]
       ls <- loess(variance ~ mean, data=st)
@@ -797,7 +796,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
       expr = e,
       lo = e - s,
       up = e + s,
-      condition = factor(meta$condition, levels=unique(meta$condition)),
+      condition = factor(meta$condition, levels=unique(as.factor(meta$condition))),
       replicates = factor(meta$replicate)
     )
     # define shapes
@@ -901,7 +900,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
                    binhex=TRUE) {
-  if(is.null(pair)) pair <- levels(pdat$metadata$condition)
+  if(is.null(pair)) pair <- pdat$conditions
   if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair parameter.")
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 

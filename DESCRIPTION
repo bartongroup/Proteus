@@ -4,8 +4,8 @@ Title: Downstream analysis of the MaxQuant output
 Version: 0.1.0
 Author: MG
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>
-Description: Just a few function for analysing evidence files.
-License: Driving license cat. B
+Description: Downstream analysis of MaxQuant evidence data.
+License: GPL2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1

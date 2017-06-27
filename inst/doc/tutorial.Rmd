@@ -209,18 +209,18 @@ The second parameter to `normalizeData()` is `norm.fun` and it points to a norma
 prodat.quant <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
 ```
 
-The function `plotIntensityDistributions` can be used to compare intensity distributions for each normalization.
+The function `plotSampleDistributions` can be used to compare intensity distributions for each normalization.
 
 ```{r, intensity_distributions_1, fig.width=5, fig.height=4}
-plotIntensityDistributions(prodat, title="Not normalized", fill="condition")
+plotSampleDistributions(prodat, title="Not normalized", fill="condition", method="violin")
 ```
 
 ```{r, intensity_distributions_2, fig.width=5, fig.height=4}
-plotIntensityDistributions(prodat.med, title="Median normalization", fill="condition")
+plotSampleDistributions(prodat.med, title="Median normalization", fill="condition", method="violin")
 ```
 
 ```{r, intensity_distributions_3, fig.width=5, fig.height=4}
-plotIntensityDistributions(prodat.quant, title="Quantile normalization", fill="condition")
+plotSampleDistributions(prodat.quant, title="Quantile normalization", fill="condition", method="violin")
 ```
 
 

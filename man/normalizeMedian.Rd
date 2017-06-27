@@ -18,6 +18,6 @@ Normalized matrix.
 medians. It should be used with \code{\link{normalizeData}} function.
 }
 \examples{
-protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
+prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
 
 }

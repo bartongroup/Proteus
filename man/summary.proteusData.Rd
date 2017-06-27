@@ -4,14 +4,16 @@
 \alias{summary.proteusData}
 \title{Summary of \code{proteusData} object}
 \usage{
-\method{summary}{proteusData}(pdat)
+\method{summary}{proteusData}(object, ...)
 }
 \arguments{
-\item{pdat}{\code{proteusData} object}
+\item{object}{\code{proteusData} object.}
+
+\item{...}{additional arguments affecting the summary produced.}
 }
 \description{
 Summary of \code{proteusData} object
 }
 \examples{
-summary(protab)
+summary(prodat)
 }

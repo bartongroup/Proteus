@@ -116,34 +116,35 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
 
 #' Summary of \code{proteusData} object
 #'
-#' @param pdat \code{proteusData} object
+#' @param object \code{proteusData} object.
+#' @param ... additional arguments affecting the summary produced.
 #'
 #' @export
 #'
 #' @examples
-#' summary(protab)
-summary.proteusData <- function(pdat) {
+#' summary(prodat)
+summary.proteusData <- function(object, ...) {
   cat("\n*** Basic statistics ***\n\n")
-  cat(paste0("  content = ", pdat$content, "\n"))
-  cat(paste0("  experiment type = ", pdat$type, "\n"))
-  cat(paste0("  number of samples = ", nrow(pdat$metadata), "\n"))
-  cat(paste0("  number of conditions = ", length(pdat$conditions), "\n"))
-  cat(paste0("  number of ", pdat$content, "s = ", nrow(pdat$tab), "\n"))
-  cat(paste0("  samples = ", paste0(pdat$metadata$sample, collapse = ", "), "\n"))
-  cat(paste0("  conditions = ", paste0(pdat$conditions, collapse = ", "), "\n"))
+  cat(paste0("  content = ", object$content, "\n"))
+  cat(paste0("  experiment type = ", object$type, "\n"))
+  cat(paste0("  number of samples = ", nrow(object$metadata), "\n"))
+  cat(paste0("  number of conditions = ", length(object$conditions), "\n"))
+  cat(paste0("  number of ", object$content, "s = ", nrow(object$tab), "\n"))
+  cat(paste0("  samples = ", paste0(object$metadata$sample, collapse = ", "), "\n"))
+  cat(paste0("  conditions = ", paste0(object$conditions, collapse = ", "), "\n"))
 
   cat("\n*** Data processing ***\n\n")
-  cat(paste0("  evidence columns used = ", paste0(pdat$values, collapse = ", "), "\n"))
-  cat(paste0("  sequence = '", ifelse(pdat$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
-  cat(paste0("  normalization = ", pdat$norm.fun, "\n"))
+  cat(paste0("  evidence columns used = ", paste0(object$values, collapse = ", "), "\n"))
+  cat(paste0("  sequence = '", ifelse(object$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
+  cat(paste0("  normalization = ", object$norm.fun, "\n"))
 
-  if(pdat$content == "protein") {
+  if(object$content == "protein") {
     cat("\n*** Protein data ***\n\n")
-    cat(paste0("  quantification method = ", pdat$protein.method, "\n"))
-    if(pdat$protein.method == "hifly") {
-      cat(paste0("  number of high-flyers = ", pdat$hifly, "\n"))
+    cat(paste0("  quantification method = ", object$protein.method, "\n"))
+    if(object$protein.method == "hifly") {
+      cat(paste0("  number of high-flyers = ", object$hifly, "\n"))
     }
-    cat(paste0("  minimum number of peptides per protein = ", pdat$min.peptides, "\n"))
+    cat(paste0("  minimum number of peptides per protein = ", object$min.peptides, "\n"))
   }
 }
 
@@ -467,7 +468,7 @@ makeProtein <- function(wp, method, hifly=3) {
 #' @return Normalized matrix.
 #'
 #' @examples
-#' protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
+#' prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
 #'
 #' @export
 normalizeMedian <- function(tab) {
@@ -495,7 +496,7 @@ normalizeMedian <- function(tab) {
 #'   \code{normalizeQuantiles} from the \code{limma} package.
 #'
 #' @examples
-#' protab.norm <- normalizeData(protab, norm.fun=normalizeMedian)
+#' prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
 #'
 #' @export
 normalizeData <- function(pdat, norm.fun=normalizeMedian) {
@@ -601,11 +602,11 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #'
 #' @examples
 #' plotSampleDistributions(prodat)
-#' plotSampleDistributions(normalizeMedian(prodat))
+#' plotSampleDistributions(normalizeData(prodat))
 plotSampleDistributions <-
 function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, fill=NULL,
          colour=NULL, hline=FALSE) {
-  m <- melt(pdat$tab, varnames=c("ID", "sample"))
+  m <- reshape2::melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
   if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
   if(!is.null(colour)) m[['colour']] <- mt[m$sample, colour]
@@ -984,7 +985,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
 
   peps <- pepdat$pep2prot[selprot,'sequence']
   mat <- as.matrix(tab[peps,])
-  dat <- reshape::melt(mat, varnames=c("peptide", "sample"))
+  dat <- reshape2::melt(mat, varnames=c("peptide", "sample"))
   levels(dat$sample) <- pepdat$metadata$sample # melt loses order of sample levels
   dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers
   dat$intensity <- log10(dat$value)

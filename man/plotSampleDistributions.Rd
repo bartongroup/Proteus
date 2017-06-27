@@ -41,5 +41,5 @@ plotSampleDistributions(pdat, title = "", method = "dist",
 }
 \examples{
 plotSampleDistributions(prodat)
-plotSampleDistributions(normalizeMedian(prodat))
+plotSampleDistributions(normalizeData(prodat))
 }

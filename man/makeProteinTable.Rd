@@ -10,7 +10,7 @@ makeProteinTable(pepdat, method = "hifly", hifly = 3, min.peptides = 1)
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
 created by \code{\link{makePeptideTable}}}
 
-\item{method}{Method to create proteins. Can be "hifly" or "sum".}
+\item{method}{Method to create proteins. Can be "hifly", "sum" or "median".}
 
 \item{hifly}{The number of top peptides (high-flyers) to be used for protein
 intensity.}
@@ -22,13 +22,19 @@ A \code{proteusData} object containing protein intensities and
   metadata.
 }
 \description{
-\code{makeProteinTable} creates a protein table from the peptide table using
-high-flyers or sum. The "hifly" method is a follows. \enumerate{ \item For a
-given protein find all corresponding peptides. \item In each replicate, order
-intensities from the highest to the lowest. This is done separetly for each
-replicate. \item Select n top rows of the ordered table. \item In each
-replicate, find the mean of these three rows. This is the estimated protein
-intensity. } The "sum" method simply adds all intensities.
+\code{makeProteinTable} creates a protein table from the peptide table.
+Protein intensities or ratios are aggregated from peptide data. There are
+three ways of protein quantification: "hifly" and "sum" for intensity data
+and "median" for SILAC data.
+}
+\details{
+The "hifly" method is a follows. \enumerate{ \item For a given protein find
+all corresponding peptides. \item In each replicate, order intensities from
+the highest to the lowest. This is done separetly for each replicate. \item
+Select n top rows of the ordered table. \item In each replicate, find the
+mean of these three rows. This is the estimated protein intensity. } The
+"sum" method simply adds all intensities for a given protein in each sample.
+The "median", well, you can guess.
 }
 \examples{
 prodat <- makeProteinTable(pepdat)

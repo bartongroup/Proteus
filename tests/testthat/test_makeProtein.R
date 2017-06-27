@@ -19,6 +19,13 @@ test_that("Test makeProtein sum", {
   expect_equal(p, exp_p)
 })
 
+test_that("Test makeProtein median", {
+  p <- makeProtein(test_wp, method="median")
+  exp_p <- data.frame(t(c(NA, 10, 10, 8)))
+  colnames(exp_p) <- cols
+  expect_equal(p, exp_p)
+})
+
 test_that("Test makeProtein hifly longer", {
   p <- makeProtein(test_wp, method="hifly", hifly=3)
   exp_p <- data.frame(t(c(NA, 10, 10, mean(c(10,8,8)))))

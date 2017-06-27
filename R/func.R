@@ -398,17 +398,25 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
 
 #' Make protein table
 #'
-#' \code{makeProteinTable} creates a protein table from the peptide table using
-#' high-flyers or sum. The "hifly" method is a follows. \enumerate{ \item For a
-#' given protein find all corresponding peptides. \item In each replicate, order
-#' intensities from the highest to the lowest. This is done separetly for each
-#' replicate. \item Select n top rows of the ordered table. \item In each
-#' replicate, find the mean of these three rows. This is the estimated protein
-#' intensity. } The "sum" method simply adds all intensities.
+#' \code{makeProteinTable} creates a protein table from the peptide table.
+#' Protein intensities or ratios are aggregated from peptide data. There are
+#' three ways of protein quantification: "hifly" and "sum" for intensity data
+#' and "median" for SILAC data.
+#'
+#'
+#' @details
+#'
+#' The "hifly" method is a follows. \enumerate{ \item For a given protein find
+#' all corresponding peptides. \item In each replicate, order intensities from
+#' the highest to the lowest. This is done separetly for each replicate. \item
+#' Select n top rows of the ordered table. \item In each replicate, find the
+#' mean of these three rows. This is the estimated protein intensity. } The
+#' "sum" method simply adds all intensities for a given protein in each sample.
+#' The "median", well, you can guess.
 #'
 #' @param pepdat A \code{proteusData} object containing peptide data, normally
 #'   created by \code{\link{makePeptideTable}}
-#' @param method Method to create proteins. Can be "hifly" or "sum".
+#' @param method Method to create proteins. Can be "hifly", "sum" or "median".
 #' @param hifly The number of top peptides (high-flyers) to be used for protein
 #'   intensity.
 #' @param min.peptides Minimum number of peptides per protein.
@@ -421,14 +429,14 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
 #' @export
 makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  if(!(method %in% c("hifly", "sum"))) stop(paste0("Unknown method ", method))
+  if(!(method %in% c("hifly", "sum", "median"))) stop(paste0("Unknown method ", method))
 
   meta <- pepdat$metadata
   tab <- pepdat$tab
 
   protlist <- list()
   for(cond in pepdat$conditions) {
-    w <- tab[,which(meta$condition == cond)]
+    w <- tab[,which(meta$condition == cond), drop=FALSE]
     samples <- colnames(w)
     protint <- NULL
     for(prot in pepdat$proteins) {
@@ -501,7 +509,10 @@ makeProtein <- function(wp, method, hifly=3) {
   } else if(method == "sum") {
     row <- as.data.frame(t(colSums(wp, na.rm=TRUE)))
     row[row==0] <- NA    # colSums puts zeroes where the column contains only NAs (!!!)
+  } else if(method == "median") {
+    row <- as.data.frame(t(apply(wp, 2, function(x) median(x, na.rm=TRUE))))
   } else stop(paste0("Unknown method ", method))
+
 
   colnames(row) <- cols
   return(row)
@@ -631,15 +642,16 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 
 #' Plot distribution of intensities/ratios for each sample
 #'
-#' \code{plotIntensityDistributions} makes a boxplot with intensity/ratio distribution for each sample.
+#' \code{plotSampleDistributions} makes a boxplot with intensity/ratio distribution for each sample.
 #'
 #' @param pdat A \code{proteusData} object with peptide/protein intensities.
 #' @param title Title of the plot.
+#' @param method "box" or "dist"
 #' @param x.text.size Text size in x-axis
 #' @param x.text.angle Text angle in x-axis
-#' @param ymin Lower bound on y-axis
-#' @param ymax Upper bound on y-axis
-#' @param logbase Base of the logarith which will be applied to data
+#' @param vmin Lower bound on log intensity/ratio
+#' @param vmax Upper bound on log intenstiy/ratio
+#' @param logbase Base of the logarithm which will be applied to data
 #' @param fill A metadata column to use for the fill of boxes
 #' @param colour A metadata column to use for the outline colour of boxes
 #' @param hline Logical, if true a horizontal line at zero is added
@@ -647,10 +659,10 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #' @export
 #'
 #' @examples
-#' plotIntensityDistributions(prodat)
-#' plotIntensityDistributions(normalizeMedian(prodat))
-plotIntensityDistributions <- function(pdat, title="Intensity distributions", x.text.size=7,
-                                       x.text.angle=90, ymin=as.numeric(NA), ymax=as.numeric(NA),
+#' plotSampleDistributions(prodat)
+#' plotSampleDistributions(normalizeMedian(prodat))
+plotSampleDistributions <- function(pdat, title="", method="dist", x.text.size=7,
+                                       x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA),
                                        logbase=10, fill=NULL, colour=NULL, hline=FALSE) {
   m <- melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
@@ -659,12 +671,21 @@ plotIntensityDistributions <- function(pdat, title="Intensity distributions", x.
 
   m$value <- log(m$value, base=logbase)
 
-  g <- ggplot(m, aes(x=sample, y=value)) +
-    simple_theme +
-    geom_boxplot(outlier.shape=NA, na.rm=TRUE) +
-    ylim(ymin,ymax) +
-    theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
-    labs(title=title, x="sample", y=paste0("log", logbase, " value"))
+  if(method == "box") {
+    g <- ggplot(m, aes(x=sample, y=value)) +
+      simple_theme +
+      geom_boxplot(outlier.shape=NA, na.rm=TRUE) +
+      ylim(vmin, vmax) +
+      theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
+      labs(title=title, x="sample", y=paste0("log", logbase, " value"))
+  } else if (method == "dist") {
+    g <- ggplot(m, aes(x=value)) +
+      #simple_theme +
+      geom_histogram(bins=100) +
+      facet_wrap(~sample, nrow=3) +
+      xlim(vmin, vmax)
+  } else stop("Wrong method.")
+
   if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_discrete(name=fill)
   if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_discrete(name=colour)
   if(hline) g <- g + geom_hline(yintercept=0)

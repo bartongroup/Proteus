@@ -280,17 +280,43 @@ readMaxQuantTable <- function(file, content, col.id, meta) {
 
 #' Create peptide table from evidence data
 #'
-#' \code{makePeptideTable} creates a table with columns corresponding to samples
-#' (experiments) and rows corresponding to peptides. Each cell is a sum of all
-#' intensities for this sample/peptide in the input evidence data.
+#' \code{makePeptideTable} computes a peptide table and related data. Peptide
+#' table is a matrix with columns corresponding to conditions and rows
+#' corresponding to peptide sequences.
 #'
-#' @param evi Evidence table created with readEvidenceFile.
+#' @details
+#'
+#' In case of unlabelled experiments only one value is required, usually stored
+#' in the "intensity" column. \code{makePeptideTable} will create a peptide
+#' table with columns corresponding to samples in the metadata and rows
+#' corresponding to peptide sequences. Each cell of this table is the sum of
+#' peptide intensities (as defined by the default \code{fun.aggregate} function;
+#' we do not recommend to change it).
+#'
+#' However, in SILAC and iTRAQ experiments there are multiple values, for
+#' example "Ratio H/L", "Ratio M/L" and "Ratio H/M". \code{makePeptideTable}
+#' will create a peptide table with columns corresponding to all combinations of
+#' samples and values. The number of columns in the peptide table is the number
+#' of samples in the metadata times the number of values. The cells of the
+#' peptide table will be aggregate with the \code{fun.aggregate} function. We
+#' recommend the median (use \code{fun.aggregate = median}) for this purpose. The
+#' metadata attached to the output \code{proteusData} object will be adjusted
+#' accordingly to contain new, expanded samples and conditions.
+#'
+#' In either case only samples from metadata are used, regardless of the content
+#' of the evidence data. This makes selection of samples for downstream
+#' processing easy: select only required rows in the metadata data frame.
+#'
+#' @param evi Evidence table created with \code{\link{readEvidenceFile}}.
 #' @param meta Data frame with metadata. As a minimum, it should contain
 #'   "sample" and "condition" columns.
 #' @param pepseq A column name to identify peptides. Can be either "sequence" or
 #'   "modseq".
-#' @param values A vector of names (or one name) of column(s) with intensity/ratio data to be used.
-#' @param fun.aggregate A function to aggregate pepetides with the same sequence/sample.
+#' @param values A vector of names (or one name) of column(s) with
+#'   intensity/ratio data to be used.
+#' @param fun.aggregate A function to aggregate pepetides with the same
+#'   sequence/sample.
+#' @param experiment.type Type of the experiment, "unlabelled" or "SILAC".
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'

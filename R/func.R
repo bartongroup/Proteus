@@ -306,10 +306,17 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
     if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
   }
 
+  # zeroes in the evidence file are missing data
+  evi[evi == 0] <- NA
+  f <- function(x) fun.aggregate(x, na.rm=TRUE)
+
   # melt and recast evidence data
   eviMeasured <- evi[,c(pepseq, "experiment", values)]
   eviMelted <- reshape2::melt(eviMeasured, id.vars = c(pepseq, "experiment"))
-  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ experiment + variable"), fun.aggregate=fun.aggregate)
+  eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
+  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ experiment + variable"), f)
+
+  # convert to matrix, keep row names as 'peptides'
   peptides <- as.character(tab[,1])
   tab <- as.matrix(tab[,2:ncol(tab)])
   tab[tab == 0] <- NA
@@ -318,29 +325,32 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
 
   # dcast created columns with merged names, these are our new samples
   # (e.g. samp1_ratio.HL, samp1_ratio.ML, samp2_ratio.HL, ...)
-  # need to create new metadata for new samples
+  # need to create new metadata to match these new samples
 
   # combine all pairs sample-value
   pairs <- expand.grid(meta$sample, values)
-  colnames(pairs) <- c("sample.original", "value")
+  colnames(pairs) <- c("sample", "value")
   # replicate naming convention from dcast (merge by "_")
-  pairs$sample <- apply(pairs, 1, function(x) paste0(x, collapse="_"))
+  pairs$sample.new <- apply(pairs, 1, function(x) paste0(x, collapse="_"))
   # new metadata
-  meta <- merge(pairs, meta, by.x="sample.original", by.y="sample")
-  selection <- meta$sample
+  mt <- merge(meta, pairs, by="sample", sort=FALSE)
+  selection <- mt$sample.new
 
-  # special case of just one value (usually "intensity")
-  # in such case we want to keep original sample names, that is samp1, samp2, ...
-  # instead of samp1_intensity, samp2_intensity
+  # clean-up metadata; when only one value, restore originals
   if(length(values) == 1) {
-    meta$sample <- meta$sample.original
-    meta$sample.original <- NULL
+    mt <- meta
+  } else {
+    # need "sample" and "condition" corresponding to the new table
+    # keep original columns for reference
+    mt <- dplyr::rename(mt, sample.original = sample, condition.original = condition, sample = sample.new)
+    # concatenate condition and value to create new condition
+    mt$condition <- apply(mt[,c("condition.original", "value")], 1, function(x) paste0(x, collapse="_"))
   }
 
   # keep only columns from the metadata file
   # you can remove bad replicates
   tab <- tab[,as.character(selection)]
-  colnames(tab) <- meta$sample
+  colnames(tab) <- mt$sample
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
@@ -350,7 +360,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, values,
+  pdat <- proteusData(tab, mt, 'peptide', pep2prot, peptides, proteins, values,
                       type = experiment.type)
 
   return(pdat)

@@ -1,8 +1,10 @@
 library(testthat)
 
 # expected result
-tab <- structure(
-  c(3, 7, 7, 2, 5, 5, 5, 5, 8, 7, 8, NA, 2, 4, 4, 9, 2, 2, NA, NA, 9, 5, 4, NA, 7, NA, 2, 4, 5, 3),
+tab.1 <- structure(
+  c(7, 7, 4, 2, 5, 5, 5, 5, 8, 7,
+    8, NA, 2, 4, 4, 9, 2, 2, NA, NA,
+    9, 5, 4, NA, 7, NA, 2, 4, 5, 3),
   .Dim = c(10L, 3L),
   .Dimnames = list(
     c("AA", "AB", "AC", "AD", "AE", "BA", "BB", "BC", "BD", "BE"),
@@ -10,30 +12,43 @@ tab <- structure(
   )
 )
 
-# median of 3 and 4 is 3.5
-tab.med <- tab
-tab.med['AC', 'WT1'] <- 3.5
+tab.2 <- structure(
+  c(3.5, 7, 4, 2, 5, 5, 5, 5, 8, 7,
+    3, 8, 2, 7, 2, 8, 5, 2, 2, NA,
+    8, NA, 2, 4, 4, 9, 2, 2, NA, NA,
+    4, 1, 2, NA, 1, 7, NA, 2, NA, NA,
+    9, 5, 4, NA, 7, NA, 2, 4, 5, 3,
+    1, NA, 6, NA, 5, 6, 1, 7, 3, 2),
+  .Dim = c(10L, 6L),
+  .Dimnames = list(
+    c("AA", "AB", "AC", "AD", "AE", "BA", "BB", "BC", "BD", "BE"),
+    c("WT1_intensity", "WT1_ratio", "WT2_intensity", "WT2_ratio", "KO1_intensity", "KO1_ratio")
+  )
+)
 
 # input data:
 evi <- read.table("../testdata/data_makePeptide_evi.txt", header=TRUE, sep="\t")
 meta <- read.table("../testdata/data_makePeptide_meta.txt", header=TRUE, sep="\t")
 
-
 context("Casting evidence into peptide table")
 
 test_that("Test makePeptide", {
   pep <- makePeptideTable(evi, meta)
-  expect_equal(pep$tab, tab)
-  expect_equal(pep$metadata, meta)
+  expect_equal(pep$tab, tab.1)
+  expect_equal(pep$metadata[,c("sample", "condition", "batch")], meta)
   expect_equal(pep$content, "peptide")
-  expect_equal(pep$value, "intensity")
-  expect_equal(pep$peptides, row.names(tab))
+  expect_equal(pep$values, "intensity")
+  expect_equal(pep$peptides, row.names(tab.1))
   expect_equal(pep$proteins, c("A", "B"))
   expect_true(is(pep, "proteusData"))
 })
 
 test_that("Test makePeptide SILAC", {
-  pep <- makePeptideTable(evi, meta, aggregate.fun = median, value="ratio")
-  expect_equal(pep$tab, tab.med)
-  expect_equal(pep$value, "ratio")
+  pep <- makePeptideTable(evi, meta, fun.aggregate = median, values=c("intensity", "ratio"), experiment.type="SILAC")
+  expect_equal(pep$tab, tab.2)
+  expect_equal(pep$metadata$batch, c(1, 1, 2, 2, 2, 2))
+  expect_equal(pep$values, c("intensity", "ratio"))
+  expect_equal(pep$peptides, row.names(tab.2))
+  expect_equal(pep$proteins, c("A", "B"))
+  expect_true(is(pep, "proteusData"))
 })

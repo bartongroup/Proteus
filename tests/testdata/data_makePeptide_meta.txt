@@ -1,4 +1,4 @@
-sample	condition
-WT1	WT
-WT2	WT
-KO1	KO
+sample	condition	batch
+WT1	WT	1
+WT2	WT	2
+KO1	KO	2

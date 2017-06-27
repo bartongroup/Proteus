@@ -1,1 +1,2 @@
-*.rb linguist-language=R
+inst/doc/* linguist-documentation
+*.Rmd linguist-language=R

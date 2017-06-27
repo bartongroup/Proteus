@@ -223,7 +223,8 @@ readProteinFile <- function(file, meta) {
 }
 
 
-#' Read MaxQuant's table
+#' This function needs redoing
+#'
 #'
 #' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or
 #' proteinGroups), extracts intensity data and creates a minimal
@@ -236,47 +237,6 @@ readProteinFile <- function(file, meta) {
 readMaxQuantTable <- function(file, content, col.id, meta) {
   dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
 
-  # check if col.id exists
-  if(!(col.id %in% colnames(dat))) stop(paste0("Column '", col.id, "' not found in ", file))
-
-  # filter peptides on reverse and contaminant
-  if(content=="peptide") {
-    test <- TRUE
-    for(col in c("Reverse", "Potential contaminant")) {
-      if(!(col %in% colnames(dat))) {
-        warning(paste0("Column '", col, "' not found in file ", file, "\nCannot filter on contaminants and reverse."))
-        test <- FALSE
-      }
-    }
-    if(test) {
-      dat$Reverse[is.na(dat$Reverse)] = ''
-      dat$`Potential contaminant`[is.na(dat$`Potential contaminant`)] = ''
-      dat <- dat[which(dat$`Potential contaminant` != '+' & dat$Reverse != '+'),]
-    }
-  }
-
-  # Find intensity columns
-  intensity.cols <- grepl("Intensity ", names(dat))
-  ncol <- length(which(intensity.cols))
-  nsam <- length(meta$sample)
-  if(ncol == 0) stop("No intensity columns found.")
-  if(ncol != nsam) stop(paste0("Wrong number of samples in the input file. Expecting ", nsam, " from metadata, but found ", ncol, "."))
-
-  tab <- dat[intensity.cols]
-  tab[tab==0] <- NA
-  colnames(tab) <- meta$sample
-  rownames(tab) <- dat[[col.id]]
-  # create pdat object
-  pdat <- list(
-    tab = tab,
-    content = content,
-    metadata = meta,
-    norm = "none",
-    stats = NULL,
-    logflag = FALSE
-  )
-  class(pdat) <- append(class(pdat), "proteusData")
-  return(pdat)
 }
 
 

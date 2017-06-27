@@ -40,10 +40,13 @@ simple_theme_grid <- ggplot2::theme_bw() +
 
 #' \code{proteusData} constructor
 #'
-#' @param tab A matrix with data, rows are peptides/proteins, columns are samples
-#' @param metadata A data frame with metadata, needs at least two columns: "sample" and "condition"
+#' @param tab A matrix with data, rows are peptides/proteins, columns are
+#'   samples
+#' @param metadata A data frame with metadata, needs at least two columns:
+#'   "sample" and "condition"
 #' @param content Either "peptides" or "proteins"
-#' @param pep2prot A data frame with two columns: "sequence" and "protein"
+#' @param pep2prot A data frame with two columns: "sequence" and "protein". Can
+#'   use "other" for non-proteus data.
 #' @param peptides A character vector with peptide sequences
 #' @param proteins A character vector with protein names
 #' @param values A character vector with names of intensity and/or ratio columns
@@ -51,7 +54,8 @@ simple_theme_grid <- ggplot2::theme_bw() +
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
 #' @param hifly Number of high-flyers
-#' @param min.peptides Integer, minimum number of peptides to combine into a protein
+#' @param min.peptides Integer, minimum number of peptides to combine into a
+#'   protein
 #' @param norm.fun Normalizing function
 #' @param protein.method Name of the method with which proteins were quantified
 #'
@@ -63,7 +67,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
   stopifnot(
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
-    content %in% c("peptide", "protein"),
+    content %in% c("peptide", "protein", "other"),
     type %in% c("unlabelled", "SILAC"),
     pepseq %in% c("sequence", "modseq")
   )
@@ -180,50 +184,7 @@ readEvidenceFile <- function(file, columns=evidenceColumns) {
   evi <- evi[which(!is.na(evi$intensity)),]
 }
 
-#' Read MaxQuant's peptide file
-#'
-#' \code{readPeptideFile} reads MaxQuant's peptide file and extracts intensity
-#' table. Contaminants and reverse sequences are filtered out.
-#'
-#' @param file File name.
-#' @param meta Data frame with metadata. As a minimum, it should contain
-#'   "sample" and "condition" columns.
-#' @return A minimal \code{proteusData} object with peptide intensities.
-#'
-#' @examples
-#' \dontrun{
-#' pepMQ <- readPeptideFile("peptides.txt", meta)
-#' }
-#'
-#' @export
-readPeptideFile <- function(file, meta) {
-  readMaxQuantTable(file, "peptide", "Sequence", meta)
-}
-
-#' Read MaxQuant's protein file
-#'
-#' \code{readPeptideFile} reads MaxQuant's protein file and extracts intensity
-#' table.
-#'
-#' @param file File name.
-#' @param meta Data frame with metadata. As a minimum, it should contain
-#'   "sample" and "condition" columns.
-#' @return A minimal \code{proteusData} object with peptide intensities.
-#'
-#' @examples
-#' \dontrun{
-#' protMQ <- readProteinFile("proteinGroups.txt", meta)
-#' }
-#' @export
-readProteinFile <- function(file, meta) {
-  pdat <- readMaxQuantTable(file, "protein", "Protein IDs", meta)
-  pdat$stats <- intensityStats(pdat)
-  pdat$proteins <- rownames(pdat$tab)
-  return(pdat)
-}
-
-
-#' This function needs redoing
+#' Read peptides or proteinGroups file from MaxQuant
 #'
 #'
 #' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or
@@ -231,12 +192,30 @@ readProteinFile <- function(file, meta) {
 #' \code{proteusData} object.
 #'
 #' @param file Input file
-#' @param content Either "peptide" or "protein"
-#' @param col.id Name of the column with identifiers (e.g. "Sequence")
 #' @param meta Metadata
-readMaxQuantTable <- function(file, content, col.id, meta) {
+#' @param id Name of the column with identifiers (e.g. "Sequence" or "Protein
+#'   ID")
+#' @param columns A vector of intensity/ratio column names
+#' @export
+readMaxQuantTable <- function(file, meta, id, columns) {
   dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
 
+  # check columns
+  if(!(id %in% colnames(dat))) stop(paste0("Column '", id, "' not found in ", file))
+  for(col in columns) {
+    if(!(col %in% colnames(dat))) stop(paste0("Column '", col, "' not found in ", file))
+  }
+
+  tab <- as.matrix(dat[columns])
+  tab[tab==0] <- NA
+  tab[is.nan(tab)] <- NA
+  colnames(tab) <- meta$sample
+  rownames(tab) <- dat[[id]]
+
+  # create pdat object
+  pdat <- proteusData(tab, meta, "other", NULL, rownames(tab), NULL, NULL)
+  class(pdat) <- append(class(pdat), "proteusData")
+  return(pdat)
 }
 
 
@@ -606,11 +585,13 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #'
 #' @param pdat A \code{proteusData} object with peptide/protein intensities.
 #' @param title Title of the plot.
-#' @param method "box" or "dist"
-#' @param x.text.size Text size in x-axis
-#' @param x.text.angle Text angle in x-axis
-#' @param vmin Lower bound on log intensity/ratio
-#' @param vmax Upper bound on log intenstiy/ratio
+#' @param method "box", "violin" or "dist"
+#' @param x.text.size Text size in value axis
+#' @param x.text.angle Text angle in value axis
+#' @param vmin Lower bound on log value
+#' @param vmax Upper bound on log value
+#' @param n.grid.rows Number of rows in the grid of facets
+#' @param hist.bins Number of bins in histograms
 #' @param logbase Base of the logarithm which will be applied to data
 #' @param fill A metadata column to use for the fill of boxes
 #' @param colour A metadata column to use for the outline colour of boxes
@@ -621,9 +602,9 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #' @examples
 #' plotSampleDistributions(prodat)
 #' plotSampleDistributions(normalizeMedian(prodat))
-plotSampleDistributions <- function(pdat, title="", method="dist", x.text.size=7,
-                                       x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA),
-                                       logbase=10, fill=NULL, colour=NULL, hline=FALSE) {
+plotSampleDistributions <-
+function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, fill=NULL,
+         colour=NULL, hline=FALSE) {
   m <- melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
   if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
@@ -631,24 +612,25 @@ plotSampleDistributions <- function(pdat, title="", method="dist", x.text.size=7
 
   m$value <- log(m$value, base=logbase)
 
-  if(method == "box") {
+  if(method == "box" | method == "violin") {
     g <- ggplot(m, aes(x=sample, y=value)) +
       simple_theme +
-      geom_boxplot(outlier.shape=NA, na.rm=TRUE) +
       ylim(vmin, vmax) +
       theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
       labs(title=title, x="sample", y=paste0("log", logbase, " value"))
+      if(hline) g <- g + geom_hline(yintercept=0, colour='grey')
+      if(method=="box") g <- g + geom_boxplot(outlier.shape=NA, na.rm=TRUE)
+      if(method=="violin") g <- g + geom_violin(na.rm=TRUE, draw_quantiles=c(0.25, 0.5, 0.75), scale="width")
   } else if (method == "dist") {
     g <- ggplot(m, aes(x=value)) +
       #simple_theme +
-      geom_histogram(bins=100) +
-      facet_wrap(~sample, nrow=3) +
+      geom_histogram(bins=hist.bins) +
+      facet_wrap(~sample, nrow=n.grid.rows) +
       xlim(vmin, vmax)
   } else stop("Wrong method.")
 
   if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_discrete(name=fill)
   if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_discrete(name=colour)
-  if(hline) g <- g + geom_hline(yintercept=0)
   g
 }
 

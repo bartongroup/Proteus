@@ -9,13 +9,16 @@ proteusData(tab, metadata, content, pep2prot, peptides, proteins, values,
   min.peptides = NULL, norm.fun = identity, protein.method = NULL)
 }
 \arguments{
-\item{tab}{A matrix with data, rows are peptides/proteins, columns are samples}
+\item{tab}{A matrix with data, rows are peptides/proteins, columns are
+samples}
 
-\item{metadata}{A data frame with metadata, needs at least two columns: "sample" and "condition"}
+\item{metadata}{A data frame with metadata, needs at least two columns:
+"sample" and "condition"}
 
 \item{content}{Either "peptides" or "proteins"}
 
-\item{pep2prot}{A data frame with two columns: "sequence" and "protein"}
+\item{pep2prot}{A data frame with two columns: "sequence" and "protein". Can
+use "other" for non-proteus data.}
 
 \item{peptides}{A character vector with peptide sequences}
 
@@ -31,7 +34,8 @@ proteusData(tab, metadata, content, pep2prot, peptides, proteins, values,
 
 \item{hifly}{Number of high-flyers}
 
-\item{min.peptides}{Integer, minimum number of peptides to combine into a protein}
+\item{min.peptides}{Integer, minimum number of peptides to combine into a
+protein}
 
 \item{norm.fun}{Normalizing function}
 

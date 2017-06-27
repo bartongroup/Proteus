@@ -2,18 +2,19 @@
 % Please edit documentation in R/func.R
 \name{readMaxQuantTable}
 \alias{readMaxQuantTable}
-\title{Read MaxQuant's table}
+\title{Read peptides or proteinGroups file from MaxQuant}
 \usage{
-readMaxQuantTable(file, content, col.id, meta)
+readMaxQuantTable(file, meta, id, columns)
 }
 \arguments{
 \item{file}{Input file}
 
-\item{content}{Either "peptide" or "protein"}
-
-\item{col.id}{Name of the column with identifiers (e.g. "Sequence")}
-
 \item{meta}{Metadata}
+
+\item{id}{Name of the column with identifiers (e.g. "Sequence" or "Protein
+ID")}
+
+\item{columns}{A vector of intensity/ratio column names}
 }
 \description{
 \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or

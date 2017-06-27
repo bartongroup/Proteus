@@ -5,24 +5,28 @@
 \title{Plot distribution of intensities/ratios for each sample}
 \usage{
 plotSampleDistributions(pdat, title = "", method = "dist",
-  x.text.size = 7, x.text.angle = 90, vmin = as.numeric(NA),
-  vmax = as.numeric(NA), logbase = 10, fill = NULL, colour = NULL,
-  hline = FALSE)
+  x.text.size = 7, n.grid.rows = 3, hist.bins = 100, x.text.angle = 90,
+  vmin = as.numeric(NA), vmax = as.numeric(NA), logbase = 10,
+  fill = NULL, colour = NULL, hline = FALSE)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptide/protein intensities.}
 
 \item{title}{Title of the plot.}
 
-\item{method}{"box" or "dist"}
+\item{method}{"box", "violin" or "dist"}
 
-\item{x.text.size}{Text size in x-axis}
+\item{x.text.size}{Text size in value axis}
 
-\item{x.text.angle}{Text angle in x-axis}
+\item{n.grid.rows}{Number of rows in the grid of facets}
 
-\item{vmin}{Lower bound on log intensity/ratio}
+\item{hist.bins}{Number of bins in histograms}
 
-\item{vmax}{Upper bound on log intenstiy/ratio}
+\item{x.text.angle}{Text angle in value axis}
+
+\item{vmin}{Lower bound on log value}
+
+\item{vmax}{Upper bound on log value}
 
 \item{logbase}{Base of the logarithm which will be applied to data}
 

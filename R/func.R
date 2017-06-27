@@ -62,6 +62,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
                         min.peptides=NULL, norm.fun=identity, protein.method=NULL) {
   stopifnot(
     ncol(tab) == nrow(metadata),
+    is(tab, "matrix"),
     content %in% c("peptide", "protein"),
     type %in% c("unlabelled", "SILAC"),
     pepseq %in% c("sequence", "modseq")
@@ -641,7 +642,7 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #' @param logbase Base of the logarith which will be applied to data
 #' @param fill A metadata column to use for the fill of boxes
 #' @param colour A metadata column to use for the outline colour of boxes
-#' @param vline Logical, if true a horizontal line at zero is added
+#' @param hline Logical, if true a horizontal line at zero is added
 #'
 #' @export
 #'
@@ -650,7 +651,7 @@ plotPeptideCount <- function(pdat, x.text.size=10){
 #' plotIntensityDistributions(normalizeMedian(prodat))
 plotIntensityDistributions <- function(pdat, title="Intensity distributions", x.text.size=7,
                                        x.text.angle=90, ymin=as.numeric(NA), ymax=as.numeric(NA),
-                                       logbase=10, fill=NULL, colour=NULL, vline=FALSE) {
+                                       logbase=10, fill=NULL, colour=NULL, hline=FALSE) {
   m <- melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
   if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
@@ -666,7 +667,7 @@ plotIntensityDistributions <- function(pdat, title="Intensity distributions", x.
     labs(title=title, x="sample", y=paste0("log", logbase, " value"))
   if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_discrete(name=fill)
   if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_discrete(name=colour)
-  if(vline) g <- g + geom_hline(yintercept=0)
+  if(hline) g <- g + geom_hline(yintercept=0)
   g
 }
 

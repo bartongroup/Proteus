@@ -131,6 +131,14 @@ Function `plotPeptideCount()` plots, as the name suggests, peptide count in each
 plotPeptideCount(pepdat)
 ```
 
+### Jaccard similarity
+
+Function `plotDetectionSimilarity()` calculates Jaccard similarity between each pair of samples and plots its distribution. The similarity is based on detection. For a pair of samples it compares the number of detected peptides in both samples (intersection) divided by the total number of peptides detected in both samples (union). This measure of similarity is a number between 0 and 1.
+
+```{r, fig.width=5, fig.height=4}
+plotDetectionSimilarity(pepdat, bin.size = 0.02)
+```
+
 ### Correlation matrix
 
 Function `plotCorrelationMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
@@ -230,7 +238,7 @@ plotSampleDistributions(prodat.quant, title="Quantile normalization", fill="cond
 
 Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV` function to plot the mean-variance relationship.
 
-```{r, fig.width=7, fig.height=6, warning=FALSE}
+```{r, fig.width=6, fig.height=4, warning=FALSE}
 plotMV(prodat.med, with.loess=TRUE)
 ```
 
@@ -276,19 +284,19 @@ res[significant,]
 
 Fold-change-intensity plot:
 
-```{r, fig.width=5, fig.height=5, warning=FALSE}
+```{r, fig.width=4, fig.height=4, warning=FALSE}
 plotFID(prodat.med)
 ```
 
 Volcano plot:
 
-```{r, fig.width=5, fig.height=5, warning=FALSE}
+```{r, fig.width=4, fig.height=4, warning=FALSE}
 plotVolcano(res)
 ```
 
 P-value distribution plot:
 
-```{r, fig.width=5, fig.height=5, warning=FALSE}
+```{r, fig.width=4, fig.height=4, warning=FALSE}
 plotPdist(res)
 ```
 

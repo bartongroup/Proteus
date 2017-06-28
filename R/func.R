@@ -1,3 +1,23 @@
+#' @import ggplot2
+#' @import graphics
+#' @import methods
+#' @import stats
+#' @import utils
+
+simple_theme <- ggplot2::theme_bw() +
+  ggplot2::theme(
+    panel.border = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.line = ggplot2::element_line(colour = "black")
+  )
+simple_theme_grid <- ggplot2::theme_bw() +
+  ggplot2::theme(
+    panel.border = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_line(colour = "grey90"),
+    panel.grid.minor = ggplot2::element_line(colour = "grey95"),
+    axis.line = ggplot2::element_line(colour = "black")
+  )
 
 #' Evidence columns
 #'
@@ -16,27 +36,6 @@ evidenceColumns <- list(
   reverse = 'Reverse',
   contaminant = 'Potential contaminant'
 )
-
-#' @import ggplot2
-#' @import graphics
-#' @import methods
-#' @import stats
-#' @import utils
-simple_theme <- ggplot2::theme_bw() +
-  ggplot2::theme(
-    panel.border = ggplot2::element_blank(),
-    panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank(),
-    axis.line = ggplot2::element_line(colour = "black")
-  )
-simple_theme_grid <- ggplot2::theme_bw() +
-  ggplot2::theme(
-    panel.border = ggplot2::element_blank(),
-    panel.grid.major = ggplot2::element_line(colour = "grey90"),
-    panel.grid.minor = ggplot2::element_line(colour = "grey95"),
-    axis.line = ggplot2::element_line(colour = "black")
-  )
-
 
 #' \code{proteusData} constructor
 #'
@@ -577,6 +576,63 @@ plotPeptideCount <- function(pdat, x.text.size=10){
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
     theme(plot.title=element_text(hjust=0, size=12))
+}
+
+#' Jaccard similarity
+#'
+#' Computes Jaccard similarity between "detections" in two vectors of the same
+#' length. A detection is a value, as opposed to NA.
+#'
+#' @param x A vector
+#' @param y A vector
+#'
+#' @return Jaccard similarity between x and y
+#'
+#' @examples
+#' sim <- jaccardSimilarity(pepdat$tab[,1], pepdat$tab[,2])
+#'
+#' @export
+#'
+jaccardSimilarity <- function(x, y) {
+  stopifnot(length(x) == length(y))
+
+  intersection <- which(!is.na(x) & !is.na(y))
+  union <- which(!is.na(x) | !is.na(y))
+  jaccard <- ifelse(length(union) > 0, length(intersection) / length(union), 0)
+  return(jaccard)
+}
+
+#' Detection Jaccard similarity
+#'
+#' \code{plotDetectionSimilarit} plots a distribution of (peptide) detection
+#' similarities between samples. Jaccard similarity between two sets is defined
+#' as the size of the intersection divided by the size of the union. This plot
+#' can be used to assess quality of data.
+#'
+#' @param pdat A \code{proteusData} object with peptides (or proteins).
+#' @param text.size Text size.
+#' @param plot.grid Logical to plot grid.
+#' @param bin.size Bin size for the histogram.
+#'
+#' @examples
+#' plotDetectionSimilarity(pepdat)
+#'
+#' @export
+#'
+plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid=TRUE) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
+  n <- ncol(pdat$tab)
+  # indices of upper triangular: all pair-wise combinations of columns in tab
+  pairs <- which(upper.tri(matrix(1, n, n)) == TRUE, arr.ind=TRUE)
+  # Jaccard simliarity for each pair of columns in tab
+  sim <- apply(pairs, 1, function(i) jaccardSimilarity(pdat$tab[,i[1]], pdat$tab[,i[2]]))
+
+  ggplot(data.frame(sim), aes(sim, ..density..)) +
+  {if(plot.grid) simple_theme_grid else simple_theme} +
+    geom_histogram(breaks=seq(0, 1, bin.size), colour='blue') +
+    labs(x='Jaccard similarity', y='Density') +
+    theme(text = element_text(size=text.size))
 }
 
 

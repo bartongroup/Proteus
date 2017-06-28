@@ -89,11 +89,17 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
     stopifnot(nrow(npep) == nrow(tab))
   }
 
+  # number of replicates in each condition
+  cnd <- metadata$condition
+  cnd.fac <- as.factor(cnd)
+  nrep <- tapply(cnd, cnd.fac, length) # nice trick
+
   pdat <- list(
     tab = tab,
     metadata = metadata,
     content = content,
-    conditions = levels(as.factor(metadata$condition)),
+    conditions = levels(cnd.fac),
+    nrep = nrep,
     type = type,
     values = values,
     pepseq = pepseq,

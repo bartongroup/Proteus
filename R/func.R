@@ -722,7 +722,8 @@ intensityStats <- function(pdat) {
     m[which(is.nan(m))] <- NA
     v <- apply(w, 1, function(v) sd(v, na.rm=TRUE)^2)
     ngood <- apply(w, 1, function(v) sum(!is.na(v)))
-    stats <- rbind(stats, data.frame(condition=cond, mean=m, variance=v, ngood=ngood))
+    stats <- rbind(stats, data.frame(id=rownames(w), condition=cond, mean=m, variance=v, ngood=ngood))
+    rownames(stats) <- NULL
   }
   return(stats)
 }

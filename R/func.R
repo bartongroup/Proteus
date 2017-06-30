@@ -874,14 +874,21 @@ limmaDE <- function(pdat, formula="~condition") {
 
 #' Create differential expression result
 #'
-#' \code{limmaTable} creates a table with differential expressioni results,
-#' using an object created with \code{\link{limmaDE}}
+#' \code{limmaTable} creates a table with differential expression results, using
+#' an object created with \code{\link{limmaDE}}
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param ebay Output from  \code{\link{limmaDE}}.
 #' @param column Which column should be used to extract data. The default value
 #'   is "condition".
-#' @return A data frame with DE results.
+#' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
+#'
+#' @details Before \code{limma} is called, intensity data are log-transformed
+#'   using base-10 logarithms. Therefore, the column "logFC" in the output data
+#'   frame contains log10 fold change (not log2!). If you need log2-based fold
+#'   change, you need to convert the column: `res$logFC <- res$logFC /
+#'   log10(2)`.
+#'
 #'
 #' @examples
 #' ebay <- limmaDE(prodat, formula="~condition")

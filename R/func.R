@@ -777,12 +777,13 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   }
 
   g <- ggplot(stats, aes(x=mean, y=variance)) +
-    simple_theme_grid +
+    simple_theme +
+    theme(panel.border = element_rect(fill=NA, color='black')) +
     xlim(xmin, xmax) +
     ylim(ymin, ymax) +
     facet_wrap(~condition) +
     stat_binhex(bins=bins) +
-    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count", na.value=NA) +
+    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, 0.2, 1), name="count", na.value=NA) +
     geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
   if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')
   return(g)

@@ -5,7 +5,7 @@
 \title{Detection Jaccard similarity}
 \usage{
 plotDetectionSimilarity(pdat, bin.size = 0.01, text.size = 12,
-  plot.grid = TRUE)
+  plot.grid = TRUE, hist.colour = "grey30")
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptides (or proteins).}
@@ -15,6 +15,8 @@ plotDetectionSimilarity(pdat, bin.size = 0.01, text.size = 12,
 \item{text.size}{Text size.}
 
 \item{plot.grid}{Logical to plot grid.}
+
+\item{hist.colour}{Colour of the histogram.}
 }
 \description{
 \code{plotDetectionSimilarit} plots a distribution of (peptide) detection

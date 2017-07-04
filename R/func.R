@@ -19,6 +19,8 @@ simple_theme_grid <- ggplot2::theme_bw() +
     axis.line = ggplot2::element_line(colour = "black")
   )
 
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 #' Evidence columns
 #'
 #' \code{evidenceColumns} contains default columns to be read from the evidence file.
@@ -562,22 +564,24 @@ plotClustering <- function(pdat) {
 #'
 #' @param pdat Peptide \code{proteusData} object.
 #' @param x.text.size Size of text on the x-axis.
+#' @param palette Palette of colours
 #' @return A plot of the number of peptides detected in each sample.
 #'
 #' @examples
 #' plotPeptideCount(pepdat)
 #'
 #' @export
-plotPeptideCount <- function(pdat, x.text.size=10){
+plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
   pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
   med.count <- median(pep.count)
   df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
   ggplot(df, aes(x=x,y=y,fill=condition)) +
-    geom_col() +
+    geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
+    scale_fill_manual(values=palette) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
@@ -619,13 +623,14 @@ jaccardSimilarity <- function(x, y) {
 #' @param text.size Text size.
 #' @param plot.grid Logical to plot grid.
 #' @param bin.size Bin size for the histogram.
+#' @param hist.colour Colour of the histogram.
 #'
 #' @examples
 #' plotDetectionSimilarity(pepdat)
 #'
 #' @export
 #'
-plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid=TRUE) {
+plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid=TRUE, hist.colour='grey30') {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   n <- ncol(pdat$tab)
@@ -636,7 +641,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 
   ggplot(data.frame(sim), aes(sim, ..density..)) +
   {if(plot.grid) simple_theme_grid else simple_theme} +
-    geom_histogram(breaks=seq(0, 1, bin.size), colour='blue') +
+    geom_histogram(breaks=seq(0, 1, bin.size), colour=hist.colour, fill=hist.colour) +
     labs(x='Jaccard similarity', y='Density') +
     theme(text = element_text(size=text.size))
 }

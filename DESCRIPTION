@@ -13,7 +13,6 @@ Imports:
     dplyr,
     reshape2,
     ggplot2,
-    gplots,
     ggExtra,
     gridExtra,
     dendextend,

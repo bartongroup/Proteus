@@ -523,15 +523,26 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 #' protein data.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
+#' @param text.size Text size on axes
 #'
 #' @examples
 #' plotCorrelationMatrix(pepdat)
 #'
 #' @export
-plotCorrelationMatrix <- function(pdat) {
+plotCorrelationMatrix <- function(pdat, text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
-  gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
+  m <- melt(corr.mat)
+  m$X1 <- factor(m$X1, levels=pdat$metadata$sample)
+  m$X2 <- factor(m$X2, levels=pdat$metadata$sample)
+  #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
+  ggplot(m, aes(x=X1, y=X2)) +
+    geom_tile(aes(fill=value)) +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),
+      axis.text.y = element_text(size=text.size)
+    ) +
+    labs(x='Sample', y='Sample', fill="Correlation")
 }
 
 

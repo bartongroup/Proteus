@@ -756,12 +756,14 @@ intensityStats <- function(pdat) {
 #' @param xmax Upper limit on x-axis
 #' @param ymin Lower limit on y-axis
 #' @param ymax Upper limit on y-axis
+#' @param with.n Logical to add a text with the number of proteins to the plot
+#' @param mid.gradient A parameter to control the midpoint of colour gradient (between 0 and 1)
 #'
 #' @examples
 #' plotMV(prodat, with.loess=TRUE)
 #'
 #' @export
-plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20) {
+plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20, with.n=FALSE, mid.gradient=0.3) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
@@ -794,8 +796,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     ylim(ymin, ymax) +
     facet_wrap(~condition) +
     stat_binhex(bins=bins) +
-    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, 0.2, 1), name="count", na.value=NA) +
-    geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
+    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
+  if(with.n) g <- g + geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
   if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')
   return(g)
 }

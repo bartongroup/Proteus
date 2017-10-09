@@ -271,7 +271,9 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #'   metadata.
 #'
 #' @examples
+#' \dontrun{
 #' xppepdat <- makePeptideTable(xpevi, xpmeta)
+#' }
 #'
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
@@ -372,7 +374,9 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
 #'   metadata.
 #'
 #' @examples
+#' \dontrun{
 #' xpprodat <- makeProteinTable(xppepdat.clean)
+#' }
 #'
 #' @export
 makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
@@ -474,6 +478,7 @@ makeProtein <- function(wp, method, hifly=3) {
 #' @param tab Data frame with raw intensities. Normally, this is a \code{tab}
 #'   field in the \code{proteusData} object (see examples below).
 #' @return Normalized matrix.
+#'
 #' @examples
 #' normtab <- normalizeMedian(xpprodat$tab)
 #'
@@ -532,11 +537,11 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 plotCorrelationMatrix <- function(pdat, text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
-  m <- reshape2::melt(corr.mat)
-  m$X1 <- factor(m$X1, levels=pdat$metadata$sample)
-  m$X2 <- factor(m$X2, levels=pdat$metadata$sample)
+  m <- reshape2::melt(corr.mat, varnames=c("Sample1", "Sample2"))
+  m$Sample1 <- factor(m$Sample1, levels=pdat$metadata$sample)
+  m$Sample2 <- factor(m$Sample2, levels=pdat$metadata$sample)
   #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
-  ggplot(m, aes(x=X1, y=X2)) +
+  ggplot(m, aes(x=Sample1, y=Sample2)) +
     geom_tile(aes(fill=value)) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),

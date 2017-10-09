@@ -119,7 +119,7 @@ Other columns can be added and used for the downstream analysis.
 
 ### Create a peptide dataset
 
-We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [reshape2](https://cran.r-project.org/web/packages/reshape2/reshape2.pdf) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples. Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added.
+We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [reshape2](https://cran.r-project.org/web/packages/reshape2/reshape2.pdf) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples. Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added (we warn that this might not be the best approach due to presence of downliers in peptide data - more to come soon).
 
 ```{r make_peptides, eval=FALSE}
 xppepdat <- makePeptideTable(xpevi, xpmeta)
@@ -153,12 +153,12 @@ Function `plotDetectionSimilarity()` calculates Jaccard similarity between each 
 plotDetectionSimilarity(xppepdat, bin.size = 0.02)
 ```
 
-### Correlation matrix
+### Distance matrix
 
-Function `plotCorrelationMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
+Function `plotDistanceMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
 
 ```{r plot_correlation_matrix, fig.width=6, fig.height=5}
-plotCorrelationMatrix(xppepdat)
+plotDistanceMatrix(xppepdat)
 ```
 
 ### Clustering
@@ -171,9 +171,9 @@ plotClustering(xppepdat)
 
 ### Removing bad data
 
-The last sample (BMO-7) looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
+The last sample (BMO-7) in the example data looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
 
-Warning: this is only a demonstration. You should exercise caution when removing any of your data.
+Warning: this is only an example. You should exercise caution when removing any of your data.
 
 ```{r remove_bad_replicate}
 xpmeta.clean <- xpmeta[which(xpmeta$sample  != 'BMO-7'),]
@@ -219,7 +219,7 @@ summary(xpprodat)
 
 ### Normalization
 
-Finally, we need to normalize data. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median:
+Finally, we need to normalize data to account for variation of intensity between samples. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median. After this step, median sample intensities will be equal.
 
 ```{r normalize_proteins}
 xpprodat.med <- normalizeData(xpprodat)
@@ -266,20 +266,20 @@ plotClustering(xpprodat.med)
 
 ## Differential expression
 
-We suggest using `limma` package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
+We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
 
 ```{r limma, warning=FALSE}
 ebay <- limmaDE(xpprodat.med)
 res <- limmaTable(xpprodat.med, ebay)
 ```
 
-The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition"). The second function, `limmaTable` creates a simple table with DE results.
+The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition", but other formulae can be provided via `formula` argument). The second function, `limmaTable` creates a simple table with DE results.
 
 ```{r show_limma_res}
 head(res)
 ```
 
-According to a traditional definition of "significance", the number of significantly differentially expressed proteins is
+The `adj.P.Val` column contains Benjamini-Hochberg corrected p-values. According to a traditional definition of "significance", the number of significantly differentially expressed proteins is
 
 ```{r significant_protein_number}
 significant <- which(res$adj.P.Val <= 0.05)

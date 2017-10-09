@@ -941,7 +941,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 
 #' Fold-change intensity diagram
 #'
-#' \code{plotFID} makes a log fold change versus log sum intensity plot, usually
+#' \code{plotFID} makes a log10 fold change versus log10 sum intensity plot, usually
 #' known as MA plot.
 #'
 #' @param pdat Protein \code{proteusData} object.

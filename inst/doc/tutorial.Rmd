@@ -7,7 +7,7 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{css}
+```{css, echo=FALSE}
 pre code, pre, code {
   white-space: pre !important;
   overflow-x: scroll !important;

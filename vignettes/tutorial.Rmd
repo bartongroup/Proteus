@@ -34,11 +34,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Files
 
-We need two files for proteus. The MaxQuant evidence file and a manually created metadata file. The metadata file is a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition".
+Proteus needs one input file: the evidence file from *MaxQuant*.
+
+In this tutorial we are also going to use a metadata file. It should be created manually as a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition" (no capital letters).
+
+Alternatively, a metadata data frame (with the same columns) can be created in R.
+
 
 ### Read evidence file
 
-`readEvidenceFile()` reads MaxQuant's evidence file, filters out contaminants and reverse sequences:
+Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file attached to the package:
 
 ```{r read_evidence, eval=FALSE}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
@@ -51,15 +56,25 @@ xpevi <- readEvidenceFile(evidenceFile)
 head(xpevi)
 ```
 
+This can be a large object:
+
+```{r size_evidence}
+dim(xpevi)
+object.size(xpevi)
+```
+
+
 ### Columns in evidence file
 
-The selection of columns is controlled by a parameter `columns` in `readEvidenceFile()`. If not provided, `readEvidenceFile()` will use the default list `evidenceColumns`.
+*MaxQuant* evidence files come with column names that can differ, depending on the *MaxQuant* version and the parameters used in its run. Many of these column names contain spaces and other characters (e.g. "/") that make R data processing awkward. Therefore, upon reading the evidence file, `proteus` renames its columns to simpler names, conforming with R variable name restrictions. Also, many of the evidence columns are not needed in `proteus` processing, so these are not kept to save memory.
+
+The selection and naming of columns is controlled by a parameter `columns` in function `readEvidenceFile()`. If not provided, `readEvidenceFile()` will use the default list `evidenceColumns`.
 
 ```{r str_evidence_columns}
 str(evidenceColumns)
 ```
 
-The list names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
+This is a named list containing columns needed by `proteus`. The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
 
 ```{r my_columns, eval=FALSE}
 myColumns <- c(evidenceColumns, mz="m/z")
@@ -70,7 +85,6 @@ The new column list can be used with `readEvidenceFile`:
 ```{r my_columns_evidence, eval=FALSE}
 xpevi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 ```
-
 
 ### Metadata
 
@@ -89,7 +103,7 @@ xpmeta
 
 Metadata object should be a data frame with at least two columns: `sample` and `condition`.
 
-`sample` corresponds to the experiment name in MaxQuant's terminology. We can easily see all experiment names in the evidence data:
+`sample` corresponds to the experiment name in *MaxQuant's* terminology. We can easily see all experiment names in the evidence data:
 
 ```{r metadata_samples}
 levels(as.factor(xpevi$experiment))
@@ -101,13 +115,11 @@ Column `condition` contains, *nomen-omen*, condition names. In our example there
 
 Other columns can be added and used for the downstream analysis.
 
-
 ## Peptide data
 
 ### Create a peptide dataset
 
 We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [reshape2](https://cran.r-project.org/web/packages/reshape2/reshape2.pdf) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples. Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added.
-
 
 ```{r make_peptides, eval=FALSE}
 xppepdat <- makePeptideTable(xpevi, xpmeta)

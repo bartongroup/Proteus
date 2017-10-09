@@ -3,16 +3,11 @@
 \docType{data}
 \name{xpmeta}
 \alias{xpmeta}
-\alias{xpmeta}
 \title{Proteomics metadata}
 \format{A \code{data.frame} with 14 rows and 3 columns (sample, condition and replicate).}
 \usage{
 data(xpmeta)
-
-data(xpmeta.clean)
 }
 \description{
 Metadata describing a proteomics experiment in two conditions with 7 replicates each.
-
-Metadata describing a proteomics experiment in two conditions with 7 replicates each. One "bad" replicate was removed.
 }

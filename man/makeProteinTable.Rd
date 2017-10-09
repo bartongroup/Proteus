@@ -37,6 +37,8 @@ mean of these three rows. This is the estimated protein intensity. } The
 The "median", well, you can guess.
 }
 \examples{
+\dontrun{
 xpprodat <- makeProteinTable(xppepdat.clean)
+}
 
 }

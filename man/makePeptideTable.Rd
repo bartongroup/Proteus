@@ -56,6 +56,8 @@ of the evidence data. This makes selection of samples for downstream
 processing easy: select only required rows in the metadata data frame.
 }
 \examples{
+\dontrun{
 xppepdat <- makePeptideTable(xpevi, xpmeta)
+}
 
 }

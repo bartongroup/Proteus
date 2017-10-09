@@ -5,7 +5,8 @@
 \title{Plot protein(s)}
 \usage{
 plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
-  ymax = as.numeric(NA), text.size = 12, point.size = 3, title = NULL)
+  ymax = as.numeric(NA), text.size = 12, point.size = 3, title = NULL,
+  palette = "Accent")
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
@@ -23,6 +24,8 @@ plotProteins(pdat, protein = protein, log = FALSE, ymin = as.numeric(NA),
 \item{point.size}{Point size}
 
 \item{title}{Title of the plot (defaults to protein name)}
+
+\item{palette}{Palette of colours from \code{ColorBrewer}}
 }
 \description{
 \code{plotProteins} makes a plot with protein intensity as a function of the

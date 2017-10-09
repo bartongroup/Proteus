@@ -4,14 +4,14 @@
 \alias{plotPeptideCount}
 \title{Plot peptide count per sample}
 \usage{
-plotPeptideCount(pdat, x.text.size = 10, palette = cbPalette)
+plotPeptideCount(pdat, x.text.size = 10, palette = "Accent")
 }
 \arguments{
 \item{pdat}{Peptide \code{proteusData} object.}
 
 \item{x.text.size}{Size of text on the x-axis.}
 
-\item{palette}{Palette of colours}
+\item{palette}{Palette of colours from \code{ColorBrewer}}
 }
 \value{
 A plot of the number of peptides detected in each sample.

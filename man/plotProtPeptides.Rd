@@ -4,7 +4,7 @@
 \alias{plotProtPeptides}
 \title{Protein-peptide plot}
 \usage{
-plotProtPeptides(pepdat, protein, prodat = NULL)
+plotProtPeptides(pepdat, protein, prodat = NULL, palette = "Accent")
 }
 \arguments{
 \item{pepdat}{Peptide \code{proteusData} object.}
@@ -12,6 +12,8 @@ plotProtPeptides(pepdat, protein, prodat = NULL)
 \item{protein}{Protein name.}
 
 \item{prodat}{(optional) protein \code{proteusData} object.}
+
+\item{palette}{Palette of colours from \code{ColorBrewer}}
 }
 \description{
 \code{plotProtPeptides} creates a plot consisting of two panels. The top

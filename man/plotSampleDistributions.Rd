@@ -7,7 +7,7 @@
 plotSampleDistributions(pdat, title = "", method = "dist",
   x.text.size = 7, n.grid.rows = 3, hist.bins = 100, x.text.angle = 90,
   vmin = as.numeric(NA), vmax = as.numeric(NA), logbase = 10,
-  fill = NULL, colour = NULL, hline = FALSE)
+  palette = "Accent", fill = NULL, colour = NULL, hline = FALSE)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptide/protein intensities.}
@@ -29,6 +29,8 @@ plotSampleDistributions(pdat, title = "", method = "dist",
 \item{vmax}{Upper bound on log value}
 
 \item{logbase}{Base of the logarithm which will be applied to data}
+
+\item{palette}{Palette of colours from \code{ColorBrewer}}
 
 \item{fill}{A metadata column to use for the fill of boxes}
 

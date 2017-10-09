@@ -1,4 +1,5 @@
 #' @import ggplot2
+#' @import RColorBrewer
 #' @import graphics
 #' @import methods
 #' @import stats
@@ -18,8 +19,6 @@ simple_theme_grid <- ggplot2::theme_bw() +
     panel.grid.minor = ggplot2::element_line(colour = "grey95"),
     axis.line = ggplot2::element_line(colour = "black")
   )
-
-cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 #' Evidence columns
 #'
@@ -580,14 +579,14 @@ plotClustering <- function(pdat) {
 #'
 #' @param pdat Peptide \code{proteusData} object.
 #' @param x.text.size Size of text on the x-axis.
-#' @param palette Palette of colours
+#' @param palette Palette of colours from \code{ColorBrewer}
 #' @return A plot of the number of peptides detected in each sample.
 #'
 #' @examples
 #' plotPeptideCount(xppepdat)
 #'
 #' @export
-plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
+plotPeptideCount <- function(pdat, x.text.size=10, palette="Accent"){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
   pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
@@ -597,7 +596,7 @@ plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
     geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
-    scale_fill_manual(values=palette) +
+    scale_fill_brewer(palette=palette) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
@@ -670,6 +669,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @param pdat A \code{proteusData} object with peptide/protein intensities.
 #' @param title Title of the plot.
 #' @param method "box", "violin" or "dist"
+#' @param palette Palette of colours from \code{ColorBrewer}
 #' @param x.text.size Text size in value axis
 #' @param x.text.angle Text angle in value axis
 #' @param vmin Lower bound on log value
@@ -687,8 +687,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' plotSampleDistributions(xpprodat)
 #' plotSampleDistributions(normalizeData(xpprodat))
 plotSampleDistributions <-
-function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, fill=NULL,
-         colour=NULL, hline=FALSE) {
+function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette="Accent",
+        fill=NULL, colour=NULL, hline=FALSE) {
   m <- reshape2::melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
   if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
@@ -702,19 +702,18 @@ function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=
       ylim(vmin, vmax) +
       theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
       labs(title=title, x="sample", y=paste0("log", logbase, " value"))
-      if(hline) g <- g + geom_hline(yintercept=0, colour='grey')
-      if(method=="box") g <- g + geom_boxplot(outlier.shape=NA, na.rm=TRUE)
-      if(method=="violin") g <- g + geom_violin(na.rm=TRUE, draw_quantiles=c(0.25, 0.5, 0.75), scale="width")
+    if(hline) g <- g + geom_hline(yintercept=0, colour='grey')
+    if(method=="box") g <- g + geom_boxplot(outlier.shape=NA, na.rm=TRUE)
+    if(method=="violin") g <- g + geom_violin(na.rm=TRUE, draw_quantiles=c(0.25, 0.5, 0.75), scale="width")
   } else if (method == "dist") {
     g <- ggplot(m, aes(x=value)) +
-      #simple_theme +
       geom_histogram(bins=hist.bins) +
       facet_wrap(~sample, nrow=n.grid.rows) +
       xlim(vmin, vmax)
   } else stop("Wrong method.")
 
-  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_discrete(name=fill)
-  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_discrete(name=colour)
+  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_brewer(name=fill, palette=palette)
+  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_brewer(name=colour, palette=palette)
   g
 }
 
@@ -818,6 +817,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
 #' @param ymax Upper bound for y-axis
+#' @param palette Palette of colours from \code{ColorBrewer}
 #' @param text.size Text size
 #' @param point.size Point size
 #' @param title Title of the plot (defaults to protein name)
@@ -827,7 +827,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #'
 #' @export
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
-                         text.size=12, point.size=3, title=NULL) {
+                         text.size=12, point.size=3, title=NULL, palette="Accent") {
   # without 'as.numeric' it returns logical NA (!!!)
 
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -858,8 +858,6 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
     #
     if(is.na(ymin) && !log) ymin=0
     ylab <- ifelse(log, "log10 intensity", "Intensity")
-    # colour-blind friendly palette
-    cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
     ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
       simple_theme_grid +
       theme(text = element_text(size=text.size), legend.position = "none") +
@@ -867,7 +865,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
       {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
       geom_point(position=pd, size=point.size) +
       scale_shape_identity() +  # necessary for shape mapping
-      #scale_fill_manual(values=cbPalette) +
+      scale_fill_brewer(palette=palette) +
       labs(x = 'Condition', y = ylab, title=title)
   }
 }
@@ -1064,12 +1062,13 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #' @param pepdat Peptide \code{proteusData} object.
 #' @param protein Protein name.
 #' @param prodat (optional) protein \code{proteusData} object.
+#' @param palette Palette of colours from \code{ColorBrewer}
 #'
 #' @examples
 #' plotProtPeptides(xppepdat, "sp|P16522|CDC23_YEAST", prodat = xpprodat)
 #'
 #' @export
-plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
+plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette="Accent") {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   tab <- normalizeMedian(pepdat$tab)
 
@@ -1097,12 +1096,14 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL) {
   }
 
   g1 <- ggplot(dat, aes(x=pepnum, y=intensity, fill=condition)) +
+    scale_fill_brewer(palette=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     facet_wrap(~condition) +
     theme(legend.position="none") +
     labs(x="Peptide", y="log intensity", title=protein)
   g2 <- ggplot(dat, aes(x=sample, y=intensity, fill=condition)) +
+    scale_fill_brewer(palette=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     theme(axis.text.x = element_text(angle = 90, hjust = 0.5)) +

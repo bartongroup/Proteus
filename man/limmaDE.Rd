@@ -21,7 +21,7 @@ limma output from eBays. See limma documentation for more details.
 performs differential expression on the intensity table.
 }
 \examples{
-ebay <- limmaDE(prodat, formula="~condition")
-res <- limmaTable(prodat, ebay)
+ebay <- limmaDE(xpprodat, formula="~condition")
+res <- limmaTable(xpprodat, ebay)
 
 }

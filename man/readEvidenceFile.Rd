@@ -21,7 +21,8 @@ reverse sequences are filtered out. It can read only one intensity column
 }
 \examples{
 \dontrun{
-evi <- readEvidenceFile("evidence.txt")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+xpevi <- readEvidenceFile(evidenceFile)
 }
 
 }

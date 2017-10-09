@@ -30,6 +30,6 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
 \code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.
 }
 \examples{
-plotMV(prodat, with.loess=TRUE)
+plotMV(xpprodat, with.loess=TRUE)
 
 }

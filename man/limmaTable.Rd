@@ -29,7 +29,7 @@ Before \code{limma} is called, intensity data are log-transformed
   log10(2)`.
 }
 \examples{
-ebay <- limmaDE(prodat, formula="~condition")
-res <- limmaTable(prodat, ebay)
+ebay <- limmaDE(xpprodat, formula="~condition")
+res <- limmaTable(xpprodat, ebay)
 
 }

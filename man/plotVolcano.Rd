@@ -30,8 +30,8 @@ is a simple point plot.}
 \code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 }
 \examples{
-ebay <- limmaDE(prodat)
-res <- limmaTable(prodat, ebay)
+ebay <- limmaDE(xpprodat)
+res <- limmaTable(xpprodat, ebay)
 plotVolcano(res)
 
 }

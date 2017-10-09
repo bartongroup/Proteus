@@ -27,6 +27,6 @@ The normalizng function, specified by \code{norm.fun} needs to
   \code{normalizeQuantiles} from the \code{limma} package.
 }
 \examples{
-prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
+xpprodat.med <- normalizeData(xpprodat, norm.fun=normalizeMedian)
 
 }

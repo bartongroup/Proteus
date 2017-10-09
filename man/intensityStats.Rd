@@ -17,6 +17,6 @@ A data frame with several statistics.
 points for peptide or protein intensities.
 }
 \examples{
-stats <- intensityStats(prodat)
+stats <- intensityStats(xpprodat)
 
 }

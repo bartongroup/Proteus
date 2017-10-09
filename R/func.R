@@ -129,7 +129,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
 #' @export
 #'
 #' @examples
-#' summary(prodat)
+#' summary(xpprodat)
 summary.proteusData <- function(object, ...) {
   cat("\n*** Basic statistics ***\n\n")
   cat(paste0("  content = ", object$content, "\n"))
@@ -168,8 +168,8 @@ summary.proteusData <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' evi.file <- system.file("extdata", "evidence.txt.gz", package="proteus")
-#' evi <- readEvidenceFile(evi.file)
+#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+#' xpevi <- readEvidenceFile(evidenceFile)
 #' }
 #'
 #' @export
@@ -271,7 +271,7 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #'   metadata.
 #'
 #' @examples
-#' pepdat <- makePeptideTable(evi, meta)
+#' xppepdat <- makePeptideTable(xpevi, xpmeta)
 #'
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
@@ -372,7 +372,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
 #'   metadata.
 #'
 #' @examples
-#' prodat <- makeProteinTable(pepdat)
+#' xpprodat <- makeProteinTable(xppepdat.clean)
 #'
 #' @export
 makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
@@ -474,9 +474,8 @@ makeProtein <- function(wp, method, hifly=3) {
 #' @param tab Data frame with raw intensities. Normally, this is a \code{tab}
 #'   field in the \code{proteusData} object (see examples below).
 #' @return Normalized matrix.
-#'
 #' @examples
-#' prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
+#' normtab <- normalizeMedian(xpprodat$tab)
 #'
 #' @export
 normalizeMedian <- function(tab) {
@@ -504,7 +503,7 @@ normalizeMedian <- function(tab) {
 #'   \code{normalizeQuantiles} from the \code{limma} package.
 #'
 #' @examples
-#' prodat.norm <- normalizeData(prodat, norm.fun=normalizeMedian)
+#' xpprodat.med <- normalizeData(xpprodat, norm.fun=normalizeMedian)
 #'
 #' @export
 normalizeData <- function(pdat, norm.fun=normalizeMedian) {
@@ -527,7 +526,7 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 #' @param text.size Text size on axes
 #'
 #' @examples
-#' plotCorrelationMatrix(pepdat)
+#' plotCorrelationMatrix(xppepdat)
 #'
 #' @export
 plotCorrelationMatrix <- function(pdat, text.size=10) {
@@ -555,7 +554,7 @@ plotCorrelationMatrix <- function(pdat, text.size=10) {
 #' @param pdat Peptide or protein \code{proteusData} object.
 #'
 #' @examples
-#' plotClustering(pepdat)
+#' plotClustering(xppepdat)
 #'
 #' @export
 plotClustering <- function(pdat) {
@@ -580,7 +579,7 @@ plotClustering <- function(pdat) {
 #' @return A plot of the number of peptides detected in each sample.
 #'
 #' @examples
-#' plotPeptideCount(pepdat)
+#' plotPeptideCount(xppepdat)
 #'
 #' @export
 plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
@@ -611,7 +610,7 @@ plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
 #' @return Jaccard similarity between x and y
 #'
 #' @examples
-#' sim <- jaccardSimilarity(pepdat$tab[,1], pepdat$tab[,2])
+#' sim <- jaccardSimilarity(xppepdat$tab[,1], xppepdat$tab[,2])
 #'
 #' @export
 #'
@@ -638,7 +637,7 @@ jaccardSimilarity <- function(x, y) {
 #' @param hist.colour Colour of the histogram.
 #'
 #' @examples
-#' plotDetectionSimilarity(pepdat)
+#' plotDetectionSimilarity(xppepdat)
 #'
 #' @export
 #'
@@ -680,8 +679,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @export
 #'
 #' @examples
-#' plotSampleDistributions(prodat)
-#' plotSampleDistributions(normalizeData(prodat))
+#' plotSampleDistributions(xpprodat)
+#' plotSampleDistributions(normalizeData(xpprodat))
 plotSampleDistributions <-
 function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, fill=NULL,
          colour=NULL, hline=FALSE) {
@@ -724,7 +723,7 @@ function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=
 #' @return A data frame with several statistics.
 #'
 #' @examples
-#' stats <- intensityStats(prodat)
+#' stats <- intensityStats(xpprodat)
 #'
 #' @export
 intensityStats <- function(pdat) {
@@ -761,7 +760,7 @@ intensityStats <- function(pdat) {
 #' @param mid.gradient A parameter to control the midpoint of colour gradient (between 0 and 1)
 #'
 #' @examples
-#' plotMV(prodat, with.loess=TRUE)
+#' plotMV(xpprodat, with.loess=TRUE)
 #'
 #' @export
 plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20, with.n=FALSE, mid.gradient=0.3) {
@@ -819,7 +818,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param title Title of the plot (defaults to protein name)
 #'
 #' @examples
-#' plotProteins(prodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
+#' plotProteins(xpprodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
 #'
 #' @export
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
@@ -880,8 +879,8 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #'   create a table with differential expression results.
 #'
 #' @examples
-#' ebay <- limmaDE(prodat, formula="~condition")
-#' res <- limmaTable(prodat, ebay)
+#' ebay <- limmaDE(xpprodat, formula="~condition")
+#' res <- limmaTable(xpprodat, ebay)
 #'
 #' @export
 limmaDE <- function(pdat, formula="~condition") {
@@ -911,8 +910,8 @@ limmaDE <- function(pdat, formula="~condition") {
 #'
 #'
 #' @examples
-#' ebay <- limmaDE(prodat, formula="~condition")
-#' res <- limmaTable(prodat, ebay)
+#' ebay <- limmaDE(xpprodat, formula="~condition")
+#' res <- limmaTable(xpprodat, ebay)
 #'
 #' @export
 limmaTable <- function(pdat, ebay, column="condition") {
@@ -949,7 +948,7 @@ limmaTable <- function(pdat, ebay, column="condition") {
 #'   is a simple point plot.
 #'
 #' @examples
-#' plotFID(prodat)
+#' plotFID(xpprodat)
 #'
 #' @export
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
@@ -999,8 +998,8 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' @param bin.size Bin size for the histogram.
 #'
 #' @examples
-#' ebay <- limmaDE(prodat)
-#' res <- limmaTable(prodat, ebay)
+#' ebay <- limmaDE(xpprodat)
+#' res <- limmaTable(xpprodat, ebay)
 #' plotPdist(res)
 #'
 #' @export
@@ -1028,8 +1027,8 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'  is a simple point plot.
 #'
 #' @examples
-#' ebay <- limmaDE(prodat)
-#' res <- limmaTable(prodat, ebay)
+#' ebay <- limmaDE(xpprodat)
+#' res <- limmaTable(xpprodat, ebay)
 #' plotVolcano(res)
 #'
 #'@export
@@ -1062,7 +1061,7 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #' @param prodat (optional) protein \code{proteusData} object.
 #'
 #' @examples
-#' plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)
+#' plotProtPeptides(xppepdat, "sp|P16522|CDC23_YEAST", prodat = xpprodat)
 #'
 #' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL) {

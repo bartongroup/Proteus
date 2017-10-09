@@ -40,6 +40,6 @@ plotSampleDistributions(pdat, title = "", method = "dist",
 \code{plotSampleDistributions} makes a boxplot with intensity/ratio distribution for each sample.
 }
 \examples{
-plotSampleDistributions(prodat)
-plotSampleDistributions(normalizeData(prodat))
+plotSampleDistributions(xpprodat)
+plotSampleDistributions(normalizeData(xpprodat))
 }

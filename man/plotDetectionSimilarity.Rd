@@ -25,6 +25,6 @@ as the size of the intersection divided by the size of the union. This plot
 can be used to assess quality of data.
 }
 \examples{
-plotDetectionSimilarity(pepdat)
+plotDetectionSimilarity(xppepdat)
 
 }

@@ -14,6 +14,6 @@ plotClustering(pdat)
 hierarchical clustering.
 }
 \examples{
-plotClustering(pepdat)
+plotClustering(xppepdat)
 
 }

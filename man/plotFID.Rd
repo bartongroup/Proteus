@@ -41,6 +41,6 @@ is a simple point plot.}
 known as MA plot.
 }
 \examples{
-plotFID(prodat)
+plotFID(xpprodat)
 
 }

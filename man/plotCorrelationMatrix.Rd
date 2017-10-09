@@ -16,6 +16,6 @@ plotCorrelationMatrix(pdat, text.size = 10)
 protein data.
 }
 \examples{
-plotCorrelationMatrix(pepdat)
+plotCorrelationMatrix(xppepdat)
 
 }

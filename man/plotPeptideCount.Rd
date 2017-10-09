@@ -20,6 +20,6 @@ A plot of the number of peptides detected in each sample.
 \code{plotPeptideCount} makes a plot of peptide count per sample.
 }
 \examples{
-plotPeptideCount(pepdat)
+plotPeptideCount(xppepdat)
 
 }

@@ -20,8 +20,8 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 \code{\link{limmaDE}}.
 }
 \examples{
-ebay <- limmaDE(prodat)
-res <- limmaTable(prodat, ebay)
+ebay <- limmaDE(xpprodat)
+res <- limmaTable(xpprodat, ebay)
 plotPdist(res)
 
 }

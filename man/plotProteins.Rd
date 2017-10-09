@@ -30,6 +30,6 @@ condition and replicate. When multiple proteins are entered, the mean and
 standard error is plotted.
 }
 \examples{
-plotProteins(prodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
+plotProteins(xpprodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
 
 }

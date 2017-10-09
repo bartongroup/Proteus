@@ -521,21 +521,27 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 }
 
 
-#' Plot correlation matrix
+#' Plot distance matrix
 #'
-#' \code{plotCorrelationMatrix} plots a correlation matrix for peptide or
-#' protein data.
+#' \code{plotDistanceMatrix} plots a distance matrix for peptide or protein
+#' data.
+#'
+#' Computes a distance matrix and plots it as a shade-plot. The default distance
+#' is Pearson's correlation coefficient. Other methods will be introduced later.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
+#' @param distance A method to calculate distance.
 #' @param palette Palette of colours from \code{ColorBrewer}
 #' @param text.size Text size on axes
 #'
 #' @examples
-#' plotCorrelationMatrix(xppepdat)
+#' plotDistanceMatrix(xppepdat)
 #'
 #' @export
-plotCorrelationMatrix <- function(pdat, text.size=10, palette="Blues") {
+plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10, palette="Blues") {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  distance <- match.arg(distance)
+
   corr.mat <- cor(pdat$tab, use="complete.obs")
   m <- reshape2::melt(corr.mat, varnames=c("Sample1", "Sample2"))
   m$Sample1 <- factor(m$Sample1, levels=pdat$metadata$sample)

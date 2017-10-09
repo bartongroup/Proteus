@@ -695,8 +695,10 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' plotSampleDistributions(xpprodat)
 #' plotSampleDistributions(normalizeData(xpprodat))
 plotSampleDistributions <-
-function(pdat, title="", method="dist", x.text.size=7, n.grid.rows=3, hist.bins=100,                                  x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette="Accent",
-        fill=NULL, colour=NULL, hline=FALSE) {
+function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,               x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette="Accent",
+         fill=NULL, colour=NULL, hline=FALSE) {
+  method <- match.arg(method)
+
   m <- reshape2::melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
   if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]

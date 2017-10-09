@@ -168,7 +168,8 @@ summary.proteusData <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' evi <- readEvidenceFile("evidence.txt")
+#' evi.file <- system.file("extdata", "evidence.txt.gz", package="proteus")
+#' evi <- readEvidenceFile(evi.file)
 #' }
 #'
 #' @export

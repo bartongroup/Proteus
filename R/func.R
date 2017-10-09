@@ -532,7 +532,7 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 plotCorrelationMatrix <- function(pdat, text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
-  m <- melt(corr.mat)
+  m <- reshape2::melt(corr.mat)
   m$X1 <- factor(m$X1, levels=pdat$metadata$sample)
   m$X2 <- factor(m$X2, levels=pdat$metadata$sample)
   #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")

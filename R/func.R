@@ -527,13 +527,14 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 #' protein data.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
+#' @param palette Palette of colours from \code{ColorBrewer}
 #' @param text.size Text size on axes
 #'
 #' @examples
 #' plotCorrelationMatrix(xppepdat)
 #'
 #' @export
-plotCorrelationMatrix <- function(pdat, text.size=10) {
+plotCorrelationMatrix <- function(pdat, text.size=10, palette="Blues") {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
   m <- reshape2::melt(corr.mat, varnames=c("Sample1", "Sample2"))
@@ -542,6 +543,7 @@ plotCorrelationMatrix <- function(pdat, text.size=10) {
   #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
   ggplot(m, aes(x=Sample1, y=Sample2)) +
     geom_tile(aes(fill=value)) +
+    scale_fill_distiller(palette=palette) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),
       axis.text.y = element_text(size=text.size)

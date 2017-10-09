@@ -4,12 +4,14 @@
 \alias{plotCorrelationMatrix}
 \title{Plot correlation matrix}
 \usage{
-plotCorrelationMatrix(pdat, text.size = 10)
+plotCorrelationMatrix(pdat, text.size = 10, palette = "Blues")
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
 
 \item{text.size}{Text size on axes}
+
+\item{palette}{Palette of colours from \code{ColorBrewer}}
 }
 \description{
 \code{plotCorrelationMatrix} plots a correlation matrix for peptide or

@@ -13,7 +13,7 @@ NULL
 #' Metadata describing a proteomics experiment in two conditions with 7 replicates each. One "bad" replicate was removed.
 #'
 #' @docType data
-#' @name xpmeta
+#' @name xpmeta.clean
 #' @usage data(xpmeta.clean)
 #' @format A \code{data.frame} with 13 rows and 3 columns (sample, condition and replicate).
 NULL

@@ -5,7 +5,7 @@
 \title{Plot distance matrix}
 \usage{
 plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10,
-  palette = "Blues")
+  palette = cbPalette)
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
@@ -14,7 +14,7 @@ plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10,
 
 \item{text.size}{Text size on axes}
 
-\item{palette}{Palette of colours from \code{ColorBrewer}}
+\item{palette}{Palette of colours}
 }
 \description{
 \code{plotDistanceMatrix} plots a distance matrix for peptide or protein

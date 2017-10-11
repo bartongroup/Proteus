@@ -4,10 +4,11 @@
 \alias{plotSampleDistributions}
 \title{Plot distribution of intensities/ratios for each sample}
 \usage{
-plotSampleDistributions(pdat, title = "", method = "dist",
-  x.text.size = 7, n.grid.rows = 3, hist.bins = 100, x.text.angle = 90,
-  vmin = as.numeric(NA), vmax = as.numeric(NA), logbase = 10,
-  palette = "Accent", fill = NULL, colour = NULL, hline = FALSE)
+plotSampleDistributions(pdat, title = "", method = c("violin", "dist",
+  "box"), x.text.size = 7, n.grid.rows = 3, hist.bins = 100,
+  x.text.angle = 90, vmin = as.numeric(NA), vmax = as.numeric(NA),
+  logbase = 10, palette = cbPalette, fill = NULL, colour = NULL,
+  hline = FALSE)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptide/protein intensities.}
@@ -30,7 +31,7 @@ plotSampleDistributions(pdat, title = "", method = "dist",
 
 \item{logbase}{Base of the logarithm which will be applied to data}
 
-\item{palette}{Palette of colours from \code{ColorBrewer}}
+\item{palette}{Palette of colours}
 
 \item{fill}{A metadata column to use for the fill of boxes}
 

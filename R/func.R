@@ -1,5 +1,4 @@
 #' @import ggplot2
-#' @import RColorBrewer
 #' @import graphics
 #' @import methods
 #' @import stats
@@ -19,6 +18,7 @@ simple_theme_grid <- ggplot2::theme_bw() +
     panel.grid.minor = ggplot2::element_line(colour = "grey95"),
     axis.line = ggplot2::element_line(colour = "black")
   )
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 #' Evidence columns
 #'
@@ -531,14 +531,14 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #' @param distance A method to calculate distance.
-#' @param palette Palette of colours from \code{ColorBrewer}
+#' @param palette Palette of colours
 #' @param text.size Text size on axes
 #'
 #' @examples
 #' plotDistanceMatrix(xppepdat)
 #'
 #' @export
-plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10, palette="Blues") {
+plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10, palette=cbPalette) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   distance <- match.arg(distance)
 
@@ -549,7 +549,7 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10, pa
   #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
   ggplot(m, aes(x=Sample1, y=Sample2)) +
     geom_tile(aes(fill=value)) +
-    scale_fill_distiller(palette=palette) +
+    #scale_fill_manual(values=palette) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),
       axis.text.y = element_text(size=text.size)
@@ -587,14 +587,14 @@ plotClustering <- function(pdat) {
 #'
 #' @param pdat Peptide \code{proteusData} object.
 #' @param x.text.size Size of text on the x-axis.
-#' @param palette Palette of colours from \code{ColorBrewer}
+#' @param palette Palette of colours
 #' @return A plot of the number of peptides detected in each sample.
 #'
 #' @examples
 #' plotPeptideCount(xppepdat)
 #'
 #' @export
-plotPeptideCount <- function(pdat, x.text.size=10, palette="Accent"){
+plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$meta
   pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
@@ -604,7 +604,7 @@ plotPeptideCount <- function(pdat, x.text.size=10, palette="Accent"){
     geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
-    scale_fill_brewer(palette=palette) +
+    scale_fill_manual(values=palette) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
@@ -677,7 +677,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @param pdat A \code{proteusData} object with peptide/protein intensities.
 #' @param title Title of the plot.
 #' @param method "box", "violin" or "dist"
-#' @param palette Palette of colours from \code{ColorBrewer}
+#' @param palette Palette of colours
 #' @param x.text.size Text size in value axis
 #' @param x.text.angle Text angle in value axis
 #' @param vmin Lower bound on log value
@@ -695,7 +695,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' plotSampleDistributions(xpprodat)
 #' plotSampleDistributions(normalizeData(xpprodat))
 plotSampleDistributions <-
-function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,               x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette="Accent",
+function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,              x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette=cbPalette,
          fill=NULL, colour=NULL, hline=FALSE) {
   method <- match.arg(method)
 
@@ -722,8 +722,8 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
       xlim(vmin, vmax)
   } else stop("Wrong method.")
 
-  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_brewer(name=fill, palette=palette)
-  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_brewer(name=colour, palette=palette)
+  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_manual(name=fill, values=palette)
+  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_manual(name=colour, values=palette)
   g
 }
 
@@ -827,7 +827,6 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
 #' @param ymax Upper bound for y-axis
-#' @param palette Palette of colours from \code{ColorBrewer}
 #' @param text.size Text size
 #' @param point.size Point size
 #' @param title Title of the plot (defaults to protein name)
@@ -837,7 +836,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #'
 #' @export
 plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
-                         text.size=12, point.size=3, title=NULL, palette="Accent") {
+                         text.size=12, point.size=3, title=NULL) {
   # without 'as.numeric' it returns logical NA (!!!)
 
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -875,7 +874,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
       {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
       geom_point(position=pd, size=point.size) +
       scale_shape_identity() +  # necessary for shape mapping
-      scale_fill_brewer(palette=palette) +
+      #scale_fill_manual(values=palette) +
       labs(x = 'Condition', y = ylab, title=title)
   }
 }
@@ -1072,13 +1071,13 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
 #' @param pepdat Peptide \code{proteusData} object.
 #' @param protein Protein name.
 #' @param prodat (optional) protein \code{proteusData} object.
-#' @param palette Palette of colours from \code{ColorBrewer}
+#' @param palette Palette of colours
 #'
 #' @examples
 #' plotProtPeptides(xppepdat, "sp|P16522|CDC23_YEAST", prodat = xpprodat)
 #'
 #' @export
-plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette="Accent") {
+plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   tab <- normalizeMedian(pepdat$tab)
 
@@ -1106,14 +1105,14 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette="Accent") {
   }
 
   g1 <- ggplot(dat, aes(x=pepnum, y=intensity, fill=condition)) +
-    scale_fill_brewer(palette=palette) +
+    scale_fill_manual(values=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     facet_wrap(~condition) +
     theme(legend.position="none") +
     labs(x="Peptide", y="log intensity", title=protein)
   g2 <- ggplot(dat, aes(x=sample, y=intensity, fill=condition)) +
-    scale_fill_brewer(palette=palette) +
+    scale_fill_manual(values=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5)) +

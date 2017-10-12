@@ -68,13 +68,23 @@ object.size(xpevi)
 
 *MaxQuant* evidence files come with column names that can differ, depending on the *MaxQuant* version and the parameters used in its run. Many of these column names contain spaces and other characters (e.g. "/") that make R data processing awkward. Therefore, upon reading the evidence file, `proteus` renames its columns to simpler names, conforming with R variable name restrictions. Also, many of the evidence columns are not needed in `proteus` processing, so these are not kept to save memory.
 
-The selection and naming of columns is controlled by a parameter `columns` in function `readEvidenceFile()`. If not provided, `readEvidenceFile()` will use the default list `evidenceColumns`.
+The selection and naming of columns is controlled by two parameters in function `readEvidenceFile()`: `measure.cols` and `data.cols`. If not provided, `readEvidenceFile()` will use the default lists.
+
+The named list `measureColumns` contains only one column with measurements, as appropriate for unlabelled proteomics:
+
+```{r str_measure_columns}
+str(measureColumns)
+```
+
+Different measure columns are needed for TMT and Silac experiments.
+
+The named list `evidenceColumns` contains a minimal set of columns needed for further processing (in addition to measure columns).
 
 ```{r str_evidence_columns}
 str(evidenceColumns)
 ```
 
-This is a named list containing columns needed by `proteus`. The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
+The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
 
 ```{r my_columns, eval=FALSE}
 myColumns <- c(evidenceColumns, mz="m/z")
@@ -84,6 +94,14 @@ The new column list can be used with `readEvidenceFile`:
 
 ```{r my_columns_evidence, eval=FALSE}
 xpevi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
+```
+
+To quickly check what the column names in a given evidence file are, we can read one row and see its names:
+
+```{r evidence_column_names}
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+evicols <- read.delim(evidenceFile, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
+names(evicols)
 ```
 
 ### Metadata

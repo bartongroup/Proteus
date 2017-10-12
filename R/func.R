@@ -33,9 +33,16 @@ evidenceColumns <- list(
   protein = 'Leading razor protein',
   experiment = 'Experiment',
   charge = 'Charge',
-  intensity = 'Intensity',
   reverse = 'Reverse',
   contaminant = 'Potential contaminant'
+)
+
+#' Measure columns
+#'
+#' \code{measureColumns} contains measurement columns from evidence file. In case of unlabelled data, there is only one column: Intensity.
+#' @export
+measureColumns <- list(
+  intensity = 'Intensity'
 )
 
 #' \code{proteusData} constructor
@@ -158,11 +165,23 @@ summary.proteusData <- function(object, ...) {
 #' Read MaxQuant's evidence file
 #'
 #' \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and
-#' reverse sequences are filtered out. It can read only one intensity column
-#' (specifed by \code{columns} parameter).
+#' reverse sequences are filtered out.
+#'
+#' @details
+#'
+#' There are two parameters controlling which columns are read from the evidence
+#' file. Parameter \code{measure.cols} selects columns with measurements: these
+#' are intensities (unlabelled, TMT) or ratios (Silac). In the simplest case of
+#' unlabelled data, there is only one measure column: "Intensity". Parameter
+#' \code{data.columns} selects all other columns read from the evidence file.
+#' There are two default lists, supplied with the package, appropriate for an
+#' unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
+#'
 #'
 #' @param file File name.
-#' @param columns Named list with columns to read.
+#' @param measure.cols Named list with measure columns to read.
+#' @param data.columns Named list with other columns to read (in addition to
+#'   measure columns).
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
@@ -172,24 +191,30 @@ summary.proteusData <- function(object, ...) {
 #' }
 #'
 #' @export
-readEvidenceFile <- function(file, columns=evidenceColumns) {
-  evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
+readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns) {
 
-  # check if all required columns exist
+  # check if all required columns are in the evidence file
+  evi.cols <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE, nrows = 1)
+  columns <- c(data.cols, measure.cols)
   missing <- NULL
   for(col in columns) {
-    if(!(col %in% colnames(evi))) missing <- c(missing, paste0("'", col, "'"))
+    if(!(col %in% colnames(evi.cols))) missing <- c(missing, paste0("'", col, "'"))
   }
   if(!is.null(missing))
     stop(paste0("Column(s) ", paste0(missing, collapse=", "), " not found in evidence file ", file))
 
+  # read and process evidence file
+  evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
   evi <- evi[, as.character(columns)]
   names(evi) <- names(columns)
   # sometimes there are only NAs and the condition doesn't work
   evi$reverse[is.na(evi$reverse)] = ''
   evi$contaminant[is.na(evi$contaminant)] = ''
   evi <- evi[which(evi$contaminant != '+' & evi$reverse != '+'),]
-  evi <- evi[which(!is.na(evi$intensity)),]
+
+  # remove rows that have only NAs in measure columns
+  not.empty <- which(rowSums(!is.na(evi[,names(measure.cols), drop=FALSE])) > 0)
+  evi <- evi[not.empty,]
 }
 
 #' Read peptides or proteinGroups file from MaxQuant

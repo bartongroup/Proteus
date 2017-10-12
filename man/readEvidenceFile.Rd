@@ -4,20 +4,32 @@
 \alias{readEvidenceFile}
 \title{Read MaxQuant's evidence file}
 \usage{
-readEvidenceFile(file, columns = evidenceColumns)
+readEvidenceFile(file, measure.cols = measureColumns,
+  data.cols = evidenceColumns)
 }
 \arguments{
 \item{file}{File name.}
 
-\item{columns}{Named list with columns to read.}
+\item{measure.cols}{Named list with measure columns to read.}
+
+\item{data.columns}{Named list with other columns to read (in addition to
+measure columns).}
 }
 \value{
 Data frame with selected columns from the evidence file.
 }
 \description{
 \code{readEvidenceFile} reads MaxQuant's evidence file. Contaminants and
-reverse sequences are filtered out. It can read only one intensity column
-(specifed by \code{columns} parameter).
+reverse sequences are filtered out.
+}
+\details{
+There are two parameters controlling which columns are read from the evidence
+file. Parameter \code{measure.cols} selects columns with measurements: these
+are intensities (unlabelled, TMT) or ratios (Silac). In the simplest case of
+unlabelled data, there is only one measure column: "Intensity". Parameter
+\code{data.columns} selects all other columns read from the evidence file.
+There are two default lists, supplied with the package, appropriate for an
+unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
 }
 \examples{
 \dontrun{

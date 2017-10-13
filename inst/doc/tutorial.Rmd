@@ -292,14 +292,13 @@ plotClustering(xpprodat.med)
 
 # Differential expression
 
-We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
+We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input.
 
 ```{r limma, warning=FALSE}
-ebay <- limmaDE(xpprodat.med)
-res <- limmaTable(xpprodat.med, ebay)
+res <- limmaDE(xpprodat.med)
 ```
 
-The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition", but other formulae can be provided via `formula` argument). The second function, `limmaTable` creates a simple table with DE results.
+This function creates a simple table with DE results.
 
 ```{r show_limma_res}
 head(res)
@@ -317,6 +316,14 @@ Since the number is small, we can just print the whole list:
 ```{r show_significant_proteins}
 res[significant,]
 ```
+
+Note: `limmaDE` requires exactly two conditions to do a differential expression on. When data contain more conditions, a parameter `conditions` is required to select a pair:
+
+```{r limma_conditions, eval=FALSE}
+res <- limmaDE(xpprodat.med, conditions=c("1112", "BMO"))
+```
+
+For more complicated designs we recommend using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) functions directly.
 
 ## Visualization
 

@@ -897,22 +897,25 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
   }
 }
 
-#' Differential expression with limma
+#' Simple differential expression with limma
 #'
-#' \code{limmaDE} is a simple wrapper around limma differential expression. It
-#' performs differential expression on the intensity table.
+#' \code{limmaDE} is a wrapper around \code{\link{limma}} to performa a differential
+#' expression between a pair of conditions.
+#'
+#' @details Before \code{limma} is called, intensity data are log-transformed
+#'   using base-10 logarithms. Therefore, the column "logFC" in the output data
+#'   frame contains log10 fold change (not log2!). If you need log2-based fold
+#'   change, you need to convert the column: `res$logFC <- res$logFC /
+#'   log10(2)`.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param formula A string with a formula for building the linear model.
-#' @param conditions A character vector with selection of conditions for
-#'   differential expression. Typically, two conditions would be selected.
-#' @return limma output from eBays. See limma documentation for more details.
-#'   The output from this function can be used with \code{\link{limmaTable}} to
-#'   create a table with differential expression results.
+#' @param conditions A character vector with two conditions for differential
+#'   expression. Can be omitted if there are only two condition in \code{pdat}.
+#' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
 #'
 #' @examples
-#' ebay <- limmaDE(xpprodat, formula="~condition")
-#' res <- limmaTable(xpprodat, ebay)
+#' res <- limmaDE(xpprodat)
 #'
 #' @export
 limmaDE <- function(pdat, formula="~condition", conditions=NULL) {
@@ -930,48 +933,19 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL) {
     tab <- tab[,sel]
   }
 
+  if(nlevels(meta$condition) != 2) stop("This function requires exactly two conditions. Use parameter conditions.
+                                        ")
+
   design <- model.matrix(as.formula(formula), meta)
   fit <- limma::lmFit(tab, design)
   ebay <- limma::eBayes(fit)
-}
-
-#' Create differential expression result
-#'
-#' \code{limmaTable} creates a table with differential expression results, using
-#' an object created with \code{\link{limmaDE}}
-#'
-#' @param pdat Protein \code{proteusData} object.
-#' @param ebay Output from  \code{\link{limmaDE}}.
-#' @param column Which column should be used to extract data. The default value
-#'   is "condition".
-#' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
-#'
-#' @details Before \code{limma} is called, intensity data are log-transformed
-#'   using base-10 logarithms. Therefore, the column "logFC" in the output data
-#'   frame contains log10 fold change (not log2!). If you need log2-based fold
-#'   change, you need to convert the column: `res$logFC <- res$logFC /
-#'   log10(2)`.
-#'
-#'
-#' @examples
-#' ebay <- limmaDE(xpprodat, formula="~condition")
-#' res <- limmaTable(xpprodat, ebay)
-#'
-#' @export
-limmaTable <- function(pdat, ebay, column="condition") {
-  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  # levels from the column (e.g. conditions)
-  # levs <- levels(factor(pdat$metadata[[column]]))
-  # coef is the column name + the last level, e.g. "conditionWT"
-  # coef <- paste0(column, levs[-1])
-
-  # assuming using only two conditions
   coef <- colnames(ebay$design)[2]
   res <- limma::topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
   res <- cbind(protein=rownames(res), res)
   rownames(res) <- c()
   return(res)
 }
+
 
 #' Fold-change intensity diagram
 #'

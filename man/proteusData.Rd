@@ -4,7 +4,7 @@
 \alias{proteusData}
 \title{\code{proteusData} constructor}
 \usage{
-proteusData(tab, metadata, content, pep2prot, peptides, proteins, values,
+proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
   npep = NULL, type = "unlabelled", pepseq = "sequence", hifly = NULL,
   min.peptides = NULL, norm.fun = identity, protein.method = NULL)
 }
@@ -24,7 +24,7 @@ use "other" for non-proteus data.}
 
 \item{proteins}{A character vector with protein names}
 
-\item{values}{A character vector with names of intensity and/or ratio columns}
+\item{measures}{A character vector with names of intensity and/or ratio columns}
 
 \item{npep}{A data frame with number of peptides per protein}
 

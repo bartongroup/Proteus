@@ -56,7 +56,7 @@ measureColumns <- list(
 #'   use "other" for non-proteus data.
 #' @param peptides A character vector with peptide sequences
 #' @param proteins A character vector with protein names
-#' @param values A character vector with names of intensity and/or ratio columns
+#' @param measures A character vector with names of intensity and/or ratio columns
 #' @param type Type of experiment: "unlabelled" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
@@ -68,7 +68,7 @@ measureColumns <- list(
 #'
 #' @return A \code{proteusData} object.
 #' @export
-proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, values,
+proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
                         npep=NULL, type="unlabelled", pepseq="sequence", hifly=NULL,
                         min.peptides=NULL, norm.fun=identity, protein.method=NULL) {
   stopifnot(
@@ -105,11 +105,11 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
   pdat <- list(
     tab = tab,
     metadata = metadata,
+    measures = measures,
     content = content,
     conditions = levels(cnd.fac),
     nrep = nrep,
     type = type,
-    values = values,
     pepseq = pepseq,
     hifly = hifly,
     min.peptides = min.peptides,
@@ -147,7 +147,7 @@ summary.proteusData <- function(object, ...) {
   cat(paste0("  conditions = ", paste0(object$conditions, collapse = ", "), "\n"))
 
   cat("\n*** Data processing ***\n\n")
-  cat(paste0("  evidence columns used = ", paste0(object$values, collapse = ", "), "\n"))
+  cat(paste0("  evidence columns used = ", paste0(object$measures, collapse = ", "), "\n"))
   cat(paste0("  sequence = '", ifelse(object$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
   cat(paste0("  normalization = ", object$norm.fun, "\n"))
 
@@ -252,6 +252,7 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 }
 
 
+
 #' Create peptide table from evidence data
 #'
 #' \code{makePeptideTable} computes a peptide table and related data. Peptide
@@ -260,24 +261,23 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #'
 #' @details
 #'
-#' In case of unlabelled experiments only one value is required, usually stored
-#' in the "intensity" column. \code{makePeptideTable} will create a peptide
-#' table with columns corresponding to samples in the metadata and rows
-#' corresponding to peptide sequences. Each cell of this table is the sum of
-#' peptide intensities (as defined by the default \code{fun.aggregate} function;
-#' we do not recommend to change it).
+#' The evidence file contains a column called "Experiment" and one or more
+#' columns with measure values. In case of unlabelled experiment there is only
+#' one measure column: "Intensity". In case of TMT experiment there are several
+#' measure columns, usually called "Reporter intensity 0", "Reporter intensity
+#' 1", and so on. \code{makePeptideTable} will combine "Experiment" and measure
+#' columns in a way defined by the metadata (parameter \code{meta}). The name of
+#' the combined column will be named using "sample" column in metadata.
 #'
-#' However, in SILAC and iTRAQ experiments there are multiple values, for
-#' example "Ratio H/L", "Ratio M/L" and "Ratio H/M". \code{makePeptideTable}
-#' will create a peptide table with columns corresponding to all combinations of
-#' samples and values. The number of columns in the peptide table is the number
-#' of samples in the metadata times the number of values. The cells of the
-#' peptide table will be aggregate with the \code{fun.aggregate} function. We
-#' recommend the median (use \code{fun.aggregate = median}) for this purpose. The
-#' metadata attached to the output \code{proteusData} object will be adjusted
-#' accordingly to contain new, expanded samples and conditions.
+#' The result is a \code{proteusData} object containing a table with rows
+#' corresponding to peptides and columns corresponding to samples (as defined in
+#' metadata). Each cell of the table is an aggregated measure values over all
+#' evidence entries corresponding to the given sequence and experiment. How
+#' these measure values are aggregated is controlled by the parameter
+#' \code{fun.aggregate}. We recommend using sum for unlabelled and TMT
+#' experiments and median for SILAC experiments.
 #'
-#' In either case only samples from metadata are used, regardless of the content
+#' Only samples from metadata are used, regardless of the content
 #' of the evidence data. This makes selection of samples for downstream
 #' processing easy: select only required rows in the metadata data frame.
 #'
@@ -286,8 +286,7 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #'   "sample" and "condition" columns.
 #' @param pepseq A column name to identify peptides. Can be either "sequence" or
 #'   "modseq".
-#' @param values A vector of names (or one name) of column(s) with
-#'   intensity/ratio data to be used.
+#' @param measure.cols A named list of measure columns; should be the same as u
 #' @param fun.aggregate A function to aggregate pepetides with the same
 #'   sequence/sample.
 #' @param experiment.type Type of the experiment, "unlabelled" or "SILAC".
@@ -300,12 +299,18 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #' }
 #'
 #' @export
-makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
+makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureColumns,
                              fun.aggregate=sum, experiment.type="unlabelled") {
 
-  # check it ratios are in evidence data
-  for(col in values) {
+  # check if measure.cols are in the evidence file
+  measures <- names(measure.cols)
+  for(col in measures) {
     if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
+  }
+
+  # test columns in metadata
+  for(col in c("experiment", "measure", "sample", "condition")) {
+    if(!(col %in% names(meta))) stop(paste0("Column '", col, "' not found in metadata."))
   }
 
   # zeroes in the evidence file are missing data
@@ -313,46 +318,34 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
   f <- function(x) fun.aggregate(x, na.rm=TRUE)
 
   # melt and recast evidence data
-  eviMeasured <- evi[,c(pepseq, "experiment", values)]
-  eviMelted <- reshape2::melt(eviMeasured, id.vars = c(pepseq, "experiment"))
+  # conflict between reshape and reshape2 requires a direct call to melt.data.frame (note three colons!)
+  eviMelted <- reshape2:::melt.data.frame(evi,
+                                          id.vars = c(pepseq, "experiment"),
+                                          measure.vars=measures,
+                                          variable.name="measure"
+                                          )
   eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
-  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ experiment + variable"), f)
+
+  # translate "experiment" and "measure" into "sample" from metadata
+  m2s <- meta$sample
+  names(m2s) <- paste0(meta$experiment, ".", meta$measure)
+
+  # recover raw evidence names, they are in metadata. merge with experiment
+  eviMelted$expmes <- paste0(eviMelted$experiment, ".", measure.cols[eviMelted$measure])
+  # select only experiment/measure combinations present in metadata
+  eviMelted <- eviMelted[which(eviMelted$expmes %in% names(m2s)),]
+
+  # translate
+  eviMelted$sample <- m2s[eviMelted$expmes]
+
+  # cast into table: sample vs sequence
+  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ sample"), f)
 
   # convert to matrix, keep row names as 'peptides'
   peptides <- as.character(tab[,1])
   tab <- as.matrix(tab[,2:ncol(tab)])
   tab[tab == 0] <- NA
   rownames(tab) <- peptides
-
-
-  # dcast created columns with merged names, these are our new samples
-  # (e.g. samp1_ratio.HL, samp1_ratio.ML, samp2_ratio.HL, ...)
-  # need to create new metadata to match these new samples
-
-  # combine all pairs sample-value
-  pairs <- expand.grid(meta$sample, values)
-  colnames(pairs) <- c("sample", "value")
-  # replicate naming convention from dcast (merge by "_")
-  pairs$sample.new <- apply(pairs, 1, function(x) paste0(x, collapse="_"))
-  # new metadata
-  mt <- merge(meta, pairs, by="sample", sort=FALSE)
-  selection <- mt$sample.new
-
-  # clean-up metadata; when only one value, restore originals
-  if(length(values) == 1) {
-    mt <- meta
-  } else {
-    # need "sample" and "condition" corresponding to the new table
-    # keep original columns for reference
-    mt <- dplyr::rename(mt, sample.original = sample, condition.original = condition, sample = sample.new)
-    # concatenate condition and value to create new condition
-    mt$condition <- apply(mt[,c("condition.original", "value")], 1, function(x) paste0(x, collapse="_"))
-  }
-
-  # keep only columns from the metadata file
-  # you can remove bad replicates
-  tab <- tab[,as.character(selection)]
-  colnames(tab) <- mt$sample
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
@@ -362,7 +355,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", values="intensity",
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(tab, mt, 'peptide', pep2prot, peptides, proteins, values,
+  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, as.character(measure.cols),
                       type = experiment.type)
 
   return(pdat)

@@ -1,6 +1,8 @@
 ---
 title: "Using proteus R package"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Using proteus R package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -30,15 +32,20 @@ options(width = 1000)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Input data
+# Input data
 
-### Files
+## Files
 
-We need two files for proteus. The MaxQuant evidence file and a manually created metadata file. The metadata file is a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition".
+Proteus needs one input file: the evidence file from *MaxQuant*.
 
-### Read evidence file
+In this tutorial we are also going to use a metadata file. It should be created manually as a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "sample" and "condition" (no capital letters).
 
-`readEvidenceFile()` reads MaxQuant's evidence file, filters out contaminants and reverse sequences:
+Alternatively, a metadata data frame (with the same columns) can be created in R.
+
+
+## Read evidence file
+
+Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file attached to the package:
 
 ```{r read_evidence, eval=FALSE}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
@@ -51,15 +58,35 @@ xpevi <- readEvidenceFile(evidenceFile)
 head(xpevi)
 ```
 
-### Columns in evidence file
+This can be a large object:
 
-The selection of columns is controlled by a parameter `columns` in `readEvidenceFile()`. If not provided, `readEvidenceFile()` will use the default list `evidenceColumns`.
+```{r size_evidence}
+dim(xpevi)
+object.size(xpevi)
+```
+
+
+## Columns in evidence file
+
+*MaxQuant* evidence files come with column names that can differ, depending on the *MaxQuant* version and the parameters used in its run. Many of these column names contain spaces and other characters (e.g. "/") that make R data processing awkward. Therefore, upon reading the evidence file, `proteus` renames its columns to simpler names, conforming with R variable name restrictions. Also, many of the evidence columns are not needed in `proteus` processing, so these are not kept to save memory.
+
+The selection and naming of columns is controlled by two parameters in function `readEvidenceFile()`: `measure.cols` and `data.cols`. If not provided, `readEvidenceFile()` will use the default lists.
+
+The named list `measureColumns` contains only one column with measurements, as appropriate for unlabelled proteomics:
+
+```{r str_measure_columns}
+str(measureColumns)
+```
+
+Different measure columns are needed for TMT and Silac experiments.
+
+The named list `evidenceColumns` contains a minimal set of columns needed for further processing (in addition to measure columns).
 
 ```{r str_evidence_columns}
 str(evidenceColumns)
 ```
 
-The list names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
+The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
 
 ```{r my_columns, eval=FALSE}
 myColumns <- c(evidenceColumns, mz="m/z")
@@ -71,8 +98,15 @@ The new column list can be used with `readEvidenceFile`:
 xpevi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 ```
 
+To quickly check what the column names in a given evidence file are, we can read one row and see its names:
 
-### Metadata
+```{r evidence_column_names}
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+evicols <- read.delim(evidenceFile, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
+names(evicols)
+```
+
+## Metadata
 
 We also need metadata. In our example it is in the file:
 
@@ -87,27 +121,31 @@ It contains the design of our experiment:
 xpmeta
 ```
 
-Metadata object should be a data frame with at least two columns: `sample` and `condition`.
+### Metadata columns
 
-`sample` corresponds to the experiment name in MaxQuant's terminology. We can easily see all experiment names in the evidence data:
+Metadata object should be a data frame with at least four columns: `experiment`, `meaure`, `sample` and `condition`.
+
+`experiment` should contain the same values as in the `Experiment` column in the evidence file. In our case there are 14 unique experiments.
+
+We can easily see all experiment names in the evidence data:
 
 ```{r metadata_samples}
 levels(as.factor(xpevi$experiment))
 ```
 
-Our `sample` column can contain either all, or selected, experiment names.
+`measure` refers to a measure column. In case of an unlabelled experiment there is only one measure column, "Intensity".
 
-Column `condition` contains, *nomen-omen*, condition names. In our example there are two conditions, hence two values in this column.
+`sample` is a name used in peptide and protein tables. In our case we simply copy the experiment name, as it uniquely identifies condition and replicate. Values in `sample` columns must be unique.
+
+`condition` contains, *nomen-omen*, condition names. In our example there are two conditions, hence two values in this column.
 
 Other columns can be added and used for the downstream analysis.
 
+# Peptide data
 
-## Peptide data
+## Create a peptide dataset
 
-### Create a peptide dataset
-
-We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [reshape2](https://cran.r-project.org/web/packages/reshape2/reshape2.pdf) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples. Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added.
-
+We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates a "cast" (terminology from the [reshape2](https://cran.r-project.org/web/packages/reshape2/reshape2.pdf) package) converting a long format of the evidence data (each peptide and sample in a separate row) into a wide format, where rows correspond to peptides and columns correspond to samples. Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added (we warn that this might not be the best approach due to presence of downliers in peptide data - more to come soon).
 
 ```{r make_peptides, eval=FALSE}
 xppepdat <- makePeptideTable(xpevi, xpmeta)
@@ -125,7 +163,7 @@ We can use generic `summary` function to see more information about `xppepdat`.
 summary(xppepdat)
 ```
 
-### Number of peptides
+## Number of peptides
 
 Function `plotPeptideCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
 
@@ -133,7 +171,7 @@ Function `plotPeptideCount()` plots, as the name suggests, peptide count in each
 plotPeptideCount(xppepdat)
 ```
 
-### Jaccard similarity
+## Jaccard similarity
 
 Function `plotDetectionSimilarity()` calculates Jaccard similarity between each pair of samples and plots its distribution. The similarity is based on detection. For a pair of samples it compares the number of detected peptides in both samples (intersection) divided by the total number of peptides detected in both samples (union). This measure of similarity is a number between 0 and 1.
 
@@ -141,15 +179,15 @@ Function `plotDetectionSimilarity()` calculates Jaccard similarity between each 
 plotDetectionSimilarity(xppepdat, bin.size = 0.02)
 ```
 
-### Correlation matrix
+## Distance matrix
 
-Function `plotCorrelationMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
+Function `plotDistanceMatrix` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
 
 ```{r plot_correlation_matrix, fig.width=6, fig.height=5}
-plotCorrelationMatrix(xppepdat)
+plotDistanceMatrix(xppepdat)
 ```
 
-### Clustering
+## Clustering
 
 We can use `plotClustering` to see a dendrogram of the peptide data set:
 
@@ -157,11 +195,11 @@ We can use `plotClustering` to see a dendrogram of the peptide data set:
 plotClustering(xppepdat)
 ```
 
-### Removing bad data
+## Removing bad data
 
-The last sample (BMO-7) looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
+The last sample (BMO-7) in the example data looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
 
-Warning: this is only a demonstration. You should exercise caution when removing any of your data.
+Warning: this is only an example. You should exercise caution when removing any of your data.
 
 ```{r remove_bad_replicate}
 xpmeta.clean <- xpmeta[which(xpmeta$sample  != 'BMO-7'),]
@@ -187,11 +225,11 @@ plotClustering(xppepdat.clean)
 ```
 
 
-## Protein data
+# Protein data
 
 There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. We quantify protein abundances using a simple, but robust method of high-fliers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
 
-### Create protein dataset
+## Create protein dataset
 
 `makeProteinTable()` creates a protein data set from the peptide data. The result is a `proteusData` object containing protein intensity table and other information.
 
@@ -205,9 +243,9 @@ Again, we can use a generic `summary` function to see its properties.
 summary(xpprodat)
 ```
 
-### Normalization
+## Normalization
 
-Finally, we need to normalize data. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median:
+Finally, we need to normalize data to account for variation of intensity between samples. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median. After this step, median sample intensities will be equal.
 
 ```{r normalize_proteins}
 xpprodat.med <- normalizeData(xpprodat)
@@ -236,7 +274,7 @@ plotSampleDistributions(xpprodat.quant, title="Quantile normalization", fill="co
 
 
 
-### Mean-variance relationship
+## Mean-variance relationship
 
 Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV` function to plot the mean-variance relationship.
 
@@ -244,7 +282,7 @@ Some statistics (like mean and variance across replicate in each condition) are 
 plotMV(xpprodat.med, with.loess=TRUE)
 ```
 
-### Protein clustering
+## Protein clustering
 
 We can use the same function `plotClustering` to see the dendrogram for the proteins.
 
@@ -252,22 +290,22 @@ We can use the same function `plotClustering` to see the dendrogram for the prot
 plotClustering(xpprodat.med)
 ```
 
-## Differential expression
+# Differential expression
 
-We suggest using `limma` package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
+We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input:
 
 ```{r limma, warning=FALSE}
 ebay <- limmaDE(xpprodat.med)
 res <- limmaTable(xpprodat.med, ebay)
 ```
 
-The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition"). The second function, `limmaTable` creates a simple table with DE results.
+The first function, `limmaDE` performs differential expression on the intensity table inside `prodat` object, based on the provided formula (default is "~condition", but other formulae can be provided via `formula` argument). The second function, `limmaTable` creates a simple table with DE results.
 
 ```{r show_limma_res}
 head(res)
 ```
 
-According to a traditional definition of "significance", the number of significantly differentially expressed proteins is
+The `adj.P.Val` column contains Benjamini-Hochberg corrected p-values. According to a traditional definition of "significance", the number of significantly differentially expressed proteins is
 
 ```{r significant_protein_number}
 significant <- which(res$adj.P.Val <= 0.05)
@@ -280,7 +318,7 @@ Since the number is small, we can just print the whole list:
 res[significant,]
 ```
 
-### Visualization
+## Visualization
 
 `proteus` provides with several functions to visualize protein data and the results of the differential expression.
 
@@ -303,7 +341,7 @@ plotPdist(res)
 ```
 
 
-### Individual proteins
+## Individual proteins
 
 We can also look at individual protein. The function `plotProteins` plots intensities of individual samples per condition, or other selected quantity (e.g. batch). Here is one of the up-regulated proteins.
 

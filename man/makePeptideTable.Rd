@@ -4,8 +4,9 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi, meta, pepseq = "sequence", values = "intensity",
-  fun.aggregate = sum, experiment.type = "unlabelled")
+makePeptideTable(evi, meta, pepseq = "sequence",
+  measure.cols = measureColumns, fun.aggregate = sum,
+  experiment.type = "unlabelled")
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -16,8 +17,7 @@ makePeptideTable(evi, meta, pepseq = "sequence", values = "intensity",
 \item{pepseq}{A column name to identify peptides. Can be either "sequence" or
 "modseq".}
 
-\item{values}{A vector of names (or one name) of column(s) with
-intensity/ratio data to be used.}
+\item{measure.cols}{A named list of measure columns; should be the same as u}
 
 \item{fun.aggregate}{A function to aggregate pepetides with the same
 sequence/sample.}
@@ -34,24 +34,23 @@ table is a matrix with columns corresponding to conditions and rows
 corresponding to peptide sequences.
 }
 \details{
-In case of unlabelled experiments only one value is required, usually stored
-in the "intensity" column. \code{makePeptideTable} will create a peptide
-table with columns corresponding to samples in the metadata and rows
-corresponding to peptide sequences. Each cell of this table is the sum of
-peptide intensities (as defined by the default \code{fun.aggregate} function;
-we do not recommend to change it).
+The evidence file contains a column called "Experiment" and one or more
+columns with measure values. In case of unlabelled experiment there is only
+one measure column: "Intensity". In case of TMT experiment there are several
+measure columns, usually called "Reporter intensity 0", "Reporter intensity
+1", and so on. \code{makePeptideTable} will combine "Experiment" and measure
+columns in a way defined by the metadata (parameter \code{meta}). The name of
+the combined column will be named using "sample" column in metadata.
 
-However, in SILAC and iTRAQ experiments there are multiple values, for
-example "Ratio H/L", "Ratio M/L" and "Ratio H/M". \code{makePeptideTable}
-will create a peptide table with columns corresponding to all combinations of
-samples and values. The number of columns in the peptide table is the number
-of samples in the metadata times the number of values. The cells of the
-peptide table will be aggregate with the \code{fun.aggregate} function. We
-recommend the median (use \code{fun.aggregate = median}) for this purpose. The
-metadata attached to the output \code{proteusData} object will be adjusted
-accordingly to contain new, expanded samples and conditions.
+The result is a \code{proteusData} object containing a table with rows
+corresponding to peptides and columns corresponding to samples (as defined in
+metadata). Each cell of the table is an aggregated measure values over all
+evidence entries corresponding to the given sequence and experiment. How
+these measure values are aggregated is controlled by the parameter
+\code{fun.aggregate}. We recommend using sum for unlabelled and TMT
+experiments and median for SILAC experiments.
 
-In either case only samples from metadata are used, regardless of the content
+Only samples from metadata are used, regardless of the content
 of the evidence data. This makes selection of samples for downstream
 processing easy: select only required rows in the metadata data frame.
 }

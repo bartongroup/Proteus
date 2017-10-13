@@ -444,6 +444,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
   prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides, pepdat$proteins, pepdat$values,
+                        measures = pepdat$measures,
                         type = pepdat$type,
                         pepseq = pepdat$pepseq,
                         hifly = hifly,

@@ -75,7 +75,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, va
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
     content %in% c("peptide", "protein", "other"),
-    type %in% c("unlabelled", "SILAC"),
+    type %in% c("unlabelled", "SILAC", "TMT"),
     pepseq %in% c("sequence", "modseq")
   )
 

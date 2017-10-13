@@ -904,6 +904,8 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param formula A string with a formula for building the linear model.
+#' @param conditions A character vector with selection of conditions for
+#'   differential expression. Typically, two conditions would be selected.
 #' @return limma output from eBays. See limma documentation for more details.
 #'   The output from this function can be used with \code{\link{limmaTable}} to
 #'   create a table with differential expression results.
@@ -913,10 +915,22 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #' res <- limmaTable(xpprodat, ebay)
 #'
 #' @export
-limmaDE <- function(pdat, formula="~condition") {
+limmaDE <- function(pdat, formula="~condition", conditions=NULL) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  design <- model.matrix(as.formula(formula), pdat$metadata)
+
+  meta <- pdat$metadata
   tab <- log10(pdat$tab)
+
+  if(!is.null(conditions)) {
+    for(cond in conditions ) {
+      if(!(cond %in% meta$condition)) stop(paste("Condition", cond, "not found in metadata."))
+    }
+    sel <- which(meta$condition %in% conditions)
+    meta <- droplevels(meta[sel,])
+    tab <- tab[,sel]
+  }
+
+  design <- model.matrix(as.formula(formula), meta)
   fit <- limma::lmFit(tab, design)
   ebay <- limma::eBayes(fit)
 }
@@ -947,9 +961,12 @@ limmaDE <- function(pdat, formula="~condition") {
 limmaTable <- function(pdat, ebay, column="condition") {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   # levels from the column (e.g. conditions)
-  levs <- levels(factor(pdat$metadata[[column]]))
+  # levs <- levels(factor(pdat$metadata[[column]]))
   # coef is the column name + the last level, e.g. "conditionWT"
-  coef <- paste0(column, levs[-1])
+  # coef <- paste0(column, levs[-1])
+
+  # assuming using only two conditions
+  coef <- colnames(ebay$design)[2]
   res <- limma::topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
   res <- cbind(protein=rownames(res), res)
   rownames(res) <- c()

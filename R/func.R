@@ -719,8 +719,8 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
 
   m <- reshape2::melt(pdat$tab, varnames=c("ID", "sample"))
   mt <- data.frame(pdat$metadata, row.names = pdat$metadata$sample)
-  if(!is.null(fill)) m[['fill']] <- mt[m$sample, fill]
-  if(!is.null(colour)) m[['colour']] <- mt[m$sample, colour]
+  if(!is.null(fill)) m[['fill']] <- as.factor(mt[m$sample, fill])
+  if(!is.null(colour)) m[['colour']] <- as.factor(mt[m$sample, colour])
 
   m$value <- log(m$value, base=logbase)
 

@@ -692,7 +692,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @param vmax Upper bound on log value
 #' @param n.grid.rows Number of rows in the grid of facets
 #' @param hist.bins Number of bins in histograms
-#' @param logbase Base of the logarithm which will be applied to data
+#' @param log.scale Logical, to plot in logarithmic scale
+#' @param log.base Base of the logarithm which will be applied to data
 #' @param fill A metadata column to use for the fill of boxes
 #' @param colour A metadata column to use for the outline colour of boxes
 #' @param hline Logical, if true a horizontal line at zero is added
@@ -703,7 +704,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' plotSampleDistributions(xpprodat)
 #' plotSampleDistributions(normalizeData(xpprodat))
 plotSampleDistributions <-
-function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,              x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), logbase=10, palette=cbPalette,
+function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,              x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), log.scale=TRUE, log.base=10, palette=cbPalette,
          fill=NULL, colour=NULL, hline=FALSE) {
   method <- match.arg(method)
 
@@ -712,14 +713,15 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
   if(!is.null(fill)) m[['fill']] <- as.factor(mt[m$sample, fill])
   if(!is.null(colour)) m[['colour']] <- as.factor(mt[m$sample, colour])
 
-  m$value <- log(m$value, base=logbase)
+  if(log.scale > 0) m$value <- log(m$value, base=log.base)
+  lg <- ifelse(log.scale, paste("log", log.base), "")
 
   if(method == "box" | method == "violin") {
     g <- ggplot(m, aes(x=sample, y=value)) +
       simple_theme +
       ylim(vmin, vmax) +
       theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
-      labs(title=title, x="sample", y=paste0("log", logbase, " value"))
+      labs(title=title, x="sample", y=paste0(lg, " value"))
     if(hline) g <- g + geom_hline(yintercept=0, colour='grey')
     if(method=="box") g <- g + geom_boxplot(outlier.shape=NA, na.rm=TRUE)
     if(method=="violin") g <- g + geom_violin(na.rm=TRUE, draw_quantiles=c(0.25, 0.5, 0.75), scale="width")

@@ -407,30 +407,19 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   for(cond in pepdat$conditions) {
     w <- tab[,which(meta$condition == cond), drop=FALSE]
     samples <- colnames(w)
-    protint <- NULL
-    for(prot in pepdat$proteins) {
+    protcond <- lapply(pepdat$proteins, function(prot) {
       sel <- which(pepdat$pep2prot$protein == prot)
       npep <- length(sel)
       if(npep >= min.peptides)
       {
-        # ARGHHH! Took me forever to get it right
-        # without drop=FALSE it will drop a dimension for one-row selection
-        # and all downstream analysis goes to hell
         wp <- w[sel,, drop=FALSE]
         row <- makeProtein(wp, method, hifly)
         row <- data.frame(protein=prot, npep=npep, row)
-
-        # this was old method using the same three peptides for all samples
-        # but it doesn't work well, missing a lot of data
-        # now (above) I pick three top peptides for each sample separately
-        #medPep <- apply(wp, 1, function(x) {median(x, na.rm=TRUE)})  # median across replicates
-        #nmed <- length(medPep)
-        #top <- min(c(nmed, hifly))
-        #itop <- sort.int(medPep, decreasing=TRUE, index.return=TRUE)$ix[1:top] #index of top peptides
-        #row <- data.frame(protein=prot, t(colMeans(wp[itop,]))) # mean of the top peptides
-        protint <- rbind(protint, row)
+        return(row)
       }
-    }
+    })
+    protint <- do.call(rbind, protcond)
+
     colnames(protint) <- c("protein", "npep", samples)
     protlist[[cond]] <- protint
   }

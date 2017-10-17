@@ -599,6 +599,9 @@ normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
   for(ex in levels(as.factor(pdat$meta$experiment))) {
     colsel <- which(pdat$metadata$experiment == ex)
     pdat$tab[, colsel] <- RAS(pdat$tab[, colsel])
+    pdat$norm.fun <- "CONSTANd"
+    pdat$stats <- intensityStats(pdat)  # need to recalculate stats!
+
   }
   return(pdat)
 }

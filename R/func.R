@@ -180,7 +180,7 @@ summary.proteusData <- function(object, ...) {
 #'
 #' @param file File name.
 #' @param measure.cols Named list with measure columns to read.
-#' @param data.columns Named list with other columns to read (in addition to
+#' @param data.cols Named list with other columns to read (in addition to
 #'   measure columns).
 #' @return Data frame with selected columns from the evidence file.
 #'
@@ -277,16 +277,17 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #' \code{fun.aggregate}. We recommend using sum for unlabelled and TMT
 #' experiments and median for SILAC experiments.
 #'
-#' Only samples from metadata are used, regardless of the content
-#' of the evidence data. This makes selection of samples for downstream
-#' processing easy: select only required rows in the metadata data frame.
+#' Only samples from metadata are used, regardless of the content of the
+#' evidence data. This makes selection of samples for downstream processing
+#' easy: select only required rows in the metadata data frame.
 #'
 #' @param evi Evidence table created with \code{\link{readEvidenceFile}}.
 #' @param meta Data frame with metadata. As a minimum, it should contain
 #'   "sample" and "condition" columns.
 #' @param pepseq A column name to identify peptides. Can be either "sequence" or
 #'   "modseq".
-#' @param measure.cols A named list of measure columns; should be the same as u
+#' @param measure.cols A named list of measure columns; should be the same as
+#'   used in \code{\link{readEvidenceFile}}
 #' @param fun.aggregate A function to aggregate pepetides with the same
 #'   sequence/sample.
 #' @param experiment.type Type of the experiment, "unlabelled" or "SILAC".
@@ -528,6 +529,66 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
   return(pdat)
 }
 
+
+
+#' RAS procedure for CONSTANd normalization (not exported)
+#'
+#' @param K Input matrix
+#' @param max.iter Maximum number of iterations
+#' @param eps Convergence limit
+#'
+#' @return Matrix normalized so row and column means equal 1/n (n - number of columns)
+RAS <- function(K, max.iter=50, eps=1e-5) {
+  n <- ncol(K)
+  m <- nrow(K)
+
+  # ignore rows with only NAs
+  good.rows <- which(rowSums(!is.na(K)) > 0)
+  K <- K[good.rows, ]
+
+  cnt <- 1
+  repeat {
+    row.mult <- 1 / (n * rowMeans(K, na.rm=TRUE))
+    K <- K * row.mult
+    err1 <- 0.5 * sum(abs(colMeans(K, na.rm=TRUE) - 1/n))
+    col.mult <- 1 / (n * colMeans(K, na.rm=TRUE))
+    K <- t(t(K) * col.mult)
+    err2 <- 0.5 * sum(abs(rowMeans(K, na.rm=TRUE) - 1/n))
+    cnt <- cnt + 1
+    if(cnt > max.iter || (err1 < eps && err2 < eps)) break
+  }
+
+  # reconstruct full table
+  KF <- matrix(NA, nrow=m, ncol=n)
+  KF[good.rows, ] <- K
+
+  return(KF)
+}
+
+#' Normalize protein/peptide data using CONSTANd normalization
+#'
+#' @details
+#'
+#' \code{normalizeTMT} implements CONSTANd algorithm from Maes et al. (2016)
+#' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4974351/pdf/zjw2779.pdf}.
+#' It normalizes TMT table, for each experiment separately. After normalization
+#' each row shows the precentage of total row intensity and each column is
+#' normalized to their mean value. Hence, both row and column means are equal
+#' 1/n, where n is the number of columns (reporters).
+#'
+#' @param pdat A \code{proteusData} object with peptide or protein intensities.
+#' @param max.iter Maximum number of iterations for the RAS procedure.
+#' @param eps Convergence limit for the RAS procedure.
+#'
+#' @return A \code{proteusData} with normalized data.
+#' @export
+normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
+  for(ex in levels(as.factor(pdat$meta$experiment))) {
+    colsel <- which(pdat$metadata$experiment == ex)
+    pdat$tab[, colsel] <- RAS(pdat$tab[, colsel])
+  }
+  return(pdat)
+}
 
 #' Plot distance matrix
 #'
@@ -1005,14 +1066,13 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' \code{plotPdist} makes a plot with distribution of raw p-values, obtained by
 #' \code{\link{limmaDE}}.
 #'
-#' @param res Output table from \code{\link{limmaTable}}.
+#' @param res Output table from \code{\link{limmaDE}}.
 #' @param text.size Text size.
 #' @param plot.grid Logical to plot grid.
 #' @param bin.size Bin size for the histogram.
 #'
 #' @examples
-#' ebay <- limmaDE(xpprodat)
-#' res <- limmaTable(xpprodat, ebay)
+#' res <- limmaDE(xpprodat)
 #' plotPdist(res)
 #'
 #' @export
@@ -1029,7 +1089,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'\code{plotVolcano} makes a volcano plot from limma results. Uses
 #'\code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 #'
-#'@param res Result table from  \code{\link{limmaTable}}.
+#'@param res Result table from  \code{\link{limmaDE}}.
 #'@param bins Number of bins for binhex.
 #'@param xmax Upper limit on x-axis. If used, the lower limit is -xmax.
 #'@param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
@@ -1040,8 +1100,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'  is a simple point plot.
 #'
 #' @examples
-#' ebay <- limmaDE(xpprodat)
-#' res <- limmaTable(xpprodat, ebay)
+#' res <- limmaDE(xpprodat)
 #' plotVolcano(res)
 #'
 #'@export

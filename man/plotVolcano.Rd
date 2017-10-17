@@ -8,7 +8,7 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
   show.legend = TRUE, plot.grid = TRUE, binhex = TRUE)
 }
 \arguments{
-\item{res}{Result table from  \code{\link{limmaTable}}.}
+\item{res}{Result table from  \code{\link{limmaDE}}.}
 
 \item{bins}{Number of bins for binhex.}
 
@@ -30,8 +30,7 @@ is a simple point plot.}
 \code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 }
 \examples{
-ebay <- limmaDE(xpprodat)
-res <- limmaTable(xpprodat, ebay)
+res <- limmaDE(xpprodat)
 plotVolcano(res)
 
 }

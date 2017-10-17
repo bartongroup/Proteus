@@ -7,7 +7,7 @@
 plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 }
 \arguments{
-\item{res}{Output table from \code{\link{limmaTable}}.}
+\item{res}{Output table from \code{\link{limmaDE}}.}
 
 \item{bin.size}{Bin size for the histogram.}
 
@@ -20,8 +20,7 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 \code{\link{limmaDE}}.
 }
 \examples{
-ebay <- limmaDE(xpprodat)
-res <- limmaTable(xpprodat, ebay)
+res <- limmaDE(xpprodat)
 plotPdist(res)
 
 }

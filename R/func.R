@@ -1066,7 +1066,7 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
   g <- ggplot(d, aes(x=x, y=y)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
     {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=id))}+
-    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
+    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA) +
     #geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
     geom_abline(colour='red', slope=0, intercept=0) +
     labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1)) +
@@ -1125,7 +1125,7 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.l
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
     {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=protein))} +
-    scale_fill_gradientn(colours=c("green","yellow", "red"), name = "count",na.value=NA) +
+    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA) +
     geom_vline(colour='red', xintercept=0) +
     theme(text = element_text(size=text.size))
     # labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1))

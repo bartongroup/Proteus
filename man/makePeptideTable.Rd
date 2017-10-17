@@ -17,7 +17,8 @@ makePeptideTable(evi, meta, pepseq = "sequence",
 \item{pepseq}{A column name to identify peptides. Can be either "sequence" or
 "modseq".}
 
-\item{measure.cols}{A named list of measure columns; should be the same as u}
+\item{measure.cols}{A named list of measure columns; should be the same as
+used in \code{\link{readEvidenceFile}}}
 
 \item{fun.aggregate}{A function to aggregate pepetides with the same
 sequence/sample.}
@@ -50,9 +51,9 @@ these measure values are aggregated is controlled by the parameter
 \code{fun.aggregate}. We recommend using sum for unlabelled and TMT
 experiments and median for SILAC experiments.
 
-Only samples from metadata are used, regardless of the content
-of the evidence data. This makes selection of samples for downstream
-processing easy: select only required rows in the metadata data frame.
+Only samples from metadata are used, regardless of the content of the
+evidence data. This makes selection of samples for downstream processing
+easy: select only required rows in the metadata data frame.
 }
 \examples{
 \dontrun{

@@ -79,6 +79,9 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     pepseq %in% c("sequence", "modseq")
   )
 
+  # make sure to keep correct order of samples
+  metadata$sample <- factor(metadata$sample, levels=metadata$sample)
+
   colnames(tab) <- metadata$sample
   if(content == "peptide") {
     stopifnot(nrow(tab) == length(peptides))
@@ -239,6 +242,9 @@ readMaxQuantTable <- function(file, meta, id, columns) {
     if(!(col %in% colnames(dat))) stop(paste0("Column '", col, "' not found in ", file))
   }
 
+  # make sure to keep correct order of samples
+  meta$sample <- factor(meta$sample, levels=meta$sample)
+
   tab <- as.matrix(dat[columns])
   tab[tab==0] <- NA
   tab[is.nan(tab)] <- NA
@@ -313,6 +319,9 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   for(col in c("experiment", "measure", "sample", "condition")) {
     if(!(col %in% names(meta))) stop(paste0("Column '", col, "' not found in metadata."))
   }
+
+  # make sure to keep correct order of samples
+  meta$sample <- factor(meta$sample, levels=meta$sample)
 
   # zeroes in the evidence file are missing data
   evi[evi == 0] <- NA
@@ -403,6 +412,10 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
 
   meta <- pepdat$metadata
   tab <- pepdat$tab
+
+  # make sure to keep correct order of samples
+  # this should be OK in peptide table, but just in case
+  meta$sample <- factor(meta$sample, levels=meta$sample)
 
   protlist <- list()
   for(cond in pepdat$conditions) {

@@ -12,7 +12,7 @@ readEvidenceFile(file, measure.cols = measureColumns,
 
 \item{measure.cols}{Named list with measure columns to read.}
 
-\item{data.columns}{Named list with other columns to read (in addition to
+\item{data.cols}{Named list with other columns to read (in addition to
 measure columns).}
 }
 \value{

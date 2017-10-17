@@ -30,25 +30,30 @@ tab.2 <- structure(
 evi <- read.table("../testdata/data_makePeptide_evi.txt", header=TRUE, sep="\t")
 meta <- read.table("../testdata/data_makePeptide_meta.txt", header=TRUE, sep="\t")
 
+# make sure even if levels order is not correct, makePeptideTable sorts this out:
+meta.ordered <- meta
+meta.ordered$sample <- factor(meta.ordered$sample, levels=meta.ordered$sample)
+
 context("Casting evidence into peptide table")
 
 test_that("Test makePeptide", {
   pep <- makePeptideTable(evi, meta)
   expect_equal(pep$tab, tab.1)
-  expect_equal(pep$metadata[,c("sample", "condition", "batch")], meta)
+  expect_equal(pep$metadata[,c("experiment", "measure", "sample", "condition", "batch")], meta.ordered)
   expect_equal(pep$content, "peptide")
-  expect_equal(pep$values, "intensity")
+  expect_equal(pep$measures, "Intensity")
   expect_equal(pep$peptides, row.names(tab.1))
   expect_equal(pep$proteins, c("A", "B"))
   expect_true(is(pep, "proteusData"))
 })
 
-test_that("Test makePeptide SILAC", {
-  pep <- makePeptideTable(evi, meta, fun.aggregate = median, values=c("intensity", "ratio"), experiment.type="SILAC")
-  expect_equal(pep$tab, tab.2)
-  expect_equal(pep$metadata$batch, c(1, 1, 2, 2, 2, 2))
-  expect_equal(pep$values, c("intensity", "ratio"))
-  expect_equal(pep$peptides, row.names(tab.2))
-  expect_equal(pep$proteins, c("A", "B"))
-  expect_true(is(pep, "proteusData"))
-})
+# deprecated, need new tests for TMT
+#test_that("Test makePeptide SILAC", {
+#  pep <- makePeptideTable(evi, meta, fun.aggregate = median, measure.cols=c("intensity", "ratio"), experiment.type="SILAC")
+#  expect_equal(pep$tab, tab.2)
+#  expect_equal(pep$metadata$batch, c(1, 1, 2, 2, 2, 2))
+#  expect_equal(pep$values, c("intensity", "ratio"))
+#  expect_equal(pep$peptides, row.names(tab.2))
+#  expect_equal(pep$proteins, c("A", "B"))
+#  expect_true(is(pep, "proteusData"))
+#})

@@ -428,9 +428,12 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
       {
         wp <- w[sel,, drop=FALSE]
         row <- makeProtein(wp, method, hifly)
-        row <- data.frame(protein=prot, npep=npep, row)
-        return(row)
+      } else {
+        row <- as.data.frame(t(rep(NA, length(samples))))
+        names(row) <- samples
       }
+      row <- data.frame(protein=prot, npep=npep, row)
+      return(row)
     })
     protint <- do.call(rbind, protcond)
 
@@ -441,12 +444,15 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   # dplyr join all tables
   protab <- Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), protlist)
 
+  # remove empty rows (happens when min.peptides > 1)
+  protab <- protab[which(rowSums(!is.na(mp$tab)) > 0), ]
+
   proteins <- protab$protein
   npep <- data.frame(npep=protab$npep.x)     # join split npep into npep.x, npep.y, ... for conditions
   rownames(npep) <- proteins                 # a bit redundant, but might be useful
   protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
-  prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides, pepdat$proteins, pepdat$values,
+  prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides, proteins, pepdat$values,
                         measures = pepdat$measures,
                         type = pepdat$type,
                         pepseq = pepdat$pepseq,

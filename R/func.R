@@ -445,7 +445,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   protab <- Reduce(function(df1, df2) dplyr::full_join(df1,df2, by="protein"), protlist)
 
   # remove empty rows (happens when min.peptides > 1)
-  protab <- protab[which(rowSums(!is.na(mp$tab)) > 0), ]
+  protab <- protab[which(rowSums(!is.na(protab)) > 0), ]
 
   proteins <- protab$protein
   npep <- data.frame(npep=protab$npep.x)     # join split npep into npep.x, npep.y, ... for conditions

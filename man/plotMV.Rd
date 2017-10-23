@@ -5,7 +5,8 @@
 \title{Plot mean-variance relationship}
 \usage{
 plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
-  ymin = 7, ymax = 20, with.n = FALSE, mid.gradient = 0.3)
+  ymin = 7, ymax = 20, with.n = FALSE, mid.gradient = 0.3,
+  text.size = 10)
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
@@ -25,6 +26,8 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
 \item{with.n}{Logical to add a text with the number of proteins to the plot}
 
 \item{mid.gradient}{A parameter to control the midpoint of colour gradient (between 0 and 1)}
+
+\item{text.size}{Text size on axes}
 }
 \description{
 \code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.

@@ -421,7 +421,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   for(cond in pepdat$conditions) {
     w <- tab[,which(meta$condition == cond), drop=FALSE]
     samples <- colnames(w)
-    protcond <- lapply(pepdat$proteins, function(prot) {
+    protcond <- mclapply(pepdat$proteins, function(prot) {
       sel <- which(pepdat$pep2prot$protein == prot)
       npep <- length(sel)
       if(npep >= min.peptides)
@@ -434,7 +434,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
       }
       row <- data.frame(protein=prot, npep=npep, row)
       return(row)
-    })
+    }, mc.cores=6)
     protint <- do.call(rbind, protcond)
 
     colnames(protint) <- c("protein", "npep", samples)
@@ -865,12 +865,13 @@ intensityStats <- function(pdat) {
 #' @param ymax Upper limit on y-axis
 #' @param with.n Logical to add a text with the number of proteins to the plot
 #' @param mid.gradient A parameter to control the midpoint of colour gradient (between 0 and 1)
+#' @param text.size Text size on axes
 #'
 #' @examples
 #' plotMV(xpprodat, with.loess=TRUE)
 #'
 #' @export
-plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20, with.n=FALSE, mid.gradient=0.3) {
+plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20, with.n=FALSE, mid.gradient=0.3, text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   meta <- pdat$metadata
   if(is.null(meta)) stop("No metadata found.")
@@ -903,6 +904,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     ylim(ymin, ymax) +
     facet_wrap(~condition) +
     stat_binhex(bins=bins) +
+    theme(text = element_text(size=text.size)) +
     scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
   if(with.n) g <- g + geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
   if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')

@@ -628,14 +628,13 @@ normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #' @param distance A method to calculate distance.
-#' @param palette Palette of colours
 #' @param text.size Text size on axes
 #'
 #' @examples
 #' plotDistanceMatrix(xppepdat)
 #'
 #' @export
-plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10, palette=cbPalette) {
+plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   distance <- match.arg(distance)
 
@@ -697,15 +696,16 @@ plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
   pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
   med.count <- median(pep.count)
   df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
-  ggplot(df, aes(x=x,y=y,fill=condition)) +
+  g <- ggplot(df, aes(x=x,y=y,fill=condition)) +
     geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
-    scale_fill_manual(values=palette) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
     labs(x='Sample', y='Peptide count') +
     labs(title = paste0("Median peptide count = ", med.count)) +
     theme(plot.title=element_text(hjust=0, size=12))
+  if(length(df$x) <= length(palette)) g <- g + scale_fill_manual(values=palette)
+  g
 }
 
 #' Jaccard similarity
@@ -821,8 +821,14 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
       xlim(vmin, vmax)
   } else stop("Wrong method.")
 
-  if(!is.null(fill)) g <- g + aes(fill=fill) + scale_fill_manual(name=fill, values=palette)
-  if(!is.null(colour)) g <- g + aes(colour=colour) + scale_color_manual(name=colour, values=palette)
+  if(!is.null(fill)) {
+    g <- g + aes(fill=fill)
+    if(nlevels(m$fill) <= length(palette)) g <- g + scale_fill_manual(name=fill, values=palette)
+  }
+  if(!is.null(colour)) {
+    g <- g + aes(colour=colour)
+    if(nlevels(m$colour) <= length(palette)) g <- g + scale_color_manual(name=colour, values=palette)
+  }
   g
 }
 

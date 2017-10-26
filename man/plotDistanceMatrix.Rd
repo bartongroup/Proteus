@@ -4,8 +4,7 @@
 \alias{plotDistanceMatrix}
 \title{Plot distance matrix}
 \usage{
-plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10,
-  palette = cbPalette)
+plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10)
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
@@ -13,8 +12,6 @@ plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10,
 \item{distance}{A method to calculate distance.}
 
 \item{text.size}{Text size on axes}
-
-\item{palette}{Palette of colours}
 }
 \description{
 \code{plotDistanceMatrix} plots a distance matrix for peptide or protein

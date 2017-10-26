@@ -215,6 +215,12 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
   evi$contaminant[is.na(evi$contaminant)] = ''
   evi <- evi[which(evi$contaminant != '+' & evi$reverse != '+'),]
 
+  # replace zeroes with NAs in measure columns
+  evi.meas <- evi[,names(measure.cols), drop=FALSE]
+  evi.meas[evi.meas == 0] <- NA
+  evi[,names(measure.cols)] <- evi.meas
+  rm(evi.meas)
+
   # remove rows that have only NAs in measure columns
   not.empty <- which(rowSums(!is.na(evi[,names(measure.cols), drop=FALSE])) > 0)
   evi <- evi[not.empty,]

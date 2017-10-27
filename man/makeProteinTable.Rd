@@ -4,7 +4,8 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(pepdat, method = "hifly", hifly = 3, min.peptides = 1)
+makeProteinTable(pepdat, method = "hifly", hifly = 3, min.peptides = 1,
+  ncores = 4)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
@@ -16,6 +17,8 @@ created by \code{\link{makePeptideTable}}}
 intensity.}
 
 \item{min.peptides}{Minimum number of peptides per protein.}
+
+\item{ncores}{Number of cores for parallel processing}
 }
 \value{
 A \code{proteusData} object containing protein intensities and

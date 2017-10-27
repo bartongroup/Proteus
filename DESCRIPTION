@@ -21,6 +21,7 @@ Imports:
     methods,
     stats,
     graphics,
-    utils
+    utils,
+    parallel
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr

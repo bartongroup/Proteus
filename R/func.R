@@ -403,6 +403,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' @param hifly The number of top peptides (high-flyers) to be used for protein
 #'   intensity.
 #' @param min.peptides Minimum number of peptides per protein.
+#' @param ncores Number of cores for parallel processing
 #' @return A \code{proteusData} object containing protein intensities and
 #'   metadata.
 #'
@@ -412,7 +413,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' }
 #'
 #' @export
-makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
+makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, ncores=4) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(!(method %in% c("hifly", "sum", "median"))) stop(paste0("Unknown method ", method))
 
@@ -427,7 +428,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
   for(cond in pepdat$conditions) {
     w <- tab[,which(meta$condition == cond), drop=FALSE]
     samples <- colnames(w)
-    protcond <- mclapply(pepdat$proteins, function(prot) {
+    protcond <- parallel::mclapply(pepdat$proteins, function(prot) {
       sel <- which(pepdat$pep2prot$protein == prot)
       npep <- length(sel)
       if(npep >= min.peptides)
@@ -440,7 +441,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1) {
       }
       row <- data.frame(protein=prot, npep=npep, row)
       return(row)
-    }, mc.cores=6)
+    }, mc.cores=ncores)
     protint <- do.call(rbind, protcond)
 
     colnames(protint) <- c("protein", "npep", samples)

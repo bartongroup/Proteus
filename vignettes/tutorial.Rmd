@@ -325,6 +325,28 @@ res <- limmaDE(xpprodat.med, conditions=c("1112", "BMO"))
 
 For more complicated designs we recommend using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) functions directly.
 
+## Proteins present in only one condition
+
+Sometimes data for a given protein is missing entirely from a condition (that is all replicates are `NA` in the intensity table). In such cases, differential expression with `limma` returns `NA` log-fold-change and p-value. However, a protein detected in one condition and not detected in the other condition might be interesting if a non-detection is due to very low abundance. We can easily find such proteins using the look-up table `detect` in an `proteusData` object. It contains logical columns for each condition, with `TRUE` indicating that the protein was detected (in at least one replicate) and `FALSE` when it was not detected (in any replicate).
+
+```{r protein_detection}
+head(xpprodat$detect)
+```
+
+The first protein, `1112-yEGFP` is not detected in `BMO` condition. The proteins detected in only one condition can be found using a logical expression:
+
+```{r missing_condition}
+only.1112 <- which(xpprodat$detect$`1112` & !xpprodat$detect$BMO)
+only.BMO <- which(!xpprodat$detect$`1112` & xpprodat$detect$BMO)
+```
+
+We can list their identifiers from the `proteins` field in the protein object, as in this example for 1112 condition:
+
+```{r missing_condition_proteins}
+as.character(xpprodat$proteins[only.1112])
+```
+
+
 ## Visualization
 
 `proteus` provides with several functions to visualize protein data and the results of the differential expression.

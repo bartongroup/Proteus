@@ -2,6 +2,7 @@
 
 S3method(summary,proteusData)
 export(evidenceColumns)
+export(goodData)
 export(intensityStats)
 export(jaccardSimilarity)
 export(limmaDE)

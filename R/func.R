@@ -125,6 +125,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
   )
   class(pdat) <- append(class(pdat), "proteusData")
   pdat$stats <- intensityStats(pdat)
+  pdat$detect <- goodData(pdat)
 
   return(pdat)
 }
@@ -862,6 +863,32 @@ intensityStats <- function(pdat) {
     rownames(stats) <- NULL
   }
   return(stats)
+}
+
+
+#' Create a table indicating good data.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#'
+#' @return A data frame with rows corresponding to peptides/proteins and columns
+#'   corresponding to conditions. Logical values indicate if at least one
+#'   replicate is available (TRUE) or if all replicates are missing (FALSE).
+#'
+#' @examples
+#' detect <- goodData(xpprodat)
+#'
+#' @export
+goodData <- function(pdat) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
+  meta <- pdat$metadata
+  G <- lapply(pdat$conditions, function(cond){
+    w <- pdat$tab[,which(meta$condition == cond), drop=FALSE]
+    rowSums(!is.na(w)) > 0
+  })
+  good <- as.data.frame(do.call(cbind, G))
+  names(good) <- pdat$conditions
+  return(good)
 }
 
 

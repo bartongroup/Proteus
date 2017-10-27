@@ -292,10 +292,10 @@ plotClustering(xpprodat.med)
 
 # Differential expression
 
-We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes `proteusData` as input.
+We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes a `proteusData` object as input.
 
 ```{r limma, warning=FALSE}
-res <- limmaDE(xpprodat.med)
+res <- limmaDE(xpprodat.med, sig.level=0.05)
 ```
 
 This function creates a data frame with DE results.
@@ -304,17 +304,12 @@ This function creates a data frame with DE results.
 head(res)
 ```
 
-The `adj.P.Val` column contains Benjamini-Hochberg corrected p-values. According to a traditional definition of "significance", the number of significantly differentially expressed proteins is
+Before `limma` is called, intensity data are transformed using the `transform.fun` function (a parameter of `limmaDE`). The default value for this transformation is `log10`. Therefore, by default, the column `logFC` in the output data frame contains log10(M_1/M_2), where M_k represent the mean of condition k. If you need log2-based fold change, you can use `transform.fun=log2`.
 
-```{r significant_protein_number}
-significant <- which(res$adj.P.Val <= 0.05)
-length(significant)
-```
-
-Since the number is small, we can just print the whole list:
+The `significant` column indicates significantly differntially expressed proteins, based on the Benjamini-Hochberg corrected p-values (column `adj.P.Val`) and the significance level defined when calling `limmaDE` (`sig.level=0.05`). It allows for simple filtering of the significant results (below we show only the most important columns, for simplicity):
 
 ```{r show_significant_proteins}
-res[significant,]
+res[which(res$significant), c("protein", "logFC", "adj.P.Val")]
 ```
 
 Note: `limmaDE` requires exactly two conditions to do a differential expression on. When data contain more conditions, a parameter `conditions` is required to select a pair:
@@ -340,7 +335,7 @@ only.1112 <- which(xpprodat$detect$`1112` & !xpprodat$detect$BMO)
 only.BMO <- which(!xpprodat$detect$`1112` & xpprodat$detect$BMO)
 ```
 
-We can list their identifiers from the `proteins` field in the protein object, as in this example for 1112 condition:
+We can list their identifiers from the `proteins` field in the protein object, as in this example for condition `1112`:
 
 ```{r missing_condition_proteins}
 as.character(xpprodat$proteins[only.1112])

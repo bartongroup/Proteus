@@ -5,7 +5,7 @@
 \title{Simple differential expression with limma}
 \usage{
 limmaDE(pdat, formula = "~condition", conditions = NULL,
-  transform.fun = log10)
+  transform.fun = log10, sig.level = 0.05)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
@@ -17,6 +17,8 @@ expression. Can be omitted if there are only two condition in \code{pdat}.}
 
 \item{transform.fun}{A function to transform data before differential
 expression.}
+
+\item{sig.level}{Significance level for rejecting the null hypothesis.}
 }
 \value{
 A data frame with DE results. "logFC" colum is a log10-fold-change.

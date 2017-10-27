@@ -1038,13 +1038,14 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 #'   expression. Can be omitted if there are only two condition in \code{pdat}.
 #' @param transform.fun A function to transform data before differential
 #'   expression.
+#' @param sig.level Significance level for rejecting the null hypothesis.
 #' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
 #'
 #' @examples
 #' res <- limmaDE(xpprodat)
 #'
 #' @export
-limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log10) {
+limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log10, sig.level=0.05) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pdat$metadata
@@ -1068,7 +1069,12 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   coef <- colnames(ebay$design)[2]
   res <- limma::topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
   res <- cbind(protein=rownames(res), res)
+  res$significant <- res$adj.P.Val <= sig.level
   rownames(res) <- c()
+
+  attr(res, "transform.fun") <- deparse(substitute(transform.fun))
+  attr(res, "sig.level") <- sig.level
+
   return(res)
 }
 

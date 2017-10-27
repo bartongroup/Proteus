@@ -110,17 +110,13 @@ plotMV(xpprodat.med, with.loess=TRUE)
 plotClustering(xpprodat.med)
 
 ## ----limma, warning=FALSE-----------------------------------------------------
-res <- limmaDE(xpprodat.med)
+res <- limmaDE(xpprodat.med, sig.level=0.05)
 
 ## ----show_limma_res-----------------------------------------------------------
 head(res)
 
-## ----significant_protein_number-----------------------------------------------
-significant <- which(res$adj.P.Val <= 0.05)
-length(significant)
-
 ## ----show_significant_proteins------------------------------------------------
-res[significant,]
+res[which(res$significant), c("protein", "logFC", "adj.P.Val")]
 
 ## ----limma_conditions, eval=FALSE---------------------------------------------
 #  res <- limmaDE(xpprodat.med, conditions=c("1112", "BMO"))

@@ -165,10 +165,10 @@ summary(xppepdat)
 
 ## Number of peptides
 
-Function `plotPeptideCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
+Function `plotCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
 
 ```{r plot_peptide_count, fig.width=5, fig.height=4}
-plotPeptideCount(xppepdat)
+plotCount(xppepdat)
 ```
 
 ## Jaccard similarity

@@ -678,34 +678,34 @@ plotClustering <- function(pdat) {
 }
 
 
-#' Plot peptide count per sample
+#' Plot peptide or protein count per sample
 #'
-#' \code{plotPeptideCount} makes a plot of peptide count per sample.
+#' \code{plotCount} makes a plot of peptide/protein count per sample.
 #'
-#' @param pdat Peptide \code{proteusData} object.
+#' @param pdat A \code{proteusData} object.
 #' @param x.text.size Size of text on the x-axis.
 #' @param palette Palette of colours
-#' @return A plot of the number of peptides detected in each sample.
+#' @return A plot of the number of peptides/proteins detected in each sample.
 #'
 #' @examples
-#' plotPeptideCount(xppepdat)
+#' plotCount(xppepdat)
 #'
 #' @export
-plotPeptideCount <- function(pdat, x.text.size=10, palette=cbPalette){
+plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  meta <- pdat$meta
-  pep.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
-  med.count <- median(pep.count)
-  df <- data.frame(x=meta$sample, y=pep.count, condition=meta$condition)
+  meta <- pdat$metadata
+  entry.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
+  med.count <- median(entry.count)
+  df <- data.frame(x=meta$sample, y=entry.count, condition=meta$condition)
   g <- ggplot(df, aes(x=x,y=y,fill=condition)) +
     geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size)) +
-    labs(x='Sample', y='Peptide count') +
-    labs(title = paste0("Median peptide count = ", med.count)) +
+    labs(x="Sample", y="Count") +
+    labs(title = paste0("Median count = ", med.count)) +
     theme(plot.title=element_text(hjust=0, size=12))
-  if(length(df$x) <= length(palette)) g <- g + scale_fill_manual(values=palette)
+  if(nlevels(as.factor(df$condition)) <= length(palette)) g <- g + scale_fill_manual(values=palette)
   g
 }
 

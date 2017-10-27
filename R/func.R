@@ -989,30 +989,39 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
 
 #' Simple differential expression with limma
 #'
-#' \code{limmaDE} is a wrapper around \code{\link{limma}} to performa a differential
-#' expression between a pair of conditions.
+#' \code{limmaDE} is a wrapper around \code{\link{limma}} to perform a
+#' differential expression between a pair of conditions.
 #'
-#' @details Before \code{limma} is called, intensity data are log-transformed
-#'   using base-10 logarithms. Therefore, the column "logFC" in the output data
-#'   frame contains log10 fold change (not log2!). If you need log2-based fold
-#'   change, you need to convert the column: `res$logFC <- res$logFC /
-#'   log10(2)`.
+#' @details
+#'
+#' Before \code{limma} is called, intensity data are transformed using the
+#' \code{transform.fun} function. The default for this transformation is
+#' \code{log10}. Therefore, by default, the column "logFC" in the output data
+#' frame contains log10 fold change. If you need log2-based fold change, you can
+#' use \code{transform.fun=log2}.
+#'
+#' \code{limmaDE} is only a simple wrapper around \code{\link{limma}}, to
+#' perform differential expression between two conditions. For more complicated
+#' designs we recommend using \code{\link{limma}} functions directly.
+#'
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param formula A string with a formula for building the linear model.
 #' @param conditions A character vector with two conditions for differential
 #'   expression. Can be omitted if there are only two condition in \code{pdat}.
+#' @param transform.fun A function to transform data before differential
+#'   expression.
 #' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
 #'
 #' @examples
 #' res <- limmaDE(xpprodat)
 #'
 #' @export
-limmaDE <- function(pdat, formula="~condition", conditions=NULL) {
+limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pdat$metadata
-  tab <- log10(pdat$tab)
+  tab <- transform.fun(pdat$tab)
 
   if(!is.null(conditions)) {
     for(cond in conditions ) {

@@ -1107,6 +1107,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
                    binhex=TRUE) {
+  if(binhex & marginal.histograms) {
+    warning("Cannot plot with both binhex=TRUE and marginal.histograms=TRUE. Ignoring binhex.")
+    binhex=FALSE
+  }
+
   if(is.null(pair)) pair <- pdat$conditions
   if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair parameter.")
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -1172,6 +1177,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'@param bins Number of bins for binhex.
 #'@param xmax Upper limit on x-axis. If used, the lower limit is -xmax.
 #'@param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
+#'@param marginal.histograms A logical to add marginal histograms.
 #'@param text.size Text size.
 #'@param show.legend Logical to show legend (colour key).
 #'@param plot.grid Logical to plot grid.
@@ -1183,18 +1189,28 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #' plotVolcano(res)
 #'
 #'@export
-plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE,
+plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=FALSE, text.size=12, show.legend=TRUE,
                         plot.grid=TRUE, binhex=TRUE) {
+  if(binhex & marginal.histograms) {
+    warning("Cannot plot with both binhex=TRUE and marginal.histograms=TRUE. Ignoring binhex.")
+    binhex=FALSE
+  }
+
+  tr <- attr(res, "transform.fun")
+  xlab <- ifelse(is.null(tr), "FC", paste(tr, "FC"))
+
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
     {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=protein))} +
-    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA) +
+    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA) +
     geom_vline(colour='red', xintercept=0) +
-    theme(text = element_text(size=text.size))
-    # labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1))
+    theme(text = element_text(size=text.size)) +
+    labs(x=xlab, y="-log10 P")
 
     if(!is.null(xmax)) g <- g + scale_x_continuous(limits = c(-xmax, xmax), expand = c(0, 0))
     if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(0, ymax), expand = c(0, 0))
+
+    if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))
   return(g)
 }
 

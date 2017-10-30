@@ -4,8 +4,9 @@
 \alias{plotVolcano}
 \title{Volcano plot}
 \usage{
-plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
-  show.legend = TRUE, plot.grid = TRUE, binhex = TRUE)
+plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL,
+  marginal.histograms = FALSE, text.size = 12, show.legend = TRUE,
+  plot.grid = TRUE, binhex = TRUE)
 }
 \arguments{
 \item{res}{Result table from  \code{\link{limmaDE}}.}
@@ -15,6 +16,8 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL, text.size = 12,
 \item{xmax}{Upper limit on x-axis. If used, the lower limit is -xmax.}
 
 \item{ymax}{Upper limit on y-axis. If used, the lower limit is -ymax.}
+
+\item{marginal.histograms}{A logical to add marginal histograms.}
 
 \item{text.size}{Text size.}
 

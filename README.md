@@ -14,8 +14,9 @@ devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth
 
 ## Tutorial
 
-Proteus contains a tutorial vignette
+Proteus contains tutorial vignettes for unlabelled and TMT analysis
 
 ```r
-vignette("tutorial", package="proteus")
+vignette("unlabelled", package="proteus")
+vignette("TMT", package="proteus")
 ```

@@ -369,10 +369,10 @@ plotPdist(res)
 
 ## Individual proteins
 
-We can also look at individual protein. The function `plotProteins` plots intensities of individual samples per condition, or other selected quantity (e.g. batch). Here is one of the up-regulated proteins.
+We can also look at individual protein. The function `plotIntensities` plots intensities of individual samples per condition, or other selected quantity (e.g. batch). Here is one of the up-regulated proteins.
 
 ```{r plot_proteins, fig.width=4, fig.height=4, warning=FALSE}
-plotProteins(xpprodat.med, protein='sp|P26263|PDC6_YEAST', log=TRUE)
+plotIntensities(xpprodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
 ```
 
 A better understanding of the protein's behaviour might be gained via function `plotProtPeptides`, which shows intensities of individual peptides and replicates for the given protein.

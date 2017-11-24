@@ -950,14 +950,14 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   return(g)
 }
 
-#' Plot protein(s)
+#' Plot protein/peptide intensities
 #'
-#' \code{plotProteins} makes a plot with protein intensity as a function of the
-#' condition and replicate. When multiple proteins are entered, the mean and
+#' \code{plotIntensities} makes a plot with peptide/protein intensity as a function of the
+#' condition and replicate. When multiple IDs are entered, the mean and
 #' standard error is plotted.
 #'
-#' @param pdat Protein \code{proteusData} object.
-#' @param protein Protein name (string) or a vector with protein names.
+#' @param pdat A \code{proteusData} object.
+#' @param is Protein name, peptide sequence or a vector with these.
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
 #' @param ymax Upper bound for y-axis
@@ -966,16 +966,25 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param title Title of the plot (defaults to protein name)
 #'
 #' @examples
-#' plotProteins(xpprodat, "sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
+#' plotIntensities(xpprodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
 #'
 #' @export
-plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
+plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
                          text.size=12, point.size=3, title=NULL) {
   # without 'as.numeric' it returns logical NA (!!!)
 
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  if(is.null(id)) stop ("Need peptide/protein id.")
 
-  sel <- which(pdat$proteins %in% protein)
+  if(pdat$content == "peptide") {
+    selcol <- pdat$peptides
+  } else if (pdat$content == "protein") {
+    selcol <- pdat$proteins
+  } else {
+    stop("Unrecognized content in pdat object.")
+  }
+  sel <- which(selcol %in% id)
+
   if(length(sel) > 0 && sel > 0) {
     E <- if(log) log10(pdat$tab[sel,,drop=FALSE]) else pdat$tab[sel,,drop=FALSE]
     e <- colMeans(E, na.rm=TRUE)
@@ -983,7 +992,7 @@ plotProteins <- function(pdat, protein=protein, log=FALSE, ymin=as.numeric(NA), 
     n <- length(sel)
 
     if(is.null(title)) {
-      title <- ifelse(n == 1, protein, paste0("selection of ", n, " proteins."))
+      title <- ifelse(n == 1, id, paste0("selection of ", n, " ", pdat$content, "s."))
     }
 
     meta <- pdat$metadata

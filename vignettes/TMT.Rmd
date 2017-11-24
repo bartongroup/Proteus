@@ -180,5 +180,5 @@ And the top protein from the table:
 
 ```{r DE_example1, fig.width=8, fig.height=3}
 prot <- as.character(res$protein[1])
-plotProteins(xtprodat.norm, protein=prot)
+plotIntensities(xtprodat.norm, id=prot)
 ```

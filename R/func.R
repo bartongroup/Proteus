@@ -1197,10 +1197,11 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
 
   tr <- attr(res, "transform.fun")
   xlab <- ifelse(is.null(tr), "FC", paste(tr, "FC"))
+  id <- names(res)[1]
 
   g <- ggplot(res, aes(logFC, -log10(P.Value))) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
-    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=protein))} +
+    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes_string(text=id))} +
     scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA) +
     geom_vline(colour='red', xintercept=0) +
     theme(text = element_text(size=text.size)) +

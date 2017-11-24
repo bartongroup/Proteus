@@ -365,7 +365,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   rownames(tab) <- peptides
 
   # peptide to protein conversion
-  pep2prot <- data.frame(sequence=evi$sequence, protein=evi$protein)
+  pep2prot <- data.frame(sequence=evi[[pepseq]], protein=evi$protein)
   pep2prot <- unique(pep2prot)
   rownames(pep2prot) <- pep2prot$sequence
   pep2prot <- pep2prot[peptides,]
@@ -1059,15 +1059,15 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
     tab <- tab[,sel]
   }
 
-  if(nlevels(meta$condition) != 2) stop("This function requires exactly two conditions. Use parameter conditions.
-                                        ")
+  if(nlevels(meta$condition) != 2) stop("This function requires exactly two conditions. Use the parameter conditions.")
 
   design <- model.matrix(as.formula(formula), meta)
   fit <- limma::lmFit(tab, design)
   ebay <- limma::eBayes(fit)
   coef <- colnames(ebay$design)[2]
   res <- limma::topTable(ebay, coef=coef, adjust="BH", sort.by="none", number=1e9)
-  res <- cbind(protein=rownames(res), res)
+  res <- cbind(rownames(res), res)
+  colnames(res)[1] <- pdat$content
   res$significant <- res$adj.P.Val <= sig.level
   rownames(res) <- c()
 

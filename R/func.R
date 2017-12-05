@@ -954,8 +954,9 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
   stats <- stats[which(!is.na(stats$mean) & !is.na(stats$variance) & stats$mean > 0 & stats$variance > 0),]
   stats$mean <- log10(stats$mean)
   stats$variance <- log10(stats$variance)
-  protnum <- as.data.frame(table(stats$condition))  #number of proteins in each condition
+  protnum <- as.data.frame(table(stats$condition))  # number of proteins in each condition
   colnames(protnum) <- c("condition", "n")
+  protnum$labn <- paste0("n = ", protnum$n)
 
   # has to be calculated for each condition separately
   if(with.loess) {
@@ -979,7 +980,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     stat_binhex(bins=bins) +
     theme(text = element_text(size=text.size)) +
     scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
-  if(with.n) g <- g + geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=paste0("n = ", n)))
+  if(with.n) g <- g + geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=labn))
   if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')
   return(g)
 }
@@ -1184,7 +1185,7 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
   title <- paste0(c1, ":", c2)
   g <- ggplot(d, aes(x=x, y=y)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
-    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes(text=id))}+
+    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point()}+
     scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA) +
     #geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
     geom_abline(colour='red', slope=0, intercept=0) +

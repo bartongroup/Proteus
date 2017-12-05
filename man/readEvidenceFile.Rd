@@ -33,8 +33,8 @@ unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
 }
 \examples{
 \dontrun{
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
-xpevi <- readEvidenceFile(evidenceFile)
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+evi <- readEvidenceFile(evidenceFile)
 }
 
 }

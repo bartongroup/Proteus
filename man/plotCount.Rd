@@ -20,6 +20,9 @@ A plot of the number of peptides/proteins detected in each sample.
 \code{plotCount} makes a plot of peptide/protein count per sample.
 }
 \examples{
-plotCount(xppepdat)
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+plotCount(pepdat)
+}
 }

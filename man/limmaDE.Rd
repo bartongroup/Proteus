@@ -39,6 +39,9 @@ perform differential expression between two conditions. For more complicated
 designs we recommend using \code{\link{limma}} functions directly.
 }
 \examples{
-res <- limmaDE(xpprodat)
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+res <- limmaDE(prodat)
+}
 }

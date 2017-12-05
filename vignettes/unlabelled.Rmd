@@ -32,7 +32,12 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*.
+This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. It uses example data distributed in a package *proteusUnlabelled*, which needs loading first:
+
+```{r load_data}
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+```
 
 # Input data
 
@@ -51,20 +56,20 @@ Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contam
 
 ```{r read_evidence, eval=FALSE}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
-xpevi <- readEvidenceFile(evidenceFile)
+evi <- readEvidenceFile(evidenceFile)
 ```
 
-`xpevi` is a data frame with selected columns from the evidence file:
+`evi` is a data frame with selected columns from the evidence file:
 
 ```{r head_evidence}
-head(xpevi)
+head(evi)
 ```
 
 This can be a large object:
 
 ```{r size_evidence}
-dim(xpevi)
-format(object.size(xpevi), units="Mb")
+dim(evi)
+format(object.size(evi), units="Mb")
 ```
 
 
@@ -97,13 +102,13 @@ myColumns <- c(evidenceColumns, mz="m/z")
 The new column list can be used with `readEvidenceFile`:
 
 ```{r my_columns_evidence, eval=FALSE}
-xpevi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
+evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 ```
 
 To quickly check what the column names are in a given evidence file, we can read one row and see its names:
 
 ```{r evidence_column_names}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 evicols <- read.delim(evidenceFile, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
 names(evicols)
 ```
@@ -113,14 +118,14 @@ names(evicols)
 We also need metadata. In our example it is stored in the file attached to the package:
 
 ```{r metadata}
-metadataFile <- system.file("extdata", "metadata.txt", package="proteus")
-xpmeta <- read.delim(metadataFile, header=TRUE, sep="\t")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
 ```
 
 It contains the design of our experiment:
 
 ```{r show_metadata}
-xpmeta
+meta
 ```
 
 This metadata information will be attached to every peptide and protein object used by Proteus.
@@ -132,7 +137,7 @@ Metadata object should be a data frame with at least four columns: `experiment`,
 - Column `experiment` should contain the same values as in the `Experiment` column in the evidence file. In our case there are 14 unique experiments. We can see all unique experiment names in the evidence data using `unique` function:
 
 ```{r metadata_samples}
-unique(xpevi$experiment)
+unique(evi$experiment)
 ```
 
 - Column `measure` refers to measure columns in the evidence file. In case of an unlabelled experiment there is only one measure column, "Intensity". In multiplexed data there can be several measure columns.
@@ -150,19 +155,19 @@ Other columns can be added and used for the downstream analysis. Here, we added 
 We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates table, where rows correspond to peptides and columns correspond to samples (as provided in metadata). Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added in unlabelled data (we warn that this might not be the best approach due to presence of downliers in peptide data - more to come soon).
 
 ```{r make_peptides, eval=FALSE}
-xppepdat <- makePeptideTable(xpevi, xpmeta)
+pepdat <- makePeptideTable(evi, meta)
 ```
 
-`xppepdat` is an object of class `proteusData`. It consists of the intensity table (`xppepdat$tab`) and additional information. The first fife rows and columns from the intensity table are
+`pepdat` is an object of class `proteusData`. It consists of the intensity table (`pepdat$tab`) and additional information. The first fife rows and columns from the intensity table are
 
 ```{r show_peptides}
-xppepdat$tab[1:5, 1:5]
+pepdat$tab[1:5, 1:5]
 ```
 
-We can use generic `summary` function to see more information about `xppepdat`.
+We can use generic `summary` function to see more information about `pepdat`.
 
 ```{r summary_peptides}
-summary(xppepdat)
+summary(pepdat)
 ```
 
 ## Number of peptides
@@ -170,7 +175,7 @@ summary(xppepdat)
 Function `plotCount()` plots, as the name suggests, peptide count in each sample. This is the number of non-zero peptide intensities per sample. 
 
 ```{r plot_peptide_count, fig.width=5, fig.height=4}
-plotCount(xppepdat)
+plotCount(pepdat)
 ```
 
 ## Jaccard similarity
@@ -178,7 +183,7 @@ plotCount(xppepdat)
 Function `plotDetectionSimilarity()` calculates Jaccard similarity between each pair of samples and plots its distribution. The similarity is based on detection. For a pair of samples it compares the number of detected peptides in both samples (intersection) divided by the total number of peptides detected in both samples (union). This measure of similarity is a number between 0 and 1.
 
 ```{r plot_detection_similarity, fig.width=5, fig.height=4}
-plotDetectionSimilarity(xppepdat, bin.size = 0.02)
+plotDetectionSimilarity(pepdat, bin.size = 0.02)
 ```
 
 ## Distance matrix
@@ -186,7 +191,7 @@ plotDetectionSimilarity(xppepdat, bin.size = 0.02)
 Function `plotDistanceMatrix()` calculates the Pearson's correlation coefficient for each pair of samples and plots a heatmap:
 
 ```{r plot_correlation_matrix, fig.width=6, fig.height=5}
-plotDistanceMatrix(xppepdat)
+plotDistanceMatrix(pepdat)
 ```
 
 ## Clustering
@@ -194,7 +199,7 @@ plotDistanceMatrix(xppepdat)
 We can use `plotClustering()` to see a dendrogram of the peptide data set:
 
 ```{r plot_clusterin, fig.width=6, fig.height=5}
-plotClustering(xppepdat)
+plotClustering(pepdat)
 ```
 
 ## Removing bad data
@@ -204,26 +209,26 @@ The last sample (BMO-7) in the example data looks odd. Lets say we call it "bad"
 Warning: this is only an example. You should exercise caution when removing any of your data.
 
 ```{r remove_bad_replicate}
-xpmeta.clean <- xpmeta[which(xpmeta$sample  != 'BMO-7'),]
+meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
 ```
 
 Now, we create a new "clean" peptide data set from evidence data:
 
 ```{r make_clean_peptides, eval=FALSE}
-xppepdat.clean <- makePeptideTable(xpevi, xpmeta.clean)
+pepdat.clean <- makePeptideTable(evi, meta.clean)
 ```
 
-The new data `xppepdat.clean` will contain only samples included in the metadata, that is
+The new data `pepdat.clean` will contain only samples included in the metadata, that is
 
 ```{r clean_peptides_samples}
-as.character(xpmeta.clean$sample)
+as.character(meta.clean$sample)
 ```
 
 
 Clustering confirms that the offending sample is gone.
 
 ```{r, fig.width=6, fig.height=5}
-plotClustering(xppepdat.clean)
+plotClustering(pepdat.clean)
 ```
 
 
@@ -236,13 +241,13 @@ There are many approaches to aggregating peptides into proteins. For simplicity,
 `makeProteinTable()` creates a protein data set from the peptide data. The result is a `proteusData` object containing protein intensity table and other information.
 
 ```{r make_proteins, eval=FALSE}
-xpprodat <- makeProteinTable(xppepdat.clean)
+prodat <- makeProteinTable(pepdat.clean)
 ```
 
 Again, we can use a generic `summary` function to see its properties.
 
 ```{r summary_proteins}
-summary(xpprodat)
+summary(prodat)
 ```
 
 ## Normalization
@@ -250,27 +255,27 @@ summary(xpprodat)
 Finally, we need to normalize data to account for variation of intensity between samples. The function `normalizeData()` can normalize peptide or protein data. Up to this point, we haven't applied any normalization. The default normalization is to the median. After this step, median sample intensities will be equal.
 
 ```{r normalize_proteins}
-xpprodat.med <- normalizeData(xpprodat)
+prodat.med <- normalizeData(prodat)
 ```
 
 The second parameter to `normalizeData()` is `norm.fun` and it points to a normalizing function. By default, this is `normalizeMedian`, but other normalizations can be used. For example, it works with `normalizeQuantiles` from `limma` package:
 
 ```{r normalize_proteins_quantiles}
-xpprodat.quant <- normalizeData(xpprodat, norm.fun=limma::normalizeQuantiles)
+prodat.quant <- normalizeData(prodat, norm.fun=limma::normalizeQuantiles)
 ```
 
 The function `plotSampleDistributions()` can be used to compare intensity distributions for each normalization.
 
 ```{r intensity_distributions_1, fig.width=5, fig.height=4}
-plotSampleDistributions(xpprodat, title="Not normalized", fill="condition", method="violin")
+plotSampleDistributions(prodat, title="Not normalized", fill="condition", method="violin")
 ```
 
 ```{r intensity_distributions_2, fig.width=5, fig.height=4}
-plotSampleDistributions(xpprodat.med, title="Median normalization", fill="condition", method="violin")
+plotSampleDistributions(prodat.med, title="Median normalization", fill="condition", method="violin")
 ```
 
 ```{r intensity_distributions_3, fig.width=5, fig.height=4}
-plotSampleDistributions(xpprodat.quant, title="Quantile normalization", fill="condition", method="violin")
+plotSampleDistributions(prodat.quant, title="Quantile normalization", fill="condition", method="violin")
 ```
 
 
@@ -281,7 +286,7 @@ plotSampleDistributions(xpprodat.quant, title="Quantile normalization", fill="co
 Some statistics (like mean and variance across replicate in each condition) are stored directly in the `prodat` object at the moment of creation. We can apply `plotMV()` function to plot the mean-variance relationship.
 
 ```{r plot_mv, fig.width=6, fig.height=4, warning=FALSE}
-plotMV(xpprodat.med, with.loess=TRUE)
+plotMV(prodat.med, with.loess=TRUE)
 ```
 
 ## Protein clustering
@@ -289,7 +294,7 @@ plotMV(xpprodat.med, with.loess=TRUE)
 We can use the same function `plotClustering()` to see the dendrogram for the proteins.
 
 ```{r plot_clustering_proteins, fig.width=6, fig.height=5}
-plotClustering(xpprodat.med)
+plotClustering(prodat.med)
 ```
 
 # Differential expression
@@ -297,7 +302,7 @@ plotClustering(xpprodat.med)
 We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes a `proteusData` object as input.
 
 ```{r limma, warning=FALSE}
-res <- limmaDE(xpprodat.med, sig.level=0.05)
+res <- limmaDE(prodat.med, sig.level=0.05)
 ```
 
 This function creates a data frame with DE results.
@@ -317,7 +322,7 @@ res[which(res$significant), c("protein", "logFC", "adj.P.Val")]
 Note: `limmaDE` requires exactly two conditions to do a differential expression on. When data contain more conditions, a parameter `conditions` is required to select a pair:
 
 ```{r limma_conditions, eval=FALSE}
-res <- limmaDE(xpprodat.med, conditions=c("1112", "BMO"))
+res <- limmaDE(prodat.med, conditions=c("1112", "BMO"))
 ```
 
 For more complicated designs we recommend using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) functions directly.
@@ -327,20 +332,20 @@ For more complicated designs we recommend using [limma](http://bioconductor.org/
 Sometimes data for a given protein is missing entirely from a condition (that is all replicates are `NA` in the intensity table). In such cases, differential expression with `limma` returns `NA` log-fold-change and p-value. However, a protein detected in one condition and not detected in the other condition might be interesting if a non-detection is due to very low abundance. We can easily find such proteins using the look-up table `detect` in an `proteusData` object. It contains logical columns for each condition, with `TRUE` indicating that the protein was detected (in at least one replicate) and `FALSE` when it was not detected (in any replicate).
 
 ```{r protein_detection}
-head(xpprodat$detect)
+head(prodat$detect)
 ```
 
 The first protein, `1112-yEGFP` is not detected in `BMO` condition. The proteins detected in only one condition can be found using a logical expression:
 
 ```{r missing_condition}
-only.1112 <- which(xpprodat$detect$`1112` & !xpprodat$detect$BMO)
-only.BMO <- which(!xpprodat$detect$`1112` & xpprodat$detect$BMO)
+only.1112 <- which(prodat$detect$`1112` & !prodat$detect$BMO)
+only.BMO <- which(!prodat$detect$`1112` & prodat$detect$BMO)
 ```
 
 We can list their identifiers from the `proteins` field in the protein object, as in this example for condition `1112`:
 
 ```{r missing_condition_proteins}
-as.character(xpprodat$proteins[only.1112])
+as.character(prodat$proteins[only.1112])
 ```
 
 
@@ -351,7 +356,7 @@ as.character(xpprodat$proteins[only.1112])
 Fold-change-intensity plot:
 
 ```{r plot_fid, fig.width=4, fig.height=4, warning=FALSE}
-plotFID(xpprodat.med)
+plotFID(prodat.med)
 ```
 
 Volcano plot:
@@ -372,11 +377,11 @@ plotPdist(res)
 We can also look at individual protein. The function `plotIntensities` plots intensities of individual samples per condition, or other selected quantity (e.g. batch). Here is one of the up-regulated proteins.
 
 ```{r plot_proteins, fig.width=4, fig.height=4, warning=FALSE}
-plotIntensities(xpprodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
+plotIntensities(prodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
 ```
 
 A better understanding of the protein's behaviour might be gained via function `plotProtPeptides`, which shows intensities of individual peptides and replicates for the given protein.
 
 ```{r plot_prot_peptides, fig.width=7, fig.height=6, warning=FALSE}
-plotProtPeptides(xppepdat.clean, 'sp|P26263|PDC6_YEAST', xpprodat.med)
+plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 ```

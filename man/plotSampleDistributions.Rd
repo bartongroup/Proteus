@@ -45,6 +45,10 @@ plotSampleDistributions(pdat, title = "", method = c("violin", "dist",
 \code{plotSampleDistributions} makes a boxplot with intensity/ratio distribution for each sample.
 }
 \examples{
-plotSampleDistributions(xpprodat)
-plotSampleDistributions(normalizeData(xpprodat))
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+plotSampleDistributions(prodat)
+plotSampleDistributions(normalizeData(prodat))
+}
 }

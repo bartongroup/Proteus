@@ -18,6 +18,9 @@ A data frame with rows corresponding to peptides/proteins and columns
 Create a table indicating good data.
 }
 \examples{
-detect <- goodData(xpprodat)
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+detect <- goodData(prodat)
+}
 }

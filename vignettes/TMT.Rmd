@@ -38,6 +38,13 @@ This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Pro
 vignette("unlabelled", package="proteus")
 ```
 
+Here we use example data distributed in a separate package *proteusTMT*, which needs loading first:
+
+```{r load_data}
+library(proteusTMT)
+data(proteusTMT)
+```
+
 # Input data
 
 ## Columns in evidence file
@@ -63,14 +70,14 @@ We are going to use the default `evidenceColumns` object, but the user should ca
 Due to its large size we do not attach the TMT evidence file to this package. The command to read the file would be:
 
 ```{r read_evidence, eval=FALSE}
-evidenceFile <- "../../GreatProt/data/Cell_cycle_TMT/evidence.txt"
-xtevi <- readEvidenceFile(evidenceFile, measure.cols=measCols)
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusTMT")
+evi <- readEvidenceFile(evidenceFile, measure.cols=measCols)
 ```
 
-We do attach an example processed evidence data with the package, it is called `xtevi`. It contains all reported intensity columns:
+We do attach an example processed evidence data with the package, it is called `evi`. It contains all reported intensity columns:
 
 ```{r head_evidence}
-head(xtevi)
+head(evi)
 ```
 
 ## <a id="Metadata"></a>Metadata
@@ -78,12 +85,12 @@ head(xtevi)
 Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:
 
 ```{r metadata, eval=FALSE}
-metadataFile <- "../../GreatProt/data/Cell_cycle_TMT/metadata.txt"
-xtmeta <- read.delim(metadataFile, header=TRUE, sep="\t")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusTMT")
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
 ```
 
 ```{r show_metadata}
-xtmeta
+meta
 ```
 
 
@@ -94,13 +101,13 @@ xtmeta
 We chose the median to aggregate peptide intensities from multiple entries in the evidence data:
 
 ```{r make_peptides, eval=FALSE}
-xtpepdat <- makePeptideTable(xtevi, xtmeta, measure.cols=measCols, fun.aggregate=median, experiment.type="TMT")
+pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, fun.aggregate=median, experiment.type="TMT")
 ```
 
 We can use generic `summary` function to see more information about `xppepdat`.
 
 ```{r summary_peptides}
-summary(xtpepdat)
+summary(pepdat)
 ```
 
 ## Number of peptides
@@ -108,7 +115,7 @@ summary(xtpepdat)
 This is the number of non-zero peptide intensities per sample. 
 
 ```{r plot_peptide_count, fig.width=5, fig.height=4}
-plotCount(xtpepdat)
+plotCount(pepdat)
 ```
 
 
@@ -121,13 +128,13 @@ plotCount(xtpepdat)
 We create protein data using the high-flyer method.
 
 ```{r make_proteins, eval=FALSE}
-xtprodat <- makeProteinTable(xtpepdat, method="hifly", hifly=3)
+prodat <- makeProteinTable(pepdat, method="hifly", hifly=3)
 ```
 
 Again, we can use a generic `summary` function to see its properties.
 
 ```{r summary_proteins}
-summary(xtprodat)
+summary(prodat)
 ```
 
 ## Normalization
@@ -136,14 +143,14 @@ For TMT data we recommend using CONSTANd normalization [Maes et al. 2016](https:
 
 
 ```{r normalize_proteins}
-xtprodat.norm <- normalizeTMT(xtprodat)
+prodat.norm <- normalizeTMT(prodat)
 ```
 
 These two figures show reporter intensity distributions before and after normalization.
 
 ```{r, sample_dist, fig.width=7, fig.height=4}
-plotSampleDistributions(xtprodat, fill="replicate") + labs(title="Before")
-plotSampleDistributions(xtprodat.norm, log.scale=FALSE, fill="replicate") + labs(title="After")
+plotSampleDistributions(prodat, fill="replicate") + labs(title="Before")
+plotSampleDistributions(prodat.norm, log.scale=FALSE, fill="replicate") + labs(title="After")
 ```
 
 
@@ -152,7 +159,7 @@ plotSampleDistributions(xtprodat.norm, log.scale=FALSE, fill="replicate") + labs
 We can use the same function `plotClustering()` to see the dendrogram for the proteins.
 
 ```{r plot_clustering_proteins, fig.width=6, fig.height=5}
-plotClustering(xtprodat.norm)
+plotClustering(prodat.norm)
 ```
 
 # Differential expression
@@ -160,7 +167,7 @@ plotClustering(xtprodat.norm)
 These particular data come from a time-course experiment that would require analysis beyond *Proteus* package. We can however show how differential expression can be used to identify proteins changing between the first and middle time point:
 
 ```{r DE_C0_C4}
-res <- limmaDE(xtprodat.norm, conditions=c("C0", "C5"))
+res <- limmaDE(prodat.norm, conditions=c("C0", "C5"))
 ```
 
 The distribution of p-values looks fine.
@@ -180,5 +187,5 @@ And the top protein from the table:
 
 ```{r DE_example1, fig.width=8, fig.height=3}
 prot <- as.character(res$protein[1])
-plotIntensities(xtprodat.norm, id=prot)
+plotIntensities(prodat.norm, id=prot)
 ```

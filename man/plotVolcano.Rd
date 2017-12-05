@@ -33,7 +33,10 @@ is a simple point plot.}
 \code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 }
 \examples{
-res <- limmaDE(xpprodat)
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+res <- limmaDE(prodat)
 plotVolcano(res)
-
+}
 }

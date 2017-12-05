@@ -57,7 +57,7 @@ easy: select only required rows in the metadata data frame.
 }
 \examples{
 \dontrun{
-xppepdat <- makePeptideTable(xpevi, xpmeta)
+pepdat <- makePeptideTable(evi, meta)
 }
 
 }

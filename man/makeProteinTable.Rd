@@ -41,7 +41,9 @@ The "median", well, you can guess.
 }
 \examples{
 \dontrun{
-xpprodat <- makeProteinTable(xppepdat.clean)
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+prodat <- makeProteinTable(pepdat.clean)
 }
 
 }

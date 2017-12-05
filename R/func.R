@@ -137,9 +137,6 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
 #' @param ... additional arguments affecting the summary produced.
 #'
 #' @export
-#'
-#' @examples
-#' summary(xpprodat)
 summary.proteusData <- function(object, ...) {
   cat("\n*** Basic statistics ***\n\n")
   cat(paste0("  content = ", object$content, "\n"))
@@ -190,8 +187,8 @@ summary.proteusData <- function(object, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
-#' xpevi <- readEvidenceFile(evidenceFile)
+#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#' evi <- readEvidenceFile(evidenceFile)
 #' }
 #'
 #' @export
@@ -309,7 +306,7 @@ readMaxQuantTable <- function(file, meta, id, columns) {
 #'
 #' @examples
 #' \dontrun{
-#' xppepdat <- makePeptideTable(xpevi, xpmeta)
+#' pepdat <- makePeptideTable(evi, meta)
 #' }
 #'
 #' @export
@@ -410,7 +407,9 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #'
 #' @examples
 #' \dontrun{
-#' xpprodat <- makeProteinTable(xppepdat.clean)
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' prodat <- makeProteinTable(pepdat.clean)
 #' }
 #'
 #' @export
@@ -514,8 +513,11 @@ makeProtein <- function(wp, method, hifly=3) {
 #' @return Normalized matrix.
 #'
 #' @examples
-#' normtab <- normalizeMedian(xpprodat$tab)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' normtab <- normalizeMedian(prodat$tab)
+#' }
 #' @export
 normalizeMedian <- function(tab) {
   norm.fac <- apply(tab, 2, function(x) {median(x, na.rm=TRUE)})
@@ -542,8 +544,11 @@ normalizeMedian <- function(tab) {
 #'   \code{normalizeQuantiles} from the \code{limma} package.
 #'
 #' @examples
-#' xpprodat.med <- normalizeData(xpprodat, norm.fun=normalizeMedian)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' prodat.med <- normalizeData(prodat, norm.fun=normalizeMedian)
+#' }
 #' @export
 normalizeData <- function(pdat, norm.fun=normalizeMedian) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -632,8 +637,11 @@ normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
 #' @param text.size Text size on axes
 #'
 #' @examples
-#' plotDistanceMatrix(xppepdat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotDistanceMatrix(pepdat)
+#' }
 #' @export
 plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -663,8 +671,11 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
 #' @param pdat Peptide or protein \code{proteusData} object.
 #'
 #' @examples
-#' plotClustering(xppepdat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotClustering(pepdat)
+#' }
 #' @export
 plotClustering <- function(pdat) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -688,8 +699,11 @@ plotClustering <- function(pdat) {
 #' @return A plot of the number of peptides/proteins detected in each sample.
 #'
 #' @examples
-#' plotCount(xppepdat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotCount(pepdat)
+#' }
 #' @export
 plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -720,8 +734,11 @@ plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
 #' @return Jaccard similarity between x and y
 #'
 #' @examples
-#' sim <- jaccardSimilarity(xppepdat$tab[,1], xppepdat$tab[,2])
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' sim <- jaccardSimilarity(pepdat$tab[,1], pepdat$tab[,2])
+#' }
 #' @export
 #'
 jaccardSimilarity <- function(x, y) {
@@ -747,7 +764,11 @@ jaccardSimilarity <- function(x, y) {
 #' @param hist.colour Colour of the histogram.
 #'
 #' @examples
-#' plotDetectionSimilarity(xppepdat)
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotDetectionSimilarity(pepdat)
+#' }
 #'
 #' @export
 #'
@@ -791,8 +812,12 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @export
 #'
 #' @examples
-#' plotSampleDistributions(xpprodat)
-#' plotSampleDistributions(normalizeData(xpprodat))
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotSampleDistributions(prodat)
+#' plotSampleDistributions(normalizeData(prodat))
+#' }
 plotSampleDistributions <-
 function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.grid.rows=3, hist.bins=100,              x.text.angle=90, vmin=as.numeric(NA), vmax=as.numeric(NA), log.scale=TRUE, log.base=10, palette=cbPalette,
          fill=NULL, colour=NULL, hline=FALSE) {
@@ -843,8 +868,11 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
 #' @return A data frame with several statistics.
 #'
 #' @examples
-#' stats <- intensityStats(xpprodat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' stats <- intensityStats(prodat)
+#' }
 #' @export
 intensityStats <- function(pdat) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -874,8 +902,11 @@ intensityStats <- function(pdat) {
 #'   replicate is available (TRUE) or if all replicates are missing (FALSE).
 #'
 #' @examples
-#' detect <- goodData(xpprodat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' detect <- goodData(prodat)
+#' }
 #' @export
 goodData <- function(pdat) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -907,8 +938,11 @@ goodData <- function(pdat) {
 #' @param text.size Text size on axes
 #'
 #' @examples
-#' plotMV(xpprodat, with.loess=TRUE)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotMV(prodat, with.loess=TRUE)
+#' }
 #' @export
 plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, ymax=20, with.n=FALSE, mid.gradient=0.3, text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -957,7 +991,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' standard error is plotted.
 #'
 #' @param pdat A \code{proteusData} object.
-#' @param is Protein name, peptide sequence or a vector with these.
+#' @param id Protein name, peptide sequence or a vector with these.
 #' @param log Logical. If set TRUE a logarithm of intensity is plotted.
 #' @param ymin Lower bound for y-axis
 #' @param ymax Upper bound for y-axis
@@ -966,8 +1000,11 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param title Title of the plot (defaults to protein name)
 #'
 #' @examples
-#' plotIntensities(xpprodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotIntensities(prodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
+#' }
 #' @export
 plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=as.numeric(NA),
                          text.size=12, point.size=3, title=NULL) {
@@ -1050,8 +1087,11 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
 #'
 #' @examples
-#' res <- limmaDE(xpprodat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' res <- limmaDE(prodat)
+#' }
 #' @export
 limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log10, sig.level=0.05) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
@@ -1109,8 +1149,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 #'   is a simple point plot.
 #'
 #' @examples
-#' plotFID(xpprodat)
-#'
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotFID(prodat)
+#' }
 #' @export
 plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
                    xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
@@ -1164,9 +1207,12 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' @param bin.size Bin size for the histogram.
 #'
 #' @examples
-#' res <- limmaDE(xpprodat)
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' res <- limmaDE(prodat)
 #' plotPdist(res)
-#'
+#' }
 #' @export
 plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
   ggplot(res, aes(P.Value, ..density..)) +
@@ -1193,9 +1239,12 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'  is a simple point plot.
 #'
 #' @examples
-#' res <- limmaDE(xpprodat)
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' res <- limmaDE(prodat)
 #' plotVolcano(res)
-#'
+#' }
 #'@export
 plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=FALSE, text.size=12, show.legend=TRUE,
                         plot.grid=TRUE, binhex=TRUE) {
@@ -1238,7 +1287,11 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
 #' @param palette Palette of colours
 #'
 #' @examples
-#' plotProtPeptides(xppepdat, "sp|P16522|CDC23_YEAST", prodat = xpprodat)
+#' \dontrun{
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)
+#' }
 #'
 #' @export
 plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {

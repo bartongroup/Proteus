@@ -41,6 +41,9 @@ is a simple point plot.}
 known as MA plot.
 }
 \examples{
-plotFID(xpprodat)
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+plotFID(prodat)
+}
 }

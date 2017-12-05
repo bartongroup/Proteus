@@ -14,6 +14,3 @@
 \description{
 Summary of \code{proteusData} object
 }
-\examples{
-summary(xpprodat)
-}

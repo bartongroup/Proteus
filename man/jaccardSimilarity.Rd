@@ -19,6 +19,9 @@ Computes Jaccard similarity between "detections" in two vectors of the same
 length. A detection is a value, as opposed to NA.
 }
 \examples{
-sim <- jaccardSimilarity(xppepdat$tab[,1], xppepdat$tab[,2])
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+sim <- jaccardSimilarity(pepdat$tab[,1], pepdat$tab[,2])
+}
 }

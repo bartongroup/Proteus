@@ -20,7 +20,10 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 \code{\link{limmaDE}}.
 }
 \examples{
-res <- limmaDE(xpprodat)
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+res <- limmaDE(prodat)
 plotPdist(res)
-
+}
 }

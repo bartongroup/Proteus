@@ -14,6 +14,9 @@ plotClustering(pdat)
 hierarchical clustering.
 }
 \examples{
-plotClustering(xppepdat)
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+plotClustering(pepdat)
+}
 }

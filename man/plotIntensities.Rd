@@ -10,6 +10,8 @@ plotIntensities(pdat, id = NULL, log = FALSE, ymin = as.numeric(NA),
 \arguments{
 \item{pdat}{A \code{proteusData} object.}
 
+\item{id}{Protein name, peptide sequence or a vector with these.}
+
 \item{log}{Logical. If set TRUE a logarithm of intensity is plotted.}
 
 \item{ymin}{Lower bound for y-axis}
@@ -21,8 +23,6 @@ plotIntensities(pdat, id = NULL, log = FALSE, ymin = as.numeric(NA),
 \item{point.size}{Point size}
 
 \item{title}{Title of the plot (defaults to protein name)}
-
-\item{is}{Protein name, peptide sequence or a vector with these.}
 }
 \description{
 \code{plotIntensities} makes a plot with peptide/protein intensity as a function of the
@@ -30,6 +30,9 @@ condition and replicate. When multiple IDs are entered, the mean and
 standard error is plotted.
 }
 \examples{
-plotIntensities(xpprodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
-
+\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+plotIntensities(prodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
+}
 }

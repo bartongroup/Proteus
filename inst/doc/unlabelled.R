@@ -16,7 +16,7 @@ library(proteusUnlabelled)
 data(proteusUnlabelled)
 
 ## ----read_evidence, eval=FALSE------------------------------------------------
-#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 #  evi <- readEvidenceFile(evidenceFile)
 
 ## ----head_evidence------------------------------------------------------------

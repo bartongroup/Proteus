@@ -55,7 +55,7 @@ Alternatively, a metadata data frame (with the same columns) can be created with
 Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file attached to the package:
 
 ```{r read_evidence, eval=FALSE}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteus")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 evi <- readEvidenceFile(evidenceFile)
 ```
 

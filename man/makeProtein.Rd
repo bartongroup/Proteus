@@ -13,6 +13,9 @@ makeProtein(wp, method, hifly = 3)
 
 \item{hifly}{Number of high-fliers}
 }
+\value{
+A data frame row with aggregated protein intensities
+}
 \description{
 Make protein from a selection of peptides
 }

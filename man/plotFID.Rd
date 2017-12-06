@@ -36,14 +36,17 @@ an interactive plotly plot.}
 \item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 is a simple point plot.}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
-\code{plotFID} makes a log10 fold change versus log10 sum intensity plot, usually
-known as MA plot.
+\code{plotFID} makes a log10 fold change versus log10 sum intensity plot,
+usually known as MA plot.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-plotFID(prodat)
-}
+prodat.med <- normalizeData(prodat)
+plotFID(prodat.med)
+
 }

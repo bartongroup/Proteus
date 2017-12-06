@@ -17,9 +17,8 @@ A data frame with several statistics.
 points for peptide or protein intensities.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 stats <- intensityStats(prodat)
-}
+
 }

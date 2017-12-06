@@ -32,9 +32,8 @@ There are two default lists, supplied with the package, appropriate for an
 unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
 }
 \examples{
-\dontrun{
+library(proteusUnlabelled)
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 evi <- readEvidenceFile(evidenceFile)
-}
 
 }

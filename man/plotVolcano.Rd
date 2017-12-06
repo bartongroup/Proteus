@@ -28,15 +28,18 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL,
 \item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 is a simple point plot.}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
 \code{plotVolcano} makes a volcano plot from limma results. Uses
 \code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-res <- limmaDE(prodat)
+prodat.med <- normalizeData(prodat)
+res <- limmaDE(prodat.med)
 plotVolcano(res)
-}
+
 }

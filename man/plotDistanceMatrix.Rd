@@ -13,6 +13,9 @@ plotDistanceMatrix(pdat, distance = c("correlation"), text.size = 10)
 
 \item{text.size}{Text size on axes}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
 \code{plotDistanceMatrix} plots a distance matrix for peptide or protein
 data.
@@ -22,9 +25,8 @@ Computes a distance matrix and plots it as a shade-plot. The default distance
 is Pearson's correlation coefficient. Other methods will be introduced later.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotDistanceMatrix(pepdat)
-}
+
 }

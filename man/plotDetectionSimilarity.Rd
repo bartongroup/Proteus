@@ -18,6 +18,9 @@ plotDetectionSimilarity(pdat, bin.size = 0.01, text.size = 12,
 
 \item{hist.colour}{Colour of the histogram.}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
 \code{plotDetectionSimilarit} plots a distribution of (peptide) detection
 similarities between samples. Jaccard similarity between two sets is defined
@@ -25,10 +28,9 @@ as the size of the intersection divided by the size of the union. This plot
 can be used to assess quality of data.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotDetectionSimilarity(pepdat)
-}
+
 
 }

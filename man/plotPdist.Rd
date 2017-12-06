@@ -15,15 +15,18 @@ plotPdist(res, bin.size = 0.02, text.size = 12, plot.grid = TRUE)
 
 \item{plot.grid}{Logical to plot grid.}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
 \code{plotPdist} makes a plot with distribution of raw p-values, obtained by
 \code{\link{limmaDE}}.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-res <- limmaDE(prodat)
+prodat.med <- normalizeData(prodat)
+res <- limmaDE(prodat.med)
 plotPdist(res)
-}
+
 }

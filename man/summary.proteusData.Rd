@@ -11,6 +11,15 @@
 
 \item{...}{additional arguments affecting the summary produced.}
 }
+\value{
+Text output with object summary
+}
 \description{
 Summary of \code{proteusData} object
+}
+\examples{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+summary(prodat)
+
 }

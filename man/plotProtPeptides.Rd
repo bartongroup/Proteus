@@ -15,6 +15,9 @@ plotProtPeptides(pepdat, protein, prodat = NULL, palette = cbPalette)
 
 \item{palette}{Palette of colours}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
 \code{plotProtPeptides} creates a plot consisting of two panels. The top
 panel shows peptide log intensity. Each box represents one peptide, peptide
@@ -23,10 +26,9 @@ intensity. Each box represents one sample. White boxes show derived protein
 intensities (if \code{prodat} is provided).
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-plotProtPeptides(pepdat, "sp|P16522|CDC23_YEAST", prodat = prodat)
-}
+prodat.med <- normalizeData(prodat)
+plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 
 }

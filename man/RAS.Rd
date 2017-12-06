@@ -14,7 +14,8 @@ RAS(K, max.iter = 50, eps = 1e-05)
 \item{eps}{Convergence limit}
 }
 \value{
-Matrix normalized so row and column means equal 1/n (n - number of columns)
+Matrix normalized so row and column means equal 1/n (n - number of
+  columns)
 }
 \description{
 RAS procedure for CONSTANd normalization (not exported)

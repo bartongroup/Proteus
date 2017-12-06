@@ -9,7 +9,12 @@
 evidenceColumns
 }
 \description{
-\code{evidenceColumns} contains default columns to be read from the evidence file.
-The names of list elements are used internally to reference evidence data.
+\code{evidenceColumns} contains default columns to be read from the evidence
+file. The names of list elements are used internally to reference evidence
+data.
+}
+\examples{
+str(evidenceColumns)
+
 }
 \keyword{datasets}

@@ -41,14 +41,17 @@ plotSampleDistributions(pdat, title = "", method = c("violin", "dist",
 
 \item{hline}{Logical, if true a horizontal line at zero is added}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
-\code{plotSampleDistributions} makes a boxplot with intensity/ratio distribution for each sample.
+\code{plotSampleDistributions} makes a boxplot with intensity/ratio
+distribution for each sample.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotSampleDistributions(prodat)
 plotSampleDistributions(normalizeData(prodat))
-}
+
 }

@@ -25,17 +25,21 @@ plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
 
 \item{with.n}{Logical to add a text with the number of proteins to the plot}
 
-\item{mid.gradient}{A parameter to control the midpoint of colour gradient (between 0 and 1)}
+\item{mid.gradient}{A parameter to control the midpoint of colour gradient
+(between 0 and 1)}
 
 \item{text.size}{Text size on axes}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
-\code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.
+\code{plotMV} makes a plot with variance of log-intensity vs mean of
+log-intensity.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotMV(prodat, with.loess=TRUE)
-}
+
 }

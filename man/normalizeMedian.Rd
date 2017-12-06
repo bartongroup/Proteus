@@ -18,9 +18,8 @@ Normalized matrix.
 medians. It should be used with \code{\link{normalizeData}} function.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 normtab <- normalizeMedian(prodat$tab)
-}
+
 }

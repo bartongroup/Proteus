@@ -9,14 +9,16 @@ plotClustering(pdat)
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
 }
+\value{
+Creates a plot
+}
 \description{
 \code{plotClustering} plots a dendrogram of intensity data, using
 hierarchical clustering.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotClustering(pepdat)
-}
+
 }

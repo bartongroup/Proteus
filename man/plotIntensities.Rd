@@ -24,15 +24,18 @@ plotIntensities(pdat, id = NULL, log = FALSE, ymin = as.numeric(NA),
 
 \item{title}{Title of the plot (defaults to protein name)}
 }
+\value{
+A \code{ggplot} object.
+}
 \description{
-\code{plotIntensities} makes a plot with peptide/protein intensity as a function of the
-condition and replicate. When multiple IDs are entered, the mean and
-standard error is plotted.
+\code{plotIntensities} makes a plot with peptide/protein intensity as a
+function of the condition and replicate. When multiple IDs are entered, the
+mean and standard error is plotted.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-plotIntensities(prodat, id="sp|P16522|CDC23_YEAST", log=TRUE, title="MNT2")
-}
+prodat.med <- normalizeData(prodat)
+plotIntensities(prodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
+
 }

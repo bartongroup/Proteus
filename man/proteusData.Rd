@@ -24,7 +24,8 @@ use "other" for non-proteus data.}
 
 \item{proteins}{A character vector with protein names}
 
-\item{measures}{A character vector with names of intensity and/or ratio columns}
+\item{measures}{A character vector with names of intensity and/or ratio
+columns}
 
 \item{npep}{A data frame with number of peptides per protein}
 

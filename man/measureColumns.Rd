@@ -9,6 +9,11 @@
 measureColumns
 }
 \description{
-\code{measureColumns} contains measurement columns from evidence file. In case of unlabelled data, there is only one column: Intensity.
+\code{measureColumns} contains measurement columns from evidence file. In
+case of unlabelled data, there is only one column: Intensity.
+}
+\examples{
+str(measureColumns)
+
 }
 \keyword{datasets}

@@ -27,3 +27,9 @@ each row shows the precentage of total row intensity and each column is
 normalized to their mean value. Hence, both row and column means are equal
 1/n, where n is the number of columns (reporters).
 }
+\examples{
+library(proteusTMT)
+data(proteusTMT)
+prodat.norm <- normalizeTMT(prodat)
+
+}

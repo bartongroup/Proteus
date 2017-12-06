@@ -22,8 +22,13 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 
 #' Evidence columns
 #'
-#' \code{evidenceColumns} contains default columns to be read from the evidence file.
-#' The names of list elements are used internally to reference evidence data.
+#' \code{evidenceColumns} contains default columns to be read from the evidence
+#' file. The names of list elements are used internally to reference evidence
+#' data.
+#'
+#' @examples
+#' str(evidenceColumns)
+#'
 #' @export
 evidenceColumns <- list(
   sequence = 'Sequence',
@@ -39,7 +44,12 @@ evidenceColumns <- list(
 
 #' Measure columns
 #'
-#' \code{measureColumns} contains measurement columns from evidence file. In case of unlabelled data, there is only one column: Intensity.
+#' \code{measureColumns} contains measurement columns from evidence file. In
+#' case of unlabelled data, there is only one column: Intensity.
+#'
+#' @examples
+#' str(measureColumns)
+#'
 #' @export
 measureColumns <- list(
   intensity = 'Intensity'
@@ -56,7 +66,8 @@ measureColumns <- list(
 #'   use "other" for non-proteus data.
 #' @param peptides A character vector with peptide sequences
 #' @param proteins A character vector with protein names
-#' @param measures A character vector with names of intensity and/or ratio columns
+#' @param measures A character vector with names of intensity and/or ratio
+#'   columns
 #' @param type Type of experiment: "unlabelled" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
@@ -67,7 +78,6 @@ measureColumns <- list(
 #' @param protein.method Name of the method with which proteins were quantified
 #'
 #' @return A \code{proteusData} object.
-#' @export
 proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
                         npep=NULL, type="unlabelled", pepseq="sequence", hifly=NULL,
                         min.peptides=NULL, norm.fun=identity, protein.method=NULL) {
@@ -136,6 +146,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
 #' @param object \code{proteusData} object.
 #' @param ... additional arguments affecting the summary produced.
 #'
+#' @return Text output with object summary
+#'
 #' @examples
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
@@ -191,10 +203,9 @@ summary.proteusData <- function(object, ...) {
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
-#' \dontrun{
+#' library(proteusUnlabelled)
 #' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 #' evi <- readEvidenceFile(evidenceFile)
-#' }
 #'
 #' @export
 readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns) {
@@ -228,44 +239,6 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
   not.empty <- which(rowSums(!is.na(evi[,names(measure.cols), drop=FALSE])) > 0)
   evi <- evi[not.empty,]
 }
-
-#' Read peptides or proteinGroups file from MaxQuant
-#'
-#'
-#' \code{readMaxQuantTable} reads a MaxQuant's output table (either peptides or
-#' proteinGroups), extracts intensity data and creates a minimal
-#' \code{proteusData} object.
-#'
-#' @param file Input file
-#' @param meta Metadata
-#' @param id Name of the column with identifiers (e.g. "Sequence" or "Protein
-#'   ID")
-#' @param columns A vector of intensity/ratio column names
-#' @export
-readMaxQuantTable <- function(file, meta, id, columns) {
-  dat <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
-
-  # check columns
-  if(!(id %in% colnames(dat))) stop(paste0("Column '", id, "' not found in ", file))
-  for(col in columns) {
-    if(!(col %in% colnames(dat))) stop(paste0("Column '", col, "' not found in ", file))
-  }
-
-  # make sure to keep correct order of samples
-  meta$sample <- factor(meta$sample, levels=meta$sample)
-
-  tab <- as.matrix(dat[columns])
-  tab[tab==0] <- NA
-  tab[is.nan(tab)] <- NA
-  colnames(tab) <- meta$sample
-  rownames(tab) <- dat[[id]]
-
-  # create pdat object
-  pdat <- proteusData(tab, meta, "other", NULL, rownames(tab), NULL, NULL)
-  class(pdat) <- append(class(pdat), "proteusData")
-  return(pdat)
-}
-
 
 
 #' Create peptide table from evidence data
@@ -374,8 +347,8 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins, as.character(measure.cols),
-                      type = experiment.type)
+  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins,
+                      as.character(measure.cols), type = experiment.type)
 
   return(pdat)
 }
@@ -413,7 +386,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' @examples
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
-#' prodat <- makeProteinTable(pepdat.clean)
+#' prodat <- makeProteinTable(pepdat.clean, ncores=2)
 #'
 #' @export
 makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, ncores=4) {
@@ -462,7 +435,8 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, nc
   rownames(npep) <- proteins                 # a bit redundant, but might be useful
   protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
-  prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides, proteins, pepdat$measures,
+  prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides,
+                        proteins, pepdat$measures,
                         type = pepdat$type,
                         pepseq = pepdat$pepseq,
                         hifly = hifly,
@@ -478,6 +452,7 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, nc
 #' @param wp Intensity table with selection of peptides for this protein
 #' @param method Method of creating proteins
 #' @param hifly Number of high-fliers
+#' @return A data frame row with aggregated protein intensities
 makeProtein <- function(wp, method, hifly=3) {
   npep <- nrow(wp)
   if(npep == 0) stop("No peptides to aggregate.")
@@ -569,7 +544,8 @@ normalizeData <- function(pdat, norm.fun=normalizeMedian) {
 #' @param max.iter Maximum number of iterations
 #' @param eps Convergence limit
 #'
-#' @return Matrix normalized so row and column means equal 1/n (n - number of columns)
+#' @return Matrix normalized so row and column means equal 1/n (n - number of
+#'   columns)
 RAS <- function(K, max.iter=50, eps=1e-5) {
   n <- ncol(K)
   m <- nrow(K)
@@ -642,6 +618,7 @@ normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
 #' @param pdat Peptide or protein \code{proteusData} object.
 #' @param distance A method to calculate distance.
 #' @param text.size Text size on axes
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -675,6 +652,7 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
 #' hierarchical clustering.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
+#' @return Creates a plot
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -701,7 +679,8 @@ plotClustering <- function(pdat) {
 #' @param pdat A \code{proteusData} object.
 #' @param x.text.size Size of text on the x-axis.
 #' @param palette Palette of colours
-#' @return A plot of the number of peptides/proteins detected in each sample.
+#' @return A plot (\code{ggplot} object) of the number of peptides/proteins
+#'   detected in each sample.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -765,6 +744,7 @@ jaccardSimilarity <- function(x, y) {
 #' @param plot.grid Logical to plot grid.
 #' @param bin.size Bin size for the histogram.
 #' @param hist.colour Colour of the histogram.
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -793,7 +773,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 
 #' Plot distribution of intensities/ratios for each sample
 #'
-#' \code{plotSampleDistributions} makes a boxplot with intensity/ratio distribution for each sample.
+#' \code{plotSampleDistributions} makes a boxplot with intensity/ratio
+#' distribution for each sample.
 #'
 #' @param pdat A \code{proteusData} object with peptide/protein intensities.
 #' @param title Title of the plot.
@@ -810,6 +791,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @param fill A metadata column to use for the fill of boxes
 #' @param colour A metadata column to use for the outline colour of boxes
 #' @param hline Logical, if true a horizontal line at zero is added
+#'
+#' @return A \code{ggplot} object.
 #'
 #' @export
 #'
@@ -924,7 +907,8 @@ goodData <- function(pdat) {
 
 #' Plot mean-variance relationship
 #'
-#' \code{plotMV} makes a plot with variance of log-intensity vs mean of log-intensity.
+#' \code{plotMV} makes a plot with variance of log-intensity vs mean of
+#' log-intensity.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
 #' @param with.loess Logical. If true, a loess line will be added.
@@ -934,8 +918,10 @@ goodData <- function(pdat) {
 #' @param ymin Lower limit on y-axis
 #' @param ymax Upper limit on y-axis
 #' @param with.n Logical to add a text with the number of proteins to the plot
-#' @param mid.gradient A parameter to control the midpoint of colour gradient (between 0 and 1)
+#' @param mid.gradient A parameter to control the midpoint of colour gradient
+#'   (between 0 and 1)
 #' @param text.size Text size on axes
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -986,9 +972,9 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 
 #' Plot protein/peptide intensities
 #'
-#' \code{plotIntensities} makes a plot with peptide/protein intensity as a function of the
-#' condition and replicate. When multiple IDs are entered, the mean and
-#' standard error is plotted.
+#' \code{plotIntensities} makes a plot with peptide/protein intensity as a
+#' function of the condition and replicate. When multiple IDs are entered, the
+#' mean and standard error is plotted.
 #'
 #' @param pdat A \code{proteusData} object.
 #' @param id Protein name, peptide sequence or a vector with these.
@@ -998,6 +984,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @param text.size Text size
 #' @param point.size Point size
 #' @param title Title of the plot (defaults to protein name)
+#'
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -1129,8 +1117,8 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 
 #' Fold-change intensity diagram
 #'
-#' \code{plotFID} makes a log10 fold change versus log10 sum intensity plot, usually
-#' known as MA plot.
+#' \code{plotFID} makes a log10 fold change versus log10 sum intensity plot,
+#' usually known as MA plot.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param pair A two-element vector containing the pair of conditions to use.
@@ -1147,6 +1135,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 #' @param plot.grid Logical to plot a grid.
 #' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 #'   is a simple point plot.
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -1206,6 +1195,8 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 #' @param plot.grid Logical to plot grid.
 #' @param bin.size Bin size for the histogram.
 #'
+#' @return A \code{ggplot} object.
+#'
 #' @examples
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
@@ -1237,6 +1228,8 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'@param plot.grid Logical to plot grid.
 #'@param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 #'  is a simple point plot.
+#'
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -1285,6 +1278,8 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
 #' @param protein Protein name.
 #' @param prodat (optional) protein \code{proteusData} object.
 #' @param palette Palette of colours
+#'
+#' @return A \code{ggplot} object.
 #'
 #' @examples
 #' library(proteusUnlabelled)

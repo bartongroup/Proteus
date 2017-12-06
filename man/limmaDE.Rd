@@ -39,9 +39,9 @@ perform differential expression between two conditions. For more complicated
 designs we recommend using \code{\link{limma}} functions directly.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-res <- limmaDE(prodat)
-}
+prodat.med <- normalizeData(prodat)
+res <- limmaDE(prodat.med)
+
 }

@@ -56,8 +56,8 @@ evidence data. This makes selection of samples for downstream processing
 easy: select only required rows in the metadata data frame.
 }
 \examples{
-\dontrun{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
 pepdat <- makePeptideTable(evi, meta)
-}
 
 }

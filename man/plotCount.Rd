@@ -14,15 +14,15 @@ plotCount(pdat, x.text.size = 10, palette = cbPalette)
 \item{palette}{Palette of colours}
 }
 \value{
-A plot of the number of peptides/proteins detected in each sample.
+A plot (\code{ggplot} object) of the number of peptides/proteins
+  detected in each sample.
 }
 \description{
 \code{plotCount} makes a plot of peptide/protein count per sample.
 }
 \examples{
-\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 plotCount(pepdat)
-}
+
 }

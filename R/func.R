@@ -1301,7 +1301,8 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {
   selprot <- which(pepdat$pep2prot$protein == protein)
   if(length(selprot) == 0) stop(paste0("Protein '", protein, "' not found."))
 
-  peps <- pepdat$pep2prot[selprot,'sequence']
+  # need as.character, or indexing by factor is wrong!
+  peps <- as.character(pepdat$pep2prot[selprot,'sequence'])
   mat <- as.matrix(tab[peps,])
   dat <- reshape2::melt(mat, varnames=c("peptide", "sample"))
   dat$sample <- factor(dat$sample, levels=pepdat$metadata$sample)

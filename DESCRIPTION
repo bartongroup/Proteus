@@ -25,3 +25,4 @@ Imports:
     parallel
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr
+biocViews: Proteomics, MassSpectrometry

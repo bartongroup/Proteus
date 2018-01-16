@@ -2,7 +2,6 @@
 library(proteus)
 library(knitr)
 library(dplyr)
-library(reshape)
 library(ggplot2)
 library(gplots)
 library(grid)

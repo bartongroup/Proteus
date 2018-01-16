@@ -22,9 +22,7 @@ Imports:
     stats,
     graphics,
     utils,
-    parallel,
-    proteusTMT,
-    proteusUnlabelled
-Suggests: testthat, knitr, rmarkdown
+    parallel
+Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry

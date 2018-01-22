@@ -32,6 +32,11 @@ cols
 # we need, as a miniumum, gene names and protein names (descriptions)
 # UNIPROTKB is the main key, corresponding to UniProt IDs
 res <- select(up, unis, c("GENES", "PROTEIN-NAMES"), "UNIPROTKB")
-rownames(res) <- names(unis)
+res$protein <- names(unis)
+res <- res[!is.na(res$`PROTEIN-NAMES`),]
+# simplify protein names
+res$name <- gsub("\\s\\(.*$", "", res$`PROTEIN-NAMES`, perl=TRUE)
+
+
 
 

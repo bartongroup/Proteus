@@ -481,6 +481,82 @@ makeProtein <- function(wp, method, hifly=3) {
   return(row)
 }
 
+
+#' Annotate proteins
+#'
+#' \code{annotateProteins} adds protein annotations to a \code{proteusData}
+#' object.
+#'
+#' @details
+#'
+#' The only information about proteins proteus package extracts from the
+#' evidence file are protein identifiers. These can be in various forms,
+#' depending on how MaxQuant was ran. In order to annotate them, two steps are
+#' required.
+#'
+#' First, the user needs to create a data frame linking protein identifiers (as
+#' in \code{pdat$proteins} vector) to some metadata. This data frame has to
+#' contain a column called \code{protein} with the identifiers and any
+#' additional columns with annotations, e.g., UniProt IDs, protein names, gene
+#' names, domains, GO-terms and so on. These data can be obtained from UniProt.
+#'
+#' Once the annotation table is created, it can be merged into the
+#' \code{proteusData} object using \code{annotateProteins} function. The order
+#' of identifiers in the annotation table is not important. Also, not all
+#' proteins have to be present. The merge will add only the matching proteins.
+#' As a result, this function returns a \code{proteusData} object with
+#' \code{annotation} field added. It contains an annotation data frame with rows
+#' corresponding to the internal list of proteins. This means the rows of this
+#' data frame correspond one-to-one to the rows in \code{pdat$tab} and
+#' \code{pdat$detect}, if pdat contains proteins (not peptides).
+#'
+#' @param pdat A \code{proteusData} object containing protein data
+#' @param annotation A data frame with a column \code{protein} containing
+#'   protein identifiers, as in \code{pdat$proteins}
+#'
+#' @return A \code{proteusData} with annotation field added.
+#'
+#' @examples
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' library(UniProt.ws)
+#'
+#' # Extract UniProt identifiers from protein IDs
+#' unis <- sapply(as.character(prodat$proteins), function(prot) {
+#'  s <- unlist(strsplit(prot, "|", fixed=TRUE))
+#'  s[2]
+#' })
+#'
+#' up <- UniProt.ws(559292)
+#'
+#' # Fetch data from UniProt
+#' unitab <- select(up, unis, c("GENES", "PROTEIN-NAMES"), "UNIPROTKB")
+#' unitab$protein <- names(unis)
+#' unitab <- unitab[!is.na(unitab$`PROTEIN-NAMES`),]
+#' # simplify protein names
+#' unitab$name <- gsub("\\s\\(.*$", "", unitab$`PROTEIN-NAMES`, perl=TRUE)
+#'
+#' prodat <- annotateProteins(prodat, unitab)
+#'
+#' @export
+annotateProteins <- function(pdat, annotation) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  if(!is.data.frame(annotation)) stop ("Annotation needs to be a data frame.")
+  if(is.null(annotation$protein)) stop ("Annotation table has to have a 'protein' column.")
+
+  nover <- length(intersect(pdat$proteins, annotation$protein))
+  if(nover == 0) stop("No overlap between data and annotation. Nothing to annotate.")
+
+  mrg <- data.frame(protein=pdat$proteins)
+  mrg <- merge(mrg, annotation, by="protein", all.x=TRUE)
+  pdat$annotation <- mrg
+
+  cat(paste("Annotated", nover, "proteins.\n"))
+
+  return(pdat)
+}
+
+
 #' Normalize columns of a matrix to medians
 #'
 #' \code{normalizeMedian} normalizes the columns of a matrix to have the same

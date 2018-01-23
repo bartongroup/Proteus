@@ -1202,7 +1202,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level
   attr(res, "formula") <- formula
-  attr(res, "conditions") <- paste(levels(meta$condition), collapse=",")
+  attr(res, "conditions") <- levels(meta$condition)
 
   return(res)
 }
@@ -1340,21 +1340,35 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
   }
 
   tr <- attr(res, "transform.fun")
+  conds <- attr(res, "conditions")
   xlab <- ifelse(is.null(tr), "FC", paste(tr, "FC"))
+  tit <- paste(conds, collapse=":")
   id <- names(res)[1]
 
-  g <- ggplot(res, aes(logFC, -log10(P.Value))) +
-    {if(plot.grid) simple_theme_grid else simple_theme} +
-    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point(aes_string(text=id))} +
-    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA) +
-    geom_vline(colour='red', xintercept=0) +
+  g <- ggplot(res, aes(logFC, -log10(P.Value)))
+
+  if(binhex) {
+    g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
+      scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA)
+  } else {
+    g <- g + geom_point()
+  }
+
+  if(plot.grid) {
+    g <- g + simple_theme_grid
+  } else {
+    g <- g + simple_theme
+  }
+
+  g <- g + geom_vline(colour='red', xintercept=0) +
     theme(text = element_text(size=text.size)) +
-    labs(x=xlab, y="-log10 P")
+    labs(x=xlab, y="-log10 P", title=tit)
 
-    if(!is.null(xmax)) g <- g + scale_x_continuous(limits = c(-xmax, xmax), expand = c(0, 0))
-    if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(0, ymax), expand = c(0, 0))
 
-    if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))
+  if(!is.null(xmax)) g <- g + scale_x_continuous(limits = c(-xmax, xmax), expand = c(0, 0))
+  if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(0, ymax), expand = c(0, 0))
+
+  if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))
   return(g)
 }
 

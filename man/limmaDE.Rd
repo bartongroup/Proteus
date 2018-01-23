@@ -21,7 +21,11 @@ expression.}
 \item{sig.level}{Significance level for rejecting the null hypothesis.}
 }
 \value{
-A data frame with DE results. "logFC" colum is a log10-fold-change.
+A data frame with DE results. "logFC" colum is a log-fold-change
+  (using the \code{transform.fun}). Two columns wiht mean log-intensity
+  (again, using \code{transform.fun}) are added. Attributes contain
+  additional information about the transformation function, significance
+  level, formula and conditions.
 }
 \description{
 \code{limmaDE} is a wrapper around \code{\link{limma}} to perform a

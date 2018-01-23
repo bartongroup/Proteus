@@ -1148,7 +1148,11 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #' @param transform.fun A function to transform data before differential
 #'   expression.
 #' @param sig.level Significance level for rejecting the null hypothesis.
-#' @return A data frame with DE results. "logFC" colum is a log10-fold-change.
+#' @return A data frame with DE results. "logFC" colum is a log-fold-change
+#'   (using the \code{transform.fun}). Two columns wiht mean log-intensity
+#'   (again, using \code{transform.fun}) are added. Attributes contain
+#'   additional information about the transformation function, significance
+#'   level, formula and conditions.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -1163,6 +1167,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   meta <- pdat$metadata
   tab <- transform.fun(pdat$tab)
 
+  # default conditions
   if(!is.null(conditions)) {
     for(cond in conditions ) {
       if(!(cond %in% meta$condition)) stop(paste("Condition", cond, "not found in metadata."))
@@ -1174,6 +1179,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 
   if(nlevels(meta$condition) != 2) stop("This function requires exactly two conditions. Use the parameter conditions.")
 
+  # limma analysis
   design <- model.matrix(as.formula(formula), meta)
   fit <- limma::lmFit(tab, design)
   ebay <- limma::eBayes(fit)
@@ -1184,8 +1190,19 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   res$significant <- res$adj.P.Val <= sig.level
   rownames(res) <- c()
 
+  # add columns with mean intensity
+  for(cond in levels(meta$condition)) {
+    cname <- paste0("mean_", cond)
+    w <- transform.fun(pdat$tab[,which(meta$condition == cond), drop=FALSE])
+    m <- rowMeans(w, na.rm=TRUE)
+    m[which(is.nan(m))] <- NA
+    res[, cname] <- m
+  }
+
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level
+  attr(res, "formula") <- formula
+  attr(res, "conditions") <- paste(levels(meta$condition), collapse=",")
 
   return(res)
 }

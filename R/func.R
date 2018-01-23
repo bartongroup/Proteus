@@ -1193,8 +1193,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   # add columns with mean intensity
   for(cond in levels(meta$condition)) {
     cname <- paste0("mean_", cond)
-    w <- transform.fun(pdat$tab[,which(meta$condition == cond), drop=FALSE])
-    m <- rowMeans(w, na.rm=TRUE)
+    m <- rowMeans(tab[,which(meta$condition == cond), drop=FALSE], na.rm=TRUE)
     m[which(is.nan(m))] <- NA
     res[, cname] <- m
   }
@@ -1216,18 +1215,19 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 #' @param pdat Protein \code{proteusData} object.
 #' @param pair A two-element vector containing the pair of conditions to use.
 #'   Can be skipped if there are only two conditions.
-#' @param pvalue An optional vector with corresponding p-values to be used with
-#'   an interactive plotly plot.
 #' @param bins Number of bins for binhex.
 #' @param marginal.histograms A logical to add marginal histograms.
 #' @param xmin Lower limit on x-axis.
 #' @param xmax Upper limit on x-axis.
 #' @param ymax Upper limit on y-axis. If used, the lower limit is -ymax.
 #' @param text.size Text size.
+#' @param point.size Size of points in the plot.
 #' @param show.legend Logical to show legend (colour key).
 #' @param plot.grid Logical to plot a grid.
 #' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 #'   is a simple point plot.
+#' @param transform.fun A function to transform data before plotting.
+#'
 #' @return A \code{ggplot} object.
 #'
 #' @examples
@@ -1237,9 +1237,10 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 #' plotFID(prodat.med)
 #'
 #' @export
-plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=FALSE,
-                   xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, show.legend=TRUE, plot.grid=TRUE,
-                   binhex=TRUE) {
+plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
+                   xmin=NULL, xmax=NULL, ymax=NULL, text.size=12, point.size=1,
+                   show.legend=TRUE, plot.grid=TRUE, binhex=TRUE, transform.fun=log10) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(binhex & marginal.histograms) {
     warning("Cannot plot with both binhex=TRUE and marginal.histograms=TRUE. Ignoring binhex.")
     binhex=FALSE
@@ -1247,31 +1248,54 @@ plotFID <- function(pdat, pair=NULL, pvalue=NULL, bins=80, marginal.histograms=F
 
   if(is.null(pair)) pair <- pdat$conditions
   if(length(pair) != 2) stop("Need exactly two conditions. You might need to specify pair parameter.")
-  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  title <- paste(pair, collapse=":")
 
-  stats <- pdat$stats
-  c1 <- pair[1]
-  c2 <- pair[2]
-  m1 <- log10(stats[which(stats$condition == c1),]$mean)
-  m2 <- log10(stats[which(stats$condition == c2),]$mean)
-  d <- data.frame(x = (m1 + m2) / 2, y = m2 - m1)
-  d$id <- rownames(pdat$tab)
-  n <- length(m1)
-  if(is.null(pvalue)) {
-    d$p <- rep('NA', n)
-  } else {
-    d$p <- signif(pvalue, 2)
+  tab <- transform.fun(pdat$tab)
+
+  # helper function
+  condMeans <- function(cond) {
+    m <- rowMeans(tab[,which(pdat$metadata$condition == cond), drop=FALSE], na.rm=TRUE)
+    m[is.nan(m)] <- NA
+    m
   }
 
-  title <- paste0(c1, ":", c2)
-  g <- ggplot(d, aes(x=x, y=y)) +
-    {if(plot.grid) simple_theme_grid else simple_theme} +
-    {if(binhex) stat_binhex(bins=bins, show.legend=show.legend) else geom_point()}+
-    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA) +
-    #geom_point(na.rm=TRUE, alpha=0.6, size=0.5, aes(text=paste(id, "\nP = ", p))) +
-    geom_abline(colour='red', slope=0, intercept=0) +
-    labs(title=title, x=paste0(c1, '+', c2), y=paste0(c2, '-', c1)) +
+  # build data frame with x-y cooordinates
+  # including infinities
+  m1 <- condMeans(pair[1])
+  m2 <- condMeans(pair[2])
+  good <- !is.na(m1) & !is.na(m2)
+  df <- data.frame(
+    id = rownames(pdat$tab),
+    x = (m1 + m2) / 2,
+    y = m2 - m1,
+    good = good
+  )
+
+  mx <- 1.1 * max(abs(df$y), na.rm=TRUE)
+  m <- rbind(m1[!good], m2[!good])
+  df[!good, "x"] <- colSums(m, na.rm=TRUE)
+  df[!good, "y"] <- ifelse(is.na(m[1,]), mx, -mx)
+
+  g <- ggplot(df[good, ], aes(x=x, y=y))
+
+  if(binhex) {
+    g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
+      scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA)
+  } else {
+    g <- g + geom_point(size=point.size) +
+      geom_point(data=df[!good,], aes(x=x, y=y), colour="orange", size=point.size)
+  }
+
+  if(plot.grid) {
+    g <- g + simple_theme_grid
+  } else {
+    g <- g + simple_theme
+  }
+
+  g <- g + geom_abline(colour='red', slope=0, intercept=0) +
+    labs(title=title, x=paste0(pair[1], '+', pair[2]), y=paste0(pair[2], '-', pair[1])) +
     theme(text = element_text(size=text.size))
+
   if(!is.null(xmin) && !is.null(xmax)) g <- g + scale_x_continuous(limits = c(xmin, xmax), expand = c(0, 0))
   if(!is.null(ymax) ) g <- g + scale_y_continuous(limits = c(-ymax, ymax), expand = c(0, 0))
   if(marginal.histograms) g <- ggExtra::ggMarginal(g, size=10, type = "histogram", xparams=list(bins=100), yparams=list(bins=50))

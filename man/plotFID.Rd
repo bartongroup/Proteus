@@ -4,18 +4,16 @@
 \alias{plotFID}
 \title{Fold-change intensity diagram}
 \usage{
-plotFID(pdat, pair = NULL, pvalue = NULL, bins = 80,
-  marginal.histograms = FALSE, xmin = NULL, xmax = NULL, ymax = NULL,
-  text.size = 12, show.legend = TRUE, plot.grid = TRUE, binhex = TRUE)
+plotFID(pdat, pair = NULL, bins = 80, marginal.histograms = FALSE,
+  xmin = NULL, xmax = NULL, ymax = NULL, text.size = 12,
+  point.size = 1, show.legend = TRUE, plot.grid = TRUE, binhex = TRUE,
+  transform.fun = log10)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
 
 \item{pair}{A two-element vector containing the pair of conditions to use.
 Can be skipped if there are only two conditions.}
-
-\item{pvalue}{An optional vector with corresponding p-values to be used with
-an interactive plotly plot.}
 
 \item{bins}{Number of bins for binhex.}
 
@@ -29,12 +27,16 @@ an interactive plotly plot.}
 
 \item{text.size}{Text size.}
 
+\item{point.size}{Size of points in the plot.}
+
 \item{show.legend}{Logical to show legend (colour key).}
 
 \item{plot.grid}{Logical to plot a grid.}
 
 \item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
 is a simple point plot.}
+
+\item{transform.fun}{A function to transform data before plotting.}
 }
 \value{
 A \code{ggplot} object.

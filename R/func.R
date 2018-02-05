@@ -459,9 +459,7 @@ makeProtein <- function(wp, method, hifly=3) {
   cols <- colnames(wp)
   if(method == "hifly") {
     if(npep > 1) {
-      wp[is.na(wp)] <- 0   # zeroes for sorting only
-      sp <- as.matrix(apply(wp, 2, sort, decreasing=TRUE))
-      sp[sp == 0] <- NA  # put NAs back
+      sp <- as.matrix(apply(wp, 2, function(x) sort(x, na.last=TRUE, decreasing=TRUE)))
       ntop <- min(npep, hifly)
       row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
       row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs

@@ -55,6 +55,21 @@ measureColumns <- list(
   intensity = 'Intensity'
 )
 
+#' Protein columns
+#'
+#' To be used as the default \code{data.cols} parameter in \code{\link{readProteinGroups}}.
+#'
+#' @examples
+#' str(proteinColumns)
+#'
+#' @export
+proteinColumns <- list(
+  protein = "Majority protein IDs",
+  reverse = 'Reverse',
+  contaminant = 'Potential contaminant'
+)
+
+
 #' \code{proteusData} constructor
 #'
 #' @param tab A matrix with data, rows are peptides/proteins, columns are
@@ -218,7 +233,7 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
     if(!(col %in% colnames(evi.cols))) missing <- c(missing, paste0("'", col, "'"))
   }
   if(!is.null(missing))
-    stop(paste0("Column(s) ", paste0(missing, collapse=", "), " not found in evidence file ", file))
+    stop(paste0("Column(s) ", paste0(missing, collapse=", "), " not found in file ", file))
 
   # read and process evidence file
   evi <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE)
@@ -239,6 +254,66 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
   not.empty <- which(rowSums(!is.na(evi[,names(measure.cols), drop=FALSE])) > 0)
   evi <- evi[not.empty,]
 }
+
+
+#' Read protein groups file from MaxQuant
+#'
+#'
+#' \code{readProteinGroups} reads a MaxQuant's protein groups file (usually
+#' named \code{proteinGroups.txt}), extracts intensity data and creates a
+#' \code{proteusData} object.
+#'
+#' @details
+#'
+#' This function allows to read MaxQuant's proteinGroups file directly, without
+#' reading and processing the evidence file. Apart from the proteinGroups file
+#' name, a metadata data frame needs to be provided.
+#'
+#' @param file Input file
+#' @param meta Metadata data frame. As a minimum, it should contain two columns:
+#'   \code{sample} with unique sample names and \code{condition} with condition
+#'   names.
+#' @param measure.cols A named list with measure columns to read. These are
+#'   columns in the proteinGroup files containing intensity measurements per
+#'   sample. Usually they are called \code{Intensity <sample>}. If not provided,
+#'   column names will be created from metadata using a template
+#'   \code{paste("Intensity", meta$sample)}.
+#' @param data.cols A named list with columns to read in addition to measure
+#'   columns. It should contain three columns named \code{protein}, which will
+#'   be used as protein ID and \code{reverse} and \code{contaminant}, which will
+#'   be used to filter data. The values of this named list are the actual column
+#'   names in the file (including spaces). The default structure
+#'   \code{proteinColumns} is provided with the package, though it might need
+#'   modifying in case these columns are named differently in the protein groups
+#'   file.
+#' @return A \code{proteusData} object with protein intensity data.
+#'
+#' @examples
+#' library(proteusUnlabelled)
+#' proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusUnlabelled")
+#' prot.MQ <- readProteinGroups(proteinGroupsFile, meta)
+#'
+#' @export
+readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinColumns) {
+  # attempt creating default measure columns "Intensity sample"
+  if(is.null(measure.cols)) {
+    measure.cols <- paste("Intensity", meta$sample)
+    names(measure.cols) <- meta$sample
+  }
+
+  dat <- readEvidenceFile(file, measure.cols=measure.cols, data.cols=proteinColumns)
+  tab <- as.matrix(dat[names(measure.cols)])
+  tab[tab==0] <- NA
+  tab[is.nan(tab)] <- NA
+  colnames(tab) <- meta$sample
+  rownames(tab) <- dat$protein
+
+  # create pdat object
+  pdat <- proteusData(tab, meta, "protein", NULL, NULL, rownames(tab), measure.cols,
+                      hifly=0, min.peptides=0, protein.method="MaxQuant")
+  return(pdat)
+}
+
 
 
 #' Create peptide table from evidence data

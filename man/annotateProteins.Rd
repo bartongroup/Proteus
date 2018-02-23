@@ -31,6 +31,12 @@ contain a column called \code{protein} with the identifiers and any
 additional columns with annotations, e.g., UniProt IDs, protein names, gene
 names, domains, GO-terms and so on. These data can be obtained from UniProt.
 
+Though only the \code{protein} column is required to merge data and all other
+annotation columns are free, we strongly recommend, if possible, to include
+two columns named \code{uniprot} and \code{name}, containing UniProt ID and
+protein name/description. if present, these columns will be used by
+interactive functions \code{plotFID_live} and \code{plotVolcano_live}.
+
 Once the annotation table is created, it can be merged into the
 \code{proteusData} object using \code{annotateProteins} function. The order
 of identifiers in the annotation table is not important. Also, not all
@@ -42,6 +48,10 @@ data frame correspond one-to-one to the rows in \code{pdat$tab} and
 \code{pdat$detect}, if pdat contains proteins (not peptides).
 }
 \examples{
+# This example is specifically written for thest data with embedded UniProt IDs.
+# For other data sets, in particular for organisms with their own protein data
+# bases, different approaches might be appropriate.
+
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 library(UniProt.ws)
@@ -55,11 +65,13 @@ unis <- sapply(as.character(prodat$proteins), function(prot) {
 up <- UniProt.ws(559292)
 
 # Fetch data from UniProt
-unitab <- select(up, unis, c("GENES", "PROTEIN-NAMES"), "UNIPROTKB")
+unitab <- UniProt.ws::select(up, unis, c("GENES", "PROTEIN-NAMES"), "UNIPROTKB")
 unitab$protein <- names(unis)
 unitab <- unitab[!is.na(unitab$`PROTEIN-NAMES`),]
 # simplify protein names
 unitab$name <- gsub("\\\\s\\\\(.*$", "", unitab$`PROTEIN-NAMES`, perl=TRUE)
+# rename column to recommended "uniprot"
+names(unitab)[1] <- "uniprot"
 
 prodat <- annotateProteins(prodat, unitab)
 

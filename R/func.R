@@ -575,9 +575,9 @@ makeProtein <- function(wp, method, hifly=3) {
 #'
 #' Though only the \code{protein} column is required to merge data and all other
 #' annotation columns are free, we strongly recommend, if possible, to include
-#' two columns names \code{uniprot} and \code{name}, containing UniProt ID and
+#' two columns named \code{uniprot} and \code{name}, containing UniProt ID and
 #' protein name/description. if present, these columns will be used by
-#' interactive \code{plotFID_live} and \code{plotVolcano_live}.
+#' interactive functions \code{plotFID_live} and \code{plotVolcano_live}.
 #'
 #' Once the annotation table is created, it can be merged into the
 #' \code{proteusData} object using \code{annotateProteins} function. The order

@@ -33,9 +33,11 @@ plotVolcano_live <- function(pdat, res, max_points=10){
   # pdat<-protdat.annot
   DEdat<-res
   DEdat$"-log10(P.Value)" <- -log10(DEdat$P.Value)
-  uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
-  urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
-  DEdat$urls <- urls
+
+  # This section is for enabling URL on the DT object. To be developed later
+  # uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
+  # urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
+  # DEdat$urls <- urls
 
 
   #######################################################################
@@ -112,8 +114,9 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       sel <- selectProtein(pdat$tab)
       n <- length(sel)
       if (n == 1 && sel > 0){
-        name <- paste0('<H3>', as.character(pdat$annotation$protein[sel]),'</H3>')
-        descr <- as.character(pdat$annotation$name[sel])
+        name <- paste0('<H3>', as.character(rownames(pdat$tab)[sel]),'</H3>')
+        # descr <- as.character(pdat$annotation$name[sel])
+        descr<-""
         HTML(paste0(name,descr,'<hr/>'))
       }else if (n > 1 && n <= max_points){
         HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
@@ -157,7 +160,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         mean[mean == 0] <- 1
         d <- d/mean
         d[is.nan(d)] <- NA
-        row.names(d) <- pdat$annotation$protein[sel]
+        row.names(d) <- rownames(pdat$tab)[sel]
         # print(d)
         heatmap.2(d, na.rm=TRUE, dendrogram = "row",key=FALSE,keysize = 1,lhei = c(1,100),Colv = FALSE,srtRow = -35,cexRow = 1.0,na.color = "blue")
       }
@@ -216,19 +219,19 @@ plotVolcano_live <- function(pdat, res, max_points=10){
     #AllProteinTable
     output$allProteinTable <-DT::renderDataTable({
       # print('allProteinTable method')
-      d <- data.frame(ProteinId=DEdat$protein,Protein_Name=pdat$annotation$`PROTEIN-NAMES`,mean_1112=formatC(DEdat$mean_1112),mean_BMO=formatC(DEdat$mean_BMO))
+      d <- data.frame(ProteinId=DEdat$protein,mean_1112=formatC(DEdat$mean_1112),mean_BMO=formatC(DEdat$mean_BMO))
       datatable(
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
 
     #Open browser for Uniprot
-    observeEvent(input$allProteinTable_cell_clicked, {
-      info = input$allProteinTable_cell_clicked
-      # do nothing if not clicked yet, or the clicked cell is not in the 1st column
-      if (is.null(info$value) || info$col != 1) return()
-      browseURL(DEdat$urls[info$row])
-    })
+  #   observeEvent(input$allProteinTable_cell_clicked, {
+  #     info = input$allProteinTable_cell_clicked
+  #     # do nothing if not clicked yet, or the clicked cell is not in the 1st column
+  #     if (is.null(info$value) || info$col != 1) return()
+  #     browseURL(DEdat$urls[info$row])
+  #   })
   }
 
   # Run the application
@@ -273,9 +276,11 @@ plotFID_live <- function(pdat, res, max_points=10){
   # pdat<-protdat.annot
   DEdat <- res
   DEdat$"-log10(P.Value)" <- -log10(DEdat$P.Value)
-  uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
-  urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
-  DEdat$urls <- urls
+
+  # This section is for enabling URL on the DT object. To be developed later
+  # uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
+  # urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
+  # DEdat$urls <- urls
 
   #Generate the FID datasets for selection. Code from Marek plotFID function.
   condMeans <- function(cond) {
@@ -371,8 +376,9 @@ plotFID_live <- function(pdat, res, max_points=10){
       # print (paste0('protein length= ', length(pdat$annotation$protein)))
       n <- length(sel)
       if (n == 1 && sel > 0){
-        name <- paste0('<H3>', as.character(pdat$annotation$protein[sel]),'</H3>')
-        descr <- as.character(pdat$annotation$name[sel])
+        name <- paste0('<H3>', as.character(rownames(pdat$tab)[sel]),'</H3>')
+        # descr <- as.character(pdat$annotation$name[sel])
+        descr<-""
         HTML(paste0(name,descr,'<hr/>'))
       }else if (n > 1 && n <= max_points){
         HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
@@ -416,7 +422,7 @@ plotFID_live <- function(pdat, res, max_points=10){
         mean[mean == 0] <- 1
         d <- d/mean
         d[is.nan(d)] <- NA
-        row.names(d) <- pdat$annotation$protein[sel]
+        row.names(d) <- rownames(pdat$tab)[sel]
         # print(d)
         heatmap.2(d, na.rm=TRUE, dendrogram = "row",key=FALSE,keysize = 1,lhei = c(1,100),Colv = FALSE,srtRow = -35,cexRow = 1.0,na.color = "blue")
       }
@@ -476,19 +482,19 @@ plotFID_live <- function(pdat, res, max_points=10){
     #AllProteinTable
     output$allProteinTable <-DT::renderDataTable({
       # print('allProteinTable method')
-      d <- data.frame(ProteinId=DEdat$protein,Protein_Name=pdat$annotation$`PROTEIN-NAMES`,mean_1112=formatC(DEdat$mean_1112),mean_BMO=formatC(DEdat$mean_BMO))
+      d <- data.frame(ProteinId=DEdat$protein,mean_1112=formatC(DEdat$mean_1112),mean_BMO=formatC(DEdat$mean_BMO))
       datatable(
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
 
     #Open browser for Uniprot
-    observeEvent(input$allProteinTable_cell_clicked, {
-      info = input$allProteinTable_cell_clicked
-      # do nothing if not clicked yet, or the clicked cell is not in the 1st column
-      if (is.null(info$value) || info$col != 1) return()
-      browseURL(DEdat$urls[info$row])
-    })
+  #   observeEvent(input$allProteinTable_cell_clicked, {
+  #     info = input$allProteinTable_cell_clicked
+  #     # do nothing if not clicked yet, or the clicked cell is not in the 1st column
+  #     if (is.null(info$value) || info$col != 1) return()
+  #     browseURL(DEdat$urls[info$row])
+  #   })
   }
 
   # Run the application

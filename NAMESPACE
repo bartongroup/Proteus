@@ -3,6 +3,7 @@
 S3method(summary,proteusData)
 export(annotateProteins)
 export(evidenceColumns)
+export(fetchFromUniProt)
 export(goodData)
 export(intensityStats)
 export(jaccardSimilarity)

@@ -24,11 +24,11 @@ plotVolcano_live <- function(pdat, res, max_points=10){
     }
     library(package_name,character.only = TRUE)
   }
-  
+
   # Load required packages
   lapply(c("shiny","ggplot2","dplyr","DT","gplots"), function(x) manage.pkg(x))
-  
-  
+
+
   # Marek plotVolcano function to be enhanced with Shiny.
   # pdat<-protdat.annot
   DEdat<-res
@@ -36,15 +36,15 @@ plotVolcano_live <- function(pdat, res, max_points=10){
   uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
   urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
   DEdat$urls <- urls
-  
-  
+
+
   #######################################################################
-  
+
   ui <- shinyUI(fluidPage(
-    
+
     # Application title
     titlePanel("PlotVolcano live version"),
-    
+
     fluidRow(
       column(5, plotOutput("plotVolcano", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
@@ -72,7 +72,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         column(6, htmlOutput("proteinTable"))
       )
     ),
-    
+
     # Show main protein table
     fluidRow(
       column(width = 12,
@@ -80,10 +80,10 @@ plotVolcano_live <- function(pdat, res, max_points=10){
     )
   )
   )
-  
+
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-    
+
     #function to fetch selected proteins from Volcano plot or table
     selectProtein <- function(data,max_hover=1){
       # print('selectProtein method')
@@ -105,7 +105,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       # print(sel)
       return(sel)
     }
-    
+
     #ProteinInfo
     output$proteinInfo <- renderUI({
       # print('proteinInfo method')
@@ -116,14 +116,14 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         descr <- as.character(pdat$annotation$name[sel])
         HTML(paste0(name,descr,'<hr/>'))
       }else if (n > 1 && n <= max_points){
-        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))                    
+        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
       }else if (n > max_points){
         HTML(paste0('<H3>','only ',max_points,' points can be selected', '</H3><hr/>'))
       }
     })
-    
+
     output$gap <- renderUI({HTML('<br/>')})
-    
+
     # replicateTable
     output$replicateTable <- renderTable({
       # print('replicateTable method')
@@ -137,7 +137,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       if (length(sel) > max_points && sel > 0){ return() }
     },digits = 0, width = "80px"
     )
-    
+
     #significanceTable
     output$significanceTable <- renderTable({
       sel <- selectProtein(pdat$tab)
@@ -146,7 +146,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       }
     },digits = 4,width = "50px"
     )
-    
+
     #heatMap
     output$heatMap <- renderPlot({
       # print('heatMap method')
@@ -162,7 +162,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         heatmap.2(d, na.rm=TRUE, dendrogram = "row",key=FALSE,keysize = 1,lhei = c(1,100),Colv = FALSE,srtRow = -35,cexRow = 1.0,na.color = "blue")
       }
     })
-    
+
     #jitterPlot
     output$jitterPlot <- renderPlot({
       # print('jitterPlot method')
@@ -212,7 +212,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       }
       pVol
     })
-    
+
     #AllProteinTable
     output$allProteinTable <-DT::renderDataTable({
       # print('allProteinTable method')
@@ -221,7 +221,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
-    
+
     #Open browser for Uniprot
     observeEvent(input$allProteinTable_cell_clicked, {
       info = input$allProteinTable_cell_clicked
@@ -230,10 +230,10 @@ plotVolcano_live <- function(pdat, res, max_points=10){
       browseURL(DEdat$urls[info$row])
     })
   }
-  
-  # Run the application 
+
+  # Run the application
   shinyApp(ui = ui, server = server)
-} 
+}
 
 
 
@@ -258,17 +258,17 @@ plotVolcano_live <- function(pdat, res, max_points=10){
 #' @export
 plotFID_live <- function(pdat, res, max_points=10){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  
+
   manage.pkg <- function(package_name){
     if(!package_name%in%installed.packages()){
       install.packages(package_name)
     }
     library(package_name,character.only = TRUE)
   }
-  
+
   # Load required packages
   lapply(c("shiny","ggplot2","dplyr","DT","gplots"), function(x) manage.pkg(x))
-  
+
   # Marek plotFID function to be enhanced with Shiny.
   # pdat<-protdat.annot
   DEdat <- res
@@ -276,14 +276,14 @@ plotFID_live <- function(pdat, res, max_points=10){
   uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
   urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
   DEdat$urls <- urls
-  
+
   #Generate the FID datasets for selection. Code from Marek plotFID function.
   condMeans <- function(cond) {
     m <- rowMeans(log10(pdat$tab)[,which(pdat$metadata$condition == cond), drop=FALSE], na.rm=TRUE)
     m[is.nan(m)] <- NA
     m
   }
-  
+
   m1 <- condMeans(pdat$conditions[1])
   m2 <- condMeans(pdat$conditions[2])
   good <- !is.na(m1) & !is.na(m2)
@@ -294,19 +294,19 @@ plotFID_live <- function(pdat, res, max_points=10){
     good = good
   )
   rownames(FDIdf) <- 1:nrow(FDIdf)
-  
+
   mx <- 1.1 * max(abs(FDIdf$y), na.rm=TRUE)
   m <- rbind(m1[!good], m2[!good])
   FDIdf[!good, "x"] <- colSums(m, na.rm=TRUE)
   FDIdf[!good, "y"] <- ifelse(is.na(m[1,]), mx, -mx)
-  
+
   #######################################################################
-  
+
   ui <- shinyUI(fluidPage(
-    
+
     # Application title
     titlePanel("PlotFID live version"),
-    
+
     fluidRow(
       column(5, plotOutput("plotFID", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
@@ -331,7 +331,7 @@ plotFID_live <- function(pdat, res, max_points=10){
         column(6, htmlOutput("proteinTable"))
       )
     ),
-    
+
     # Show main protein table
     fluidRow(
       column(width = 12,
@@ -339,10 +339,10 @@ plotFID_live <- function(pdat, res, max_points=10){
     )
   )
   )
-  
+
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-    
+
     #function to fetch selected proteins from Volcano plot or table
     selectProtein <- function(data,max_hover=1){
       # print('selectProtein method')
@@ -363,7 +363,7 @@ plotFID_live <- function(pdat, res, max_points=10){
       # print(sel)
       return(sel)
     }
-    
+
     #ProteinInfo
     output$proteinInfo <- renderUI({
       # print('proteinInfo method')
@@ -375,14 +375,14 @@ plotFID_live <- function(pdat, res, max_points=10){
         descr <- as.character(pdat$annotation$name[sel])
         HTML(paste0(name,descr,'<hr/>'))
       }else if (n > 1 && n <= max_points){
-        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))                    
+        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
       }else if (n > max_points){
         HTML(paste0('<H3>','only ',max_points,' points can be selected', '</H3><hr/>'))
       }
     })
-    
+
     output$gap <- renderUI({HTML('<br/>')})
-    
+
     # replicateTable
     output$replicateTable <- renderTable({
       # print('replicateTable method')
@@ -396,7 +396,7 @@ plotFID_live <- function(pdat, res, max_points=10){
       if (length(sel) > max_points && sel > 0){ return() }
     },digits = 0, width = "80px"
     )
-    
+
     #significanceTable
     output$significanceTable <- renderTable({
       sel <- selectProtein(pdat$tab)
@@ -405,7 +405,7 @@ plotFID_live <- function(pdat, res, max_points=10){
       }
     },digits = 4,width = "50px"
     )
-    
+
     #heatMap
     output$heatMap <- renderPlot({
       # print('heatMap method')
@@ -421,7 +421,7 @@ plotFID_live <- function(pdat, res, max_points=10){
         heatmap.2(d, na.rm=TRUE, dendrogram = "row",key=FALSE,keysize = 1,lhei = c(1,100),Colv = FALSE,srtRow = -35,cexRow = 1.0,na.color = "blue")
       }
     })
-    
+
     #jitterPlot
     output$jitterPlot <- renderPlot({
       # print('jitterPlot method')
@@ -461,7 +461,7 @@ plotFID_live <- function(pdat, res, max_points=10){
           {if (input$intensityScale == 'Log') labs(x = 'Condition', y = 'Log Intensity') else labs(x = 'Condition', y = 'Intensity')}
       }
     })
-    
+
     #FID plot
     output$plotFID <- renderPlot({
       # print('plotFID method')
@@ -472,7 +472,7 @@ plotFID_live <- function(pdat, res, max_points=10){
       }
       pFID
     })
-    
+
     #AllProteinTable
     output$allProteinTable <-DT::renderDataTable({
       # print('allProteinTable method')
@@ -481,7 +481,7 @@ plotFID_live <- function(pdat, res, max_points=10){
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
-    
+
     #Open browser for Uniprot
     observeEvent(input$allProteinTable_cell_clicked, {
       info = input$allProteinTable_cell_clicked
@@ -490,7 +490,7 @@ plotFID_live <- function(pdat, res, max_points=10){
       browseURL(DEdat$urls[info$row])
     })
   }
-  
-  # Run the application 
+
+  # Run the application
   shinyApp(ui = ui, server = server)
 }

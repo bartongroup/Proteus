@@ -295,6 +295,61 @@ We can use the same function `plotClustering()` to see the dendrogram for the pr
 plotClustering(prodat.med)
 ```
 
+## Protein annotations
+
+So far, we have analysed data using protein identifiers as provided in the evidence file. We need to annotate proteins and add more information, for example, UniProt ID, gene name, protein description. To do this, we need to prepare a data frame containing a column called `protein` with the original protein identifiers, as in the evidence file. Additional columns in this data frame will contain all necessary annotations. The function `annotateProteins` can merge such data frame into a `proteusData` object and the annotations can be used later to identify proteins and perform further downstream analysis (e.g. functional entichment).
+
+In the case of our example data protein identifiers look like `sp|P00546|CDK1_YEAST`. Hence, they contain a UniProt ID. We can use this information to grab annotations from UniProt servers.
+
+First, we use `strsplit` to extract UniProt IDs:
+
+```{r protein_annotations}
+luni <- lapply(as.character(prodat$proteins), function(prot) {
+ if(grepl("sp\\|", prot)) {
+   uniprot <- unlist(strsplit(prot, "|", fixed=TRUE))[2]
+   c(prot, uniprot)
+ }
+})
+ids <- as.data.frame(do.call(rbind, luni))
+names(ids) <- c("protein", "uniprot")
+```
+
+This creates a data frame with two columns:
+
+```{r ids_head}
+head(ids)
+```
+
+So, for each protein we have found its UniProt ID. A helper function `fetchFromUniProt` gets basic annotations from UniProt servers. We would like to note that `fetchFromUniProt` is a very basic function using UniProt REST API to extract information. It requires that identifiers are valid UniProt IDs and the function doesn't perform any validity checks. Invalid identifiers can lead to unpredictable response from the server.
+
+Here we use the column `uniprot` containing `r nrow(ids)` UniProt IDs to fetch basic annotations (gene names and protein names) from UniProt. This might take a while!
+
+```{r fetch_from_uniprot, eval=FALSE}
+annotations <- fetchFromUniProt(ids$uniprot, verbose=TRUE)
+```
+
+This is what the content of this data frame looks like:
+
+```{r annotations_head}
+head(annotations)
+```
+
+In order to feed these data into a `proteusData` object we need a column with the original protein identifiers. We can get this by merging the two data frames:
+
+```{r merge_annotations}
+annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
+```
+
+This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
+
+```{r annotate_proteins}
+prodat <- annotateProteins(prodat, annotations.id)
+```
+
+The annotations are merged into `prodat` based on the `protein` column in the annotation data frame. They are stored in `prodat$annotation` and rows of this data frame correspond to the order of proteins in the intensity table.
+
+Obviously, not every data set follows the identifier convention in this example. For any data set the user will need to create a data frame with the appropriate annotations, using available resources. The only requirement is that the annotation data frame contains a column called `protein` and this column contains protein identifiers as provided in the evidence file and available from the `proteusData` object in the field `proteins`.
+
 # Differential expression
 
 We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes a `proteusData` object as input.

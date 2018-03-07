@@ -81,7 +81,7 @@ fetchFromUniProt <- function(unis, columns=c("genes", "protein names"),
   res <- lapply(seq_along(batches), function(i) {
     if(verbose) cat(paste("Batch", i, "out of", nbatch, "\n"))
     ids <- batches[[i]]
-    qry <- paste(ids, collapse="+or+")
+    qry <- paste(paste0("id:", ids), collapse="+or+")
     qurl <- URLencode(paste0(url, "?query=", qry, "&format=tab&columns=", cols))
     tryQuery(qurl)
   })

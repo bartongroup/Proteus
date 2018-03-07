@@ -572,12 +572,11 @@ makeProtein <- function(wp, method, hifly=3) {
 #' contain a column called \code{protein} with the identifiers and any
 #' additional columns with annotations, e.g., UniProt IDs, protein names, gene
 #' names, domains, GO-terms and so on. These data can be obtained from UniProt.
+#' Any annotation columns included will be used by interactive functions
+#' \code{plotFID_live} and \code{plotVolcano_live}.
 #'
-#' Though only the \code{protein} column is required to merge data and all other
-#' annotation columns are free, we strongly recommend, if possible, to include
-#' two columns with UniProt ID and protein name/description. if present, these
-#' columns will be used by interactive functions \code{plotFID_live} and
-#' \code{plotVolcano_live}.
+#' See \code{\link{fetchFromUniProt}} for obtaining annotation data from
+#' UniProt.
 #'
 #' Once the annotation table is created, it can be merged into the
 #' \code{proteusData} object using \code{annotateProteins} function. The order
@@ -596,13 +595,10 @@ makeProtein <- function(wp, method, hifly=3) {
 #' @return A \code{proteusData} with annotation field added.
 #'
 #' @examples
-#' # This example is specifically written for thest data with embedded UniProt IDs.
-#' # For other data sets, in particular for organisms with their own protein data
-#' # bases, different approaches might be appropriate.
-#'
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #'
+#' # annotations.id is a data frame with annotations
 #' prodat <- annotateProteins(prodat, annotations.id)
 #'
 #' @export

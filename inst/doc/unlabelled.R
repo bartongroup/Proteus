@@ -111,6 +111,31 @@ plotMV(prodat.med, with.loess=TRUE)
 ## ----plot_clustering_proteins, fig.width=6, fig.height=5----------------------
 plotClustering(prodat.med)
 
+## ----protein_annotations------------------------------------------------------
+luni <- lapply(as.character(prodat$proteins), function(prot) {
+ if(grepl("sp\\|", prot)) {
+   uniprot <- unlist(strsplit(prot, "|", fixed=TRUE))[2]
+   c(prot, uniprot)
+ }
+})
+ids <- as.data.frame(do.call(rbind, luni))
+names(ids) <- c("protein", "uniprot")
+
+## ----ids_head-----------------------------------------------------------------
+head(ids)
+
+## ----fetch_from_uniprot, eval=FALSE-------------------------------------------
+#  annotations <- fetchFromUniProt(ids$uniprot, verbose=TRUE)
+
+## ----annotations_head---------------------------------------------------------
+head(annotations)
+
+## ----merge_annotations--------------------------------------------------------
+annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
+
+## ----annotate_proteins--------------------------------------------------------
+prodat <- annotateProteins(prodat, annotations.id)
+
 ## ----limma, warning=FALSE-----------------------------------------------------
 res <- limmaDE(prodat.med, sig.level=0.05)
 

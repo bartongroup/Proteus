@@ -297,7 +297,7 @@ plotClustering(prodat.med)
 
 ## Protein annotations
 
-So far, we have analysed data using protein identifiers as provided in the evidence file. We need to annotate proteins and add more information, for example, UniProt ID, gene name, protein description. To do this, we need to prepare a data frame containing a column called `protein` with the original protein identifiers, as in the evidence file. Additional columns in this data frame will contain all necessary annotations. The function `annotateProteins` can merge such data frame into a `proteusData` object and the annotations can be used later to identify proteins and perform further downstream analysis (e.g. functional entichment).
+So far, we have analysed data using protein identifiers as provided in the evidence file. We need to annotate proteins and add more information, for example, UniProt ID, gene name, protein description. To do this, we need to prepare a data frame containing a column called `protein` with the original protein identifiers, as in the evidence file. Additional columns in this data frame will contain all necessary annotations. The function `annotateProteins` can merge such data frame into a `proteusData` object and the annotations can be used later to identify proteins and perform further downstream analysis (e.g. functional enrichment).
 
 In the case of our example data protein identifiers look like `sp|P00546|CDK1_YEAST`. Hence, they contain a UniProt ID. We can use this information to grab annotations from UniProt servers.
 
@@ -320,9 +320,7 @@ This creates a data frame with two columns:
 head(ids)
 ```
 
-So, for each protein we have found its UniProt ID. A helper function `fetchFromUniProt` gets basic annotations from UniProt servers. We would like to note that `fetchFromUniProt` is a very basic function using UniProt REST API to extract information. It requires that identifiers are valid UniProt IDs and the function doesn't perform any validity checks. Invalid identifiers can lead to unpredictable response from the server.
-
-Here we use the column `uniprot` containing `r nrow(ids)` UniProt IDs to fetch basic annotations (gene names and protein names) from UniProt. This might take a while!
+So, for each protein we have found its UniProt ID. A helper function `fetchFromUniProt` gets basic annotations from UniProt servers. Here we use the column `uniprot` containing `r nrow(ids)` UniProt IDs to fetch basic annotations (gene names and protein names) from UniProt. This might take a while!
 
 ```{r fetch_from_uniprot, eval=FALSE}
 annotations <- fetchFromUniProt(ids$uniprot, verbose=TRUE)
@@ -366,7 +364,7 @@ head(res)
 
 Before `limma` is called, intensity data are transformed using the `transform.fun` function (a parameter of `limmaDE`). The default value for this transformation is `log10`. Therefore, by default, the column `logFC` in the output data frame contains log10(M_1/M_2), where M_k represent the mean of condition k. If you need log2-based fold change, you can use `transform.fun=log2`.
 
-The `significant` column indicates significantly differntially expressed proteins, based on the Benjamini-Hochberg corrected p-values (column `adj.P.Val`) and the significance level defined when calling `limmaDE` (`sig.level=0.05`). It allows for simple filtering of the significant results (below we show only the most important columns, for simplicity):
+The `significant` column indicates significantly differentially expressed proteins, based on the Benjamini-Hochberg corrected p-values (column `adj.P.Val`) and the significance level defined when calling `limmaDE` (`sig.level=0.05`). It allows for simple filtering of the significant results (below we show only the most important columns, for simplicity):
 
 ```{r show_significant_proteins}
 res[which(res$significant), c("protein", "logFC", "adj.P.Val")]

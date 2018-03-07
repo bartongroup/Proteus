@@ -26,13 +26,14 @@ Fetch annotations from UniProt
 }
 \details{
 For a given list of UniProt identifiers this function will bring back
-annotation from UniProt servers. What information is downloaded is controlled
-by the \code{columns} parameter. By default it fetches gene names and protein
-name/description. The full list of available columns is in a vector
-\code{allowedUniProtColumns}.
+annotations from UniProt servers. What information is downloaded is
+controlled by the \code{columns} parameter. By default it fetches gene names
+and protein name/description. The full list of available columns is in a
+vector \code{allowedUniProtColumns}.
 
 The column names in the returned data frame are the same as in \code{columns}
-unless alterntive names are provided in parameter \code{col.names}.
+parameter, unless alternative names are provided in parameter
+\code{col.names}. The \code{id} column is added by default.
 }
 \examples{
 library(proteusUnlabelled)

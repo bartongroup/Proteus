@@ -34,12 +34,6 @@ plotVolcano_live <- function(pdat, res, max_points=10){
   DEdat<-res
   DEdat$"-log10(P.Value)" <- -log10(DEdat$P.Value)
 
-  # This section is for enabling URL on the DT object. To be developed later
-  # uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
-  # urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
-  # DEdat$urls <- urls
-
-
   #######################################################################
 
   ui <- shinyUI(fluidPage(
@@ -50,7 +44,7 @@ plotVolcano_live <- function(pdat, res, max_points=10){
     fluidRow(
       column(5, plotOutput("plotVolcano", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
-             fluidRow(htmlOutput("proteinInfo")),
+             fluidRow(tableOutput("proteinInfo")),
              fluidRow(
                column(4,
                       radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
@@ -109,21 +103,19 @@ plotVolcano_live <- function(pdat, res, max_points=10){
     }
 
     #ProteinInfo
-    output$proteinInfo <- renderUI({
+    output$proteinInfo <- renderTable({
       # print('proteinInfo method')
       sel <- selectProtein(pdat$tab)
       n <- length(sel)
-      if (n == 1 && sel > 0){
-        name <- paste0('<H3>', as.character(rownames(pdat$tab)[sel]),'</H3>')
-        # descr <- as.character(pdat$annotation$name[sel])
-        descr<-""
-        HTML(paste0(name,descr,'<hr/>'))
-      }else if (n > 1 && n <= max_points){
-        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
-      }else if (n > max_points){
-        HTML(paste0('<H3>','only ',max_points,' points can be selected', '</H3><hr/>'))
+      if (!'annotation' %in% names(pdat)){
+        data.frame(Error='no annotation found on the Proteus object. Consult vignette.')
       }
-    })
+      if (n >= 1 && n <= max_points && sel > 0){
+        data.frame(pdat$annotation[sel,])
+      }else if (n > max_points){
+        data.frame(Error=paste0('only ',max_points,' points can be selected.'))
+      }
+    },width = "150px")
 
     output$gap <- renderUI({HTML('<br/>')})
 
@@ -224,14 +216,6 @@ plotVolcano_live <- function(pdat, res, max_points=10){
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
-
-    #Open browser for Uniprot
-  #   observeEvent(input$allProteinTable_cell_clicked, {
-  #     info = input$allProteinTable_cell_clicked
-  #     # do nothing if not clicked yet, or the clicked cell is not in the 1st column
-  #     if (is.null(info$value) || info$col != 1) return()
-  #     browseURL(DEdat$urls[info$row])
-  #   })
   }
 
   # Run the application
@@ -277,11 +261,6 @@ plotFID_live <- function(pdat, res, max_points=10){
   DEdat <- res
   DEdat$"-log10(P.Value)" <- -log10(DEdat$P.Value)
 
-  # This section is for enabling URL on the DT object. To be developed later
-  # uniprot_ids <- sapply(strsplit(as.character(DEdat$protein),"|",fixed = TRUE),function(x) x[2])
-  # urls <- paste0("https://www.uniprot.org/uniprot/",uniprot_ids)
-  # DEdat$urls <- urls
-
   #Generate the FID datasets for selection. Code from Marek plotFID function.
   condMeans <- function(cond) {
     m <- rowMeans(log10(pdat$tab)[,which(pdat$metadata$condition == cond), drop=FALSE], na.rm=TRUE)
@@ -315,7 +294,7 @@ plotFID_live <- function(pdat, res, max_points=10){
     fluidRow(
       column(5, plotOutput("plotFID", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
-             fluidRow(htmlOutput("proteinInfo")),
+             fluidRow(tableOutput("proteinInfo")),
              fluidRow(
                column(4,
                       radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
@@ -370,22 +349,19 @@ plotFID_live <- function(pdat, res, max_points=10){
     }
 
     #ProteinInfo
-    output$proteinInfo <- renderUI({
+    output$proteinInfo <- renderTable({
       # print('proteinInfo method')
       sel <- selectProtein(pdat$tab)
-      # print (paste0('protein length= ', length(pdat$annotation$protein)))
       n <- length(sel)
-      if (n == 1 && sel > 0){
-        name <- paste0('<H3>', as.character(rownames(pdat$tab)[sel]),'</H3>')
-        # descr <- as.character(pdat$annotation$name[sel])
-        descr<-""
-        HTML(paste0(name,descr,'<hr/>'))
-      }else if (n > 1 && n <= max_points){
-        HTML(paste0('<H3>','selection of ', n, ' proteins', '</H3><hr/>'))
-      }else if (n > max_points){
-        HTML(paste0('<H3>','only ',max_points,' points can be selected', '</H3><hr/>'))
+      if (!'annotation' %in% names(pdat)){
+        data.frame(Error='no annotation found on the Proteus object. Consult vignette.')
       }
-    })
+      if (n >= 1 && n <= max_points && sel > 0){
+        data.frame(pdat$annotation[sel,])
+      }else if (n > max_points){
+        data.frame(Error=paste0('only ',max_points,' points can be selected.'))
+      }
+    },width = "150px")
 
     output$gap <- renderUI({HTML('<br/>')})
 
@@ -487,14 +463,6 @@ plotFID_live <- function(pdat, res, max_points=10){
         d, class = 'cell-border strip hover'
       ) %>% formatStyle(0, cursor = 'pointer')
     })
-
-    #Open browser for Uniprot
-  #   observeEvent(input$allProteinTable_cell_clicked, {
-  #     info = input$allProteinTable_cell_clicked
-  #     # do nothing if not clicked yet, or the clicked cell is not in the 1st column
-  #     if (is.null(info$value) || info$col != 1) return()
-  #     browseURL(DEdat$urls[info$row])
-  #   })
   }
 
   # Run the application

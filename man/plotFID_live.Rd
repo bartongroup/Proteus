@@ -4,7 +4,7 @@
 \alias{plotFID_live}
 \title{Fold-change intensity diagram in live Shiny session}
 \usage{
-plotFID_live(pdat, res, max_points = 10)
+plotFID_live(pdat, res, max_points = 100)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
@@ -21,10 +21,11 @@ A \code{shiny} session hosted locally.
 usually known as MA plot.
 }
 \examples{
+library(shiny)
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med,sig.level = 0.05)
-plotFID_live(prodat.med, res)
+# plotFID_live(prodat.med, res)
 
 }

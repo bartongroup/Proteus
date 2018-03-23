@@ -336,9 +336,10 @@ In order to feed these data into a `proteusData` object we need a column with th
 
 ```{r merge_annotations}
 annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
+annotations.id <- unique(annotations.id)
 ```
 
-This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
+The second command is to remove duplicated entries. This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
 
 ```{r annotate_proteins}
 prodat <- annotateProteins(prodat, annotations.id)

@@ -78,13 +78,14 @@ replicateTable <- function(tab, input, pdat, max_points) {
 
 #' significanceTable
 #'
+#' @param tab Table used to create a plot
 #' @param res Result from limma
 #' @param input Input variable from shiny server
 #'
 #' @return A rendered table with pvalue and adjusted p-value
-significanceTable <- function(res, input) {
+significanceTable <- function(tab, res, input) {
   renderTable({
-    sel <- selectProtein(res, input)
+    sel <- selectProtein(tab, input)
     if(!is.null(sel) && length(sel) == 1) {
       data.frame(`P-value`=sprintf("%.2g", res$P.Value[sel]), `adjusted P-value`=sprintf("%.2g", res$adj.P.Val[sel]), check.names = FALSE)
     }
@@ -154,11 +155,12 @@ allProteinTable <- function(res) {
 #' @return A \code{shiny} session hosted locally.
 #'
 #' @examples
+#' library(shiny)
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
-#' plotVolcano_live(prodat.med, res)
+#' # plotVolcano_live(prodat.med, res)
 #'
 #'@export
 plotVolcano_live <- function(pdat, res, max_points=100){
@@ -214,7 +216,7 @@ plotVolcano_live <- function(pdat, res, max_points=100){
     output$proteinInfo <- proteinInfo(res, input, pdat, max_points)
     output$gap <- renderUI({HTML('<br/>')})
     output$replicateTable <- replicateTable(res, input, pdat, max_points)
-    output$significanceTable <- significanceTable(res, input)
+    output$significanceTable <- significanceTable(res, res, input)
     output$jitterPlot <- jitterPlot(res, input, pdat, max_points)
 
     # Volcano plot
@@ -248,11 +250,12 @@ plotVolcano_live <- function(pdat, res, max_points=100){
 #' @return A \code{shiny} session hosted locally.
 #'
 #' @examples
+#' library(shiny)
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med,sig.level = 0.05)
-#' plotFID_live(prodat.med, res)
+#' # plotFID_live(prodat.med, res)
 #'
 #' @export
 plotFID_live <- function(pdat, res, max_points=100){
@@ -323,10 +326,10 @@ plotFID_live <- function(pdat, res, max_points=100){
 
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-    output$proteinInfo <- proteinInfo(fi, input, pdat)
+    output$proteinInfo <- proteinInfo(fi, input, pdat, max_points)
     output$gap <- renderUI({HTML('<br/>')})
-    output$replicateTable <- replicateTable(fi, input, pdat)
-    output$significanceTable <- significanceTable(fi, input)
+    output$replicateTable <- replicateTable(fi, input, pdat, max_points)
+    output$significanceTable <- significanceTable(fi, res, input)
     output$jitterPlot <- jitterPlot(fi, input, pdat, max_points)
 
     #FID plot

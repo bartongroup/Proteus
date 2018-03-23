@@ -4,7 +4,7 @@
 \alias{plotVolcano_live}
 \title{Volcano plot in live Shiny session}
 \usage{
-plotVolcano_live(pdat, res, max_points = 10)
+plotVolcano_live(pdat, res, max_points = 100)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}
@@ -20,10 +20,11 @@ A \code{shiny} session hosted locally.
 \code{plotVolcano_live} makes a volcano plot from limma results.
 }
 \examples{
+library(shiny)
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med)
-plotVolcano_live(prodat.med, res)
+# plotVolcano_live(prodat.med, res)
 
 }

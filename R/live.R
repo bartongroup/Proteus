@@ -1,3 +1,7 @@
+library(shiny)
+library(dplyr)
+library(ggplot2)
+
 # Fetch selected proteins from a plot or table
 selectProtein <- function(tab, input, max_hover=1) {
   sel <- NULL
@@ -22,9 +26,10 @@ selectProtein <- function(tab, input, max_hover=1) {
 #' @param tab Table used to create a plot
 #' @param input Input variable from shiny server
 #' @param pdat \code{proteusData} object with data and annotations
+#' @param max_points Maximum number of points to select
 #'
 #' @return Rendered table with protein(s) annotations
-proteinInfo <- function(tab, input, pdat) {
+proteinInfo <- function(tab, input, pdat, max_points) {
   renderTable({
     sel <- selectProtein(tab, input)
     if(!is.null(sel)) {
@@ -52,9 +57,10 @@ proteinInfo <- function(tab, input, pdat) {
 #' @param tab Table used to create a plot
 #' @param input Input variable from shiny server
 #' @param pdat \code{proteusData} object with data and annotations
+#' @param max_points Maximum number of points to select
 #'
 #' @return Rendered table with replicate intensities.
-replicateTable <- function(tab, input, pdat) {
+replicateTable <- function(tab, input, pdat, max_points) {
   renderTable({
     sel <- selectProtein(tab, input)
     if(!is.null(sel)) {
@@ -120,6 +126,19 @@ jitterPlot <- function(tab, input, pdat, max_points) {
     }
   })
 
+}
+
+
+allProteinTable <- function(res) {
+  DT::renderDataTable({
+    cols <- c("protein", "logFC", "adj.P.Val", grep("mean_", colnames(res), value=TRUE))
+    d <- res[, cols]
+    d[, 2:ncol(d)] <- sapply(d[, 2:ncol(d)], function(x) signif(x, 3))
+    DT::datatable(
+      d,
+      class = 'cell-border strip hover'
+    ) %>% DT::formatStyle(0, cursor = 'pointer')
+  })
 }
 
 
@@ -192,9 +211,9 @@ plotVolcano_live <- function(pdat, res, max_points=100){
 
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-    output$proteinInfo <- proteinInfo(res, input, pdat)
+    output$proteinInfo <- proteinInfo(res, input, pdat, max_points)
     output$gap <- renderUI({HTML('<br/>')})
-    output$replicateTable <- replicateTable(res, input, pdat)
+    output$replicateTable <- replicateTable(res, input, pdat, max_points)
     output$significanceTable <- significanceTable(res, input)
     output$jitterPlot <- jitterPlot(res, input, pdat, max_points)
 
@@ -208,16 +227,7 @@ plotVolcano_live <- function(pdat, res, max_points=100){
       pVol
     })
 
-    # AllProteinTable
-    output$allProteinTable <- DT::renderDataTable({
-      cols <- c("protein", "logFC", "adj.P.Val", grep("mean_", colnames(res), value=TRUE))
-      d <- res[, cols]
-      d[, 2:ncol(d)] <- sapply(d[, 2:ncol(d)], function(x) sprintf("%.3g", x))
-      datatable(
-        d,
-        class = 'cell-border strip hover'
-      ) %>% formatStyle(0, cursor = 'pointer')
-    })
+    output$allProteinTable <- allProteinTable(res)
   }
 
   # Run the application
@@ -249,28 +259,27 @@ plotFID_live <- function(pdat, res, max_points=100){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   res$"-log10(P.Value)" <- -log10(res$P.Value)
 
-  #Generate the FID datasets for selection. Code from Marek plotFID function.
+  # Generate the fold-change/intensity dataset. The same as in the FID plot.
   condMeans <- function(cond) {
     m <- rowMeans(log10(pdat$tab)[,which(pdat$metadata$condition == cond), drop=FALSE], na.rm=TRUE)
     m[is.nan(m)] <- NA
     m
   }
-
   m1 <- condMeans(pdat$conditions[1])
   m2 <- condMeans(pdat$conditions[2])
   good <- !is.na(m1) & !is.na(m2)
-  FDIdf <- data.frame(
+  fi <- data.frame(
     id = rownames(pdat$tab),
     x = (m1 + m2) / 2,
     y = m2 - m1,
     good = good
   )
-  rownames(FDIdf) <- 1:nrow(FDIdf)
+  rownames(fi) <- 1:nrow(fi)
 
-  mx <- 1.1 * max(abs(FDIdf$y), na.rm=TRUE)
+  mx <- 1.1 * max(abs(fi$y), na.rm=TRUE)
   m <- rbind(m1[!good], m2[!good])
-  FDIdf[!good, "x"] <- colSums(m, na.rm=TRUE)
-  FDIdf[!good, "y"] <- ifelse(is.na(m[1,]), mx, -mx)
+  fi[!good, "x"] <- colSums(m, na.rm=TRUE)
+  fi[!good, "y"] <- ifelse(is.na(m[1,]), mx, -mx)
 
   #######################################################################
 
@@ -294,9 +303,9 @@ plotFID_live <- function(pdat, res, max_points=100){
                       fluidRow(htmlOutput("gap")),
                       fluidRow(tableOutput("significanceTable"))),
                column(3,
-                      fluidRow(tableOutput("replicateTable"))),
-               column(5,
-                      fluidRow(plotOutput("heatMap",height = "700px", width = "100%")))
+                      fluidRow(tableOutput("replicateTable")))
+#               column(5,
+#                      fluidRow(plotOutput("heatMap",height = "700px", width = "100%")))
              )
       ),
       fluidRow(
@@ -314,131 +323,23 @@ plotFID_live <- function(pdat, res, max_points=100){
 
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-
-    #function to fetch selected proteins from Volcano plot or table
-    selectProtein <- function(data,max_hover=1){
-      sel = -1
-      tab_idx <- as.numeric(input$allProteinTable_rows_selected)
-      if(!is.null(input$plot_brush)){
-        brushed <- na.omit(brushedPoints(FDIdf, input$plot_brush))
-        sel <- as.numeric(rownames(brushed))
-      }else if(!is.null(input$plot_hover)){
-        near <- nearPoints(FDIdf,input$plot_hover,threshold = 20,maxpoints = max_hover)
-        sel <- as.numeric(rownames(near))
-      }else if(length(tab_idx)>0){
-        sel <- tab_idx
-      }
-      return(sel)
-    }
-
-    #ProteinInfo
-    output$proteinInfo <- renderTable({
-      sel <- selectProtein(pdat$tab)
-      n <- length(sel)
-      if (!'annotation' %in% names(pdat)){
-        data.frame(Error='no annotation found on the Proteus object. Consult vignette.')
-      }else{
-        if (n >= 1 && n <= max_points && sel > 0){
-          data.frame(pdat$annotation[sel,])
-        }else if (n > max_points){
-          data.frame(Error=paste0('only ',max_points,' points can be selected.'))
-        }
-      }
-    })
-
+    output$proteinInfo <- proteinInfo(fi, input, pdat)
     output$gap <- renderUI({HTML('<br/>')})
-
-    # replicateTable
-    output$replicateTable <- renderTable({
-      sel <- selectProtein(pdat$tab)
-      if(length(sel) > 1 && sel > 0 && length(sel) <= max_points){
-        data.frame(Sample=colnames(pdat$tab),Intensity=colMeans(pdat$tab[sel,],na.rm = TRUE))
-      }
-      if (length(sel) == 1 && sel > 0){
-        data.frame(Sample=colnames(pdat$tab),Intensity=pdat$tab[sel,])
-      }
-    },digits = 0, width = "80px"
-    )
-
-    #significanceTable
-    output$significanceTable <- renderTable({
-      sel <- selectProtein(pdat$tab)
-      if(length(sel) == 1 && sel > 0){
-        data.frame(Contrast="1112-BMO", pvalue=as.numeric(res$P.Value[sel]))
-      }
-    },digits = 4,width = "50px"
-    )
-
-    #heatMap
-    output$heatMap <- renderPlot({
-      sel<-selectProtein(pdat$tab)
-      if(length(sel) > 1 && sel > 0 && length(sel) <= max_points){
-        d <- as.matrix(pdat$tab[sel,])
-        mean <- rowMeans(d,na.rm = TRUE)
-        mean[mean == 0] <- 1
-        d <- d/mean
-        d[is.nan(d)] <- NA
-        row.names(d) <- rownames(pdat$tab)[sel]
-        heatmap.2(d, na.rm=TRUE, dendrogram = "row",key=FALSE,keysize = 1,lhei = c(1,100),Colv = FALSE,srtRow = -35,cexRow = 1.0,na.color = "blue")
-      }
-    })
-
-    #jitterPlot
-    output$jitterPlot <- renderPlot({
-      sel <- selectProtein(pdat$tab)
-      if(length(sel)>0 && sel > 0 && length(sel) <= max_points){
-        dataIntensity<-pdat$tab[sel,]
-        if (input$intensityScale == 'Log'){
-          dataIntensity<-log10(dataIntensity)
-        }
-        if (length(sel) == 1){
-          i <- dataIntensity
-        }else{
-          i <- colMeans(dataIntensity,na.rm = TRUE)
-        }
-        s <- sapply(as.data.frame(dataIntensity),function(x) sd(x,na.rm = TRUE)/sqrt(length(x)))
-        n <- length(sel)
-        p <- data.frame(
-          intensity= i,
-          lo=i-s,
-          up=i+s,
-          condition=factor(pdat$metadata$condition,levels=unique(pdat$condition)),
-          replicates=factor(pdat$metadata$replicate)
-        )
-        #shape
-        p$shape <- rep(21,length(p$intensity))
-        p$shape[which(p$intensity==0)] <- 24
-        pd <- position_dodge(width = 0.4)
-        #colorblind friendly definition
-        cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-        ggplot(p, aes(x=condition, y=intensity, ymin=lo, ymax=up, colour=replicates, shape= shape, fill=replicates)) +
-          theme(text = element_text(size=20), legend.position = "bottom",legend.direction = "horizontal") +
-          {if (input$intensityScale == '') ylim(0, NA)} +
-          {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
-          geom_point(position=pd, size=4) +
-          scale_shape_identity() +  # necessary for shape mapping
-          scale_fill_manual(values=cbPalette) +
-          {if (input$intensityScale == 'Log') labs(x = 'Condition', y = 'Log Intensity') else labs(x = 'Condition', y = 'Intensity')}
-      }
-    })
+    output$replicateTable <- replicateTable(fi, input, pdat)
+    output$significanceTable <- significanceTable(fi, input)
+    output$jitterPlot <- jitterPlot(fi, input, pdat, max_points)
 
     #FID plot
     output$plotFID <- renderPlot({
       tab_idx <- as.numeric(input$allProteinTable_rows_selected)
       pFID <- plotFID(pdat,binhex=FALSE)
       if (length(tab_idx) > 0){
-        pFID <- pFID + geom_point(data=FDIdf[tab_idx,],size=3,color='red')
+        pFID <- pFID + geom_point(data=fi[tab_idx,], size=3, color='red')
       }
       pFID
     })
 
-    #AllProteinTable
-    output$allProteinTable <-DT::renderDataTable({
-      d <- data.frame(ProteinId=res$protein,mean_1112=formatC(res$mean_1112),mean_BMO=formatC(res$mean_BMO))
-      datatable(
-        d, class = 'cell-border strip hover'
-      ) %>% formatStyle(0, cursor = 'pointer')
-    })
+    output$allProteinTable <- allProteinTable(res)
   }
 
   # Run the application

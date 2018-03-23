@@ -23,7 +23,10 @@ Imports:
     stats,
     graphics,
     utils,
-    parallel
-Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled, UniProt.ws
+    parallel,
+    shiny,
+    DT,
+    gplots
+Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry

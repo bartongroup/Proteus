@@ -606,6 +606,7 @@ annotateProteins <- function(pdat, annotation) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   if(!is.data.frame(annotation)) stop ("Annotation needs to be a data frame.")
   if(is.null(annotation$protein)) stop ("Annotation table has to have a 'protein' column.")
+  if(anyDuplicated(annotation$protein) > 0) stop("protein column in annotations must contain only unique identifiers.")
 
   nover <- length(intersect(pdat$proteins, annotation$protein))
   if(nover == 0) stop("No overlap between data and annotation. Nothing to annotate.")

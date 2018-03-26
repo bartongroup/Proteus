@@ -14,7 +14,6 @@ Imports:
     dplyr,
     reshape2,
     ggplot2,
-    hexbin,
     ggExtra,
     gridExtra,
     dendextend,
@@ -25,8 +24,7 @@ Imports:
     utils,
     parallel,
     shiny,
-    DT,
-    gplots
+    DT
 Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry

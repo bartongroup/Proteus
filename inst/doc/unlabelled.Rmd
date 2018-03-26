@@ -37,6 +37,23 @@ library(proteusUnlabelled)
 data(proteusUnlabelled)
 ```
 
+# Quick start
+
+Here is a minimal example of data analysis in *Proteus*. You will need an evidence file from *MaxQuant* and a very simple text file with metadata  (see below how to create it). Then, you can get from the evidence file to differential expression in just a few steps.
+
+```{r quick_start, eval=FALSE}
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+
+evi <- readEvidenceFile(evidenceFile)
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
+pepdat <- makePeptideTable(evi, meta)
+prodat <- makeProteinTable(pepdat)
+prodat.med <- normalizeData(prodat)
+res <- limmaDE(prodat.med)
+plotVolcano_live(prodat.med, res)
+```
+
 # Input data
 
 ## Files
@@ -45,7 +62,7 @@ data(proteusUnlabelled)
 
 In this tutorial we are also going to use a metadata file. It should be created manually as a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "experiment", "measure", "sample" and "condition" (see section [Metadata](#Metadata)).
 
-Alternatively, a metadata data frame (with the same columns) can be created within R session.
+Alternatively, a metadata data frame (with the same columns) can be created within the R session.
 
 
 ## Read evidence file
@@ -336,9 +353,10 @@ In order to feed these data into a `proteusData` object we need a column with th
 
 ```{r merge_annotations}
 annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
+annotations.id <- unique(annotations.id)
 ```
 
-This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
+The second command is to remove duplicated entries. This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
 
 ```{r annotate_proteins}
 prodat <- annotateProteins(prodat, annotations.id)
@@ -436,3 +454,19 @@ A better understanding of the protein's behaviour might be gained via function `
 ```{r plot_prot_peptides, fig.width=7, fig.height=6, warning=FALSE}
 plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 ```
+
+# Interactive plots
+
+*Proteus* offers interactive versions of volcano and fold-change/intensity plots. They use [Shiny](https://shiny.rstudio.com) framework to build an interactive local web page in your browser. They are called (from command line):
+
+```{r shiny_volcano, eval=FALSE}
+plotVolcano_live(prodat.med, res)
+```
+
+and 
+
+```{r shiny_fid, eval=FALSE}
+plotFID_live(prodat.med, res)
+```
+
+We strongly recommend to build protein annotations before running live functions.

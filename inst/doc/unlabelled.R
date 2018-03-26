@@ -13,6 +13,18 @@ knitr::opts_chunk$set(echo = TRUE)
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 
+## ----quick_start, eval=FALSE--------------------------------------------------
+#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#  metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+#  
+#  evi <- readEvidenceFile(evidenceFile)
+#  meta <- read.delim(metadataFile, header=TRUE, sep="\t")
+#  pepdat <- makePeptideTable(evi, meta)
+#  prodat <- makeProteinTable(pepdat)
+#  prodat.med <- normalizeData(prodat)
+#  res <- limmaDE(prodat.med)
+#  plotVolcano_live(prodat.med, res)
+
 ## ----read_evidence, eval=FALSE------------------------------------------------
 #  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
 #  evi <- readEvidenceFile(evidenceFile)
@@ -132,6 +144,7 @@ head(annotations)
 
 ## ----merge_annotations--------------------------------------------------------
 annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
+annotations.id <- unique(annotations.id)
 
 ## ----annotate_proteins--------------------------------------------------------
 prodat <- annotateProteins(prodat, annotations.id)
@@ -172,4 +185,10 @@ plotIntensities(prodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
 
 ## ----plot_prot_peptides, fig.width=7, fig.height=6, warning=FALSE-------------
 plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
+
+## ----shiny_volcano, eval=FALSE------------------------------------------------
+#  plotVolcano_live(prodat.med, res)
+
+## ----shiny_fid, eval=FALSE----------------------------------------------------
+#  plotFID_live(prodat.med, res)
 

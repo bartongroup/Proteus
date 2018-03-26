@@ -1,8 +1,5 @@
-library(shiny)
-library(dplyr)
-library(ggplot2)
+#' @import shiny
 
-# Fetch selected proteins from a plot or table
 selectProtein <- function(tab, input, max_hover=1) {
   sel <- NULL
   tab_idx <- as.numeric(input$allProteinTable_rows_selected)
@@ -19,9 +16,9 @@ selectProtein <- function(tab, input, max_hover=1) {
 }
 
 
-#' proteinInfo
+#' Protein information
 #'
-#' Create a rendered table with protein annotations.
+#' Internal function to create a rendered table with protein annotations.
 #'
 #' @param tab Table used to create a plot
 #' @param input Input variable from shiny server
@@ -48,11 +45,11 @@ proteinInfo <- function(tab, input, pdat, max_points) {
 }
 
 
-#' replicateTable
+#' Replicate table
 #'
-#' Create a rendered table with replicate intensities. When multiple points are
-#' selected, the returned table contains mean values. If \code{intensityScale}
-#' in the input is 'log', data are log-10 transformed.
+#' Internal function to create a rendered table with replicate intensities. When
+#' multiple points are selected, the returned table contains mean values. If
+#' \code{intensityScale} in the input is 'log', data are log-10 transformed.
 #'
 #' @param tab Table used to create a plot
 #' @param input Input variable from shiny server
@@ -76,7 +73,7 @@ replicateTable <- function(tab, input, pdat, max_points) {
 }
 
 
-#' significanceTable
+#' Significance table
 #'
 #' @param tab Table used to create a plot
 #' @param res Result from limma
@@ -93,6 +90,17 @@ significanceTable <- function(tab, res, input) {
 }
 
 
+#' Jitter plot
+#'
+#' Internal function to create a jitter plot with replicate intensities versus
+#' condition.
+#'
+#' @param tab Table used to create a plot
+#' @param input Input variable from shiny server
+#' @param pdat \code{proteusData} object with data and annotations
+#' @param max_points Maximum number of points to select
+#'
+#' @return A ggplot object.
 jitterPlot <- function(tab, input, pdat, max_points) {
   renderPlot({
     sel <- selectProtein(tab, input)
@@ -130,23 +138,28 @@ jitterPlot <- function(tab, input, pdat, max_points) {
 }
 
 
+#' All protein table
+#'
+#' Internal function to create a table with all proteins (bottom of the web page).
+#'
+#' @param res A data frame with results from limmaDE.
+#'
+#' @return A rendered table.
 allProteinTable <- function(res) {
   DT::renderDataTable({
     cols <- c("protein", "logFC", "adj.P.Val", grep("mean_", colnames(res), value=TRUE))
     d <- res[, cols]
     d[, 2:ncol(d)] <- sapply(d[, 2:ncol(d)], function(x) signif(x, 3))
-    DT::datatable(
-      d,
-      class = 'cell-border strip hover'
-    ) %>% DT::formatStyle(0, cursor = 'pointer')
+    d <- DT::datatable(d, class = 'cell-border strip hover')
+    DT::formatStyle(d, 0, cursor = 'pointer')
   })
 }
 
 
 
-#'Volcano plot in live Shiny session
+#' Volcano plot in live Shiny session
 #'
-#'\code{plotVolcano_live} makes a volcano plot from limma results.
+#' \code{plotVolcano_live} makes a volcano plot from limma results.
 #'
 #' @param pdat Protein \code{proteusData} object.
 #' @param res Result table from  \code{\link{limmaDE}}.
@@ -162,7 +175,7 @@ allProteinTable <- function(res) {
 #' res <- limmaDE(prodat.med)
 #' # plotVolcano_live(prodat.med, res)
 #'
-#'@export
+#' @export
 plotVolcano_live <- function(pdat, res, max_points=100){
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
@@ -178,24 +191,21 @@ plotVolcano_live <- function(pdat, res, max_points=100){
     fluidRow(
       column(5, plotOutput("plotVolcano", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
-             fluidRow(tableOutput("proteinInfo")),
-             fluidRow(
-               column(4,
-                      radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
-               )
+        fluidRow(tableOutput("proteinInfo")),
+          fluidRow(
+            column(4,
+              radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
+              )
              ),
              fluidRow(
                column(4,
-                      fluidRow(plotOutput("jitterPlot", height = "400px",width = "100%")),
-                      fluidRow(htmlOutput("gap")),
-                      fluidRow(tableOutput("significanceTable"))
+                fluidRow(plotOutput("jitterPlot", height = "400px",width = "100%")),
+                fluidRow(htmlOutput("gap")),
+                fluidRow(tableOutput("significanceTable"))
                ),
                column(3,
-                      fluidRow(tableOutput("replicateTable"))
+                    fluidRow(tableOutput("replicateTable"))
                )
-#               column(5,
-#                      fluidRow(plotOutput("heatMap",height = "700px" ,width = "100%"))
-#               )
              )
       ),
       fluidRow(
@@ -206,7 +216,7 @@ plotVolcano_live <- function(pdat, res, max_points=100){
     # Show main protein table
     fluidRow(
       column(width = 12,
-             DT::dataTableOutput("allProteinTable"))
+        DT::dataTableOutput("allProteinTable"))
     )
   )
   )
@@ -297,7 +307,7 @@ plotFID_live <- function(pdat, res, max_points=100){
              fluidRow(tableOutput("proteinInfo")),
              fluidRow(
                column(4,
-                      radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
+                  radioButtons("intensityScale","Intesity Scale:",choices = c("Linear scale" = "","Log scale"="Log"),inline = TRUE)
                )
              ),
              fluidRow(
@@ -307,8 +317,6 @@ plotFID_live <- function(pdat, res, max_points=100){
                       fluidRow(tableOutput("significanceTable"))),
                column(3,
                       fluidRow(tableOutput("replicateTable")))
-#               column(5,
-#                      fluidRow(plotOutput("heatMap",height = "700px", width = "100%")))
              )
       ),
       fluidRow(
@@ -319,7 +327,7 @@ plotFID_live <- function(pdat, res, max_points=100){
     # Show main protein table
     fluidRow(
       column(width = 12,
-             DT::dataTableOutput("allProteinTable"))
+        DT::dataTableOutput("allProteinTable"))
     )
   )
   )

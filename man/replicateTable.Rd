@@ -2,7 +2,7 @@
 % Please edit documentation in R/live.R
 \name{replicateTable}
 \alias{replicateTable}
-\title{replicateTable}
+\title{Replicate table}
 \usage{
 replicateTable(tab, input, pdat, max_points)
 }
@@ -19,7 +19,7 @@ replicateTable(tab, input, pdat, max_points)
 Rendered table with replicate intensities.
 }
 \description{
-Create a rendered table with replicate intensities. When multiple points are
-selected, the returned table contains mean values. If \code{intensityScale}
-in the input is 'log', data are log-10 transformed.
+Internal function to create a rendered table with replicate intensities. When
+multiple points are selected, the returned table contains mean values. If
+\code{intensityScale} in the input is 'log', data are log-10 transformed.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/live.R
 \name{significanceTable}
 \alias{significanceTable}
-\title{significanceTable}
+\title{Significance table}
 \usage{
 significanceTable(tab, res, input)
 }
@@ -17,5 +17,5 @@ significanceTable(tab, res, input)
 A rendered table with pvalue and adjusted p-value
 }
 \description{
-significanceTable
+Significance table
 }

@@ -1196,9 +1196,9 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #'
 #' Before \code{limma} is called, intensity data are transformed using the
 #' \code{transform.fun} function. The default for this transformation is
-#' \code{log10}. Therefore, by default, the column "logFC" in the output data
-#' frame contains log10 fold change. If you need log2-based fold change, you can
-#' use \code{transform.fun=log2}.
+#' \code{log2}. Therefore, by default, the column "logFC" in the output data
+#' frame contains log2 fold change. If you need log10-based fold change, you can
+#' use \code{transform.fun=log10}.
 #'
 #' \code{limmaDE} is only a simple wrapper around \code{\link{limma}}, to
 #' perform differential expression between two conditions. For more complicated
@@ -1225,7 +1225,7 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #' res <- limmaDE(prodat.med)
 #'
 #' @export
-limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log10, sig.level=0.05) {
+limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=log2, sig.level=0.05) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pdat$metadata

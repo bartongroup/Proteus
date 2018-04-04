@@ -1,7 +1,7 @@
 Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
-Version: 0.1.14
+Version: 0.1.15
 Depends: R (>= 3.4)
 Author: MG
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>

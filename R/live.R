@@ -147,7 +147,9 @@ jitterPlot <- function(tab, input, pdat, max_points) {
 #' @return A rendered table.
 allProteinTable <- function(res) {
   DT::renderDataTable({
-    cols <- c("protein", "logFC", "adj.P.Val", grep("mean_", colnames(res), value=TRUE))
+    # assume first column is id ("protein" or "peptide")
+    idcol <- names(res)[1]
+    cols <- c(idcol, "logFC", "adj.P.Val", grep("mean_", colnames(res), value=TRUE))
     d <- res[, cols]
     d[, 2:ncol(d)] <- sapply(d[, 2:ncol(d)], function(x) signif(x, 3))
     d <- DT::datatable(d, class = 'cell-border strip hover')

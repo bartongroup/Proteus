@@ -225,9 +225,11 @@ summary.proteusData <- function(object, ...) {
 #' @export
 readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns) {
 
+  columns <- c(data.cols, measure.cols)
+  if(anyDuplicated(names(columns))) stop("Column names must be unique.")
+
   # check if all required columns are in the evidence file
   evi.cols <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, as.is=TRUE, strip.white=TRUE, nrows = 1)
-  columns <- c(data.cols, measure.cols)
   missing <- NULL
   for(col in columns) {
     if(!(col %in% colnames(evi.cols))) missing <- c(missing, paste0("'", col, "'"))

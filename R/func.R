@@ -432,6 +432,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi[[pepseq]], protein=evi$protein)
   pep2prot <- unique(pep2prot)
+  if(anyDuplicated(pep2prot$sequence) > 0) stop("Non-unique peptide-to-protein association found. Proteus requires that peptide sequence is uniquely associated with a leading razor protein.")
   rownames(pep2prot) <- pep2prot$sequence
   pep2prot <- pep2prot[peptides,]
   proteins <- levels(as.factor(pep2prot$protein))

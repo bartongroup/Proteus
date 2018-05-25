@@ -6,7 +6,7 @@
 \usage{
 makePeptideTable(evi, meta, pepseq = "sequence",
   measure.cols = measureColumns, fun.aggregate = sum,
-  experiment.type = "unlabelled")
+  experiment.type = c("unlabelled", "TMT", "SILAC"))
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -23,7 +23,7 @@ used in \code{\link{readEvidenceFile}}}
 \item{fun.aggregate}{A function to aggregate pepetides with the same
 sequence/sample.}
 
-\item{experiment.type}{Type of the experiment, "unlabelled" or "SILAC".}
+\item{experiment.type}{Type of the experiment, "unlabelled", "TMT" or "SILAC".}
 }
 \value{
 A \code{proteusData} object, containing peptide intensities and

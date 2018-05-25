@@ -359,7 +359,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #'   used in \code{\link{readEvidenceFile}}
 #' @param fun.aggregate A function to aggregate pepetides with the same
 #'   sequence/sample.
-#' @param experiment.type Type of the experiment, "unlabelled" or "SILAC".
+#' @param experiment.type Type of the experiment, "unlabelled", "TMT" or "SILAC".
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'
@@ -370,7 +370,9 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #'
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureColumns,
-                             fun.aggregate=sum, experiment.type="unlabelled") {
+                             fun.aggregate=sum, experiment.type=c("unlabelled", "TMT", "SILAC")) {
+
+  experiment.type <- match.arg(experiment.type)
 
   # check if measure.cols are in the evidence file
   measures <- names(measure.cols)

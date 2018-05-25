@@ -380,16 +380,23 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
     if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
   }
 
-  # test columns in metadata
+  # test metadata integrity
   for(col in c("experiment", "measure", "sample", "condition")) {
     if(!(col %in% names(meta))) stop(paste0("Column '", col, "' not found in metadata."))
+  }
+  if(anyDuplicated(paste0(meta$experiment, meta$measure)) > 0) stop("Experiment/measure combination in metadata must be unique.")
+  if(anyDuplicated(meta$sample) > 0) stop("Sample in metadata must be unique.")
+  experiments <- unique(evi$experiment)
+  for(ex in meta$experiment) {
+    if(!(ex %in% experiments)) stop(paste0("Experiment '", ex, "' from metadata not found in evidence."))
+  }
+  for(me in meta$measure) {
+    if(!(me %in% measure.cols)) stop(paste0("Measure '", me, "' from metadata not found in measure.cols."))
   }
 
   # make sure to keep correct order of samples
   meta$sample <- factor(meta$sample, levels=meta$sample)
 
-  # zeroes in the evidence file are missing data
-  evi[evi == 0] <- NA
   f <- function(x) fun.aggregate(x, na.rm=TRUE)
 
   # melt and recast evidence data

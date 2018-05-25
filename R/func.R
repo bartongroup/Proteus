@@ -215,6 +215,7 @@ summary.proteusData <- function(object, ...) {
 #' @param measure.cols Named list with measure columns to read.
 #' @param data.cols Named list with other columns to read (in addition to
 #'   measure columns).
+#' @param zeroes.are.missing Logical. If TRUE zeroes are interpreted as missing data and replaced with NAs.
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
@@ -223,7 +224,7 @@ summary.proteusData <- function(object, ...) {
 #' evi <- readEvidenceFile(evidenceFile)
 #'
 #' @export
-readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns) {
+readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns, zeroes.are.missing=TRUE) {
 
   columns <- c(data.cols, measure.cols)
   if(anyDuplicated(names(columns))) stop("Column names must be unique.")
@@ -242,15 +243,18 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
   evi <- evi[, as.character(columns)]
   names(evi) <- names(columns)
   # sometimes there are only NAs and the condition doesn't work
-  evi$reverse[is.na(evi$reverse)] = ''
-  evi$contaminant[is.na(evi$contaminant)] = ''
+  evi$reverse[is.na(evi$reverse)] <- ''
+  evi$contaminant[is.na(evi$contaminant)] <- ''
   evi <- evi[which(evi$contaminant != '+' & evi$reverse != '+'),]
 
-  # replace zeroes with NAs in measure columns
-  evi.meas <- evi[,names(measure.cols), drop=FALSE]
-  evi.meas[evi.meas == 0] <- NA
-  evi[,names(measure.cols)] <- evi.meas
-  rm(evi.meas)
+  # replace NaNs and infinites with NAs in measure columns
+  # the same with zeroes if flag is on
+  for(col in names(measure.cols)) {
+    x <- evi[, col]
+    x[is.nan(x) | is.infinite(x)] <- NA
+    if(zeroes.are.missing) x[x == 0] <- NA
+    evi[, col] <- x
+  }
 
   # remove rows that have only NAs in measure columns
   not.empty <- which(rowSums(!is.na(evi[,names(measure.cols), drop=FALSE])) > 0)

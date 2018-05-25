@@ -5,7 +5,7 @@
 \title{Read MaxQuant's evidence file}
 \usage{
 readEvidenceFile(file, measure.cols = measureColumns,
-  data.cols = evidenceColumns)
+  data.cols = evidenceColumns, zeroes.are.missing = TRUE)
 }
 \arguments{
 \item{file}{File name.}
@@ -14,6 +14,8 @@ readEvidenceFile(file, measure.cols = measureColumns,
 
 \item{data.cols}{Named list with other columns to read (in addition to
 measure columns).}
+
+\item{zeroes.are.missing}{Logical. If TRUE zeroes are interpreted as missing data and replaced with NAs.}
 }
 \value{
 Data frame with selected columns from the evidence file.

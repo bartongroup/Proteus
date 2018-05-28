@@ -20,17 +20,13 @@ vignette: >
 
 ```{r setup, include=FALSE}
 library(proteus)
-library(knitr)
-library(dplyr)
 library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
+library(knitr)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and SILAC analysis
+This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlaballed and SILAC analysis
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")
@@ -156,7 +152,7 @@ prodat.norm <- normalizeData(prodat)
 
 These two figures show reporter intensity distributions before and after normalization.
 
-```{r, sample_dist, fig.width=7, fig.height=4}
+```{r, sample_dist, fig.width=4, fig.height=3}
 plotSampleDistributions(prodat, fill="replicate") + labs(title="Before")
 plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 ```
@@ -164,7 +160,8 @@ plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 
 ## Differential expression
 
-For SILAC data we sometimes need to do a differential expression on an isotope ratio, e.g. M/L. The null hypothesis is that $M/L = 1$ or $\log H/L = 0$. Because SILAC ratios tend to be symmetric in log space (see figure above), we chose the second apprach. 
+For SILAC data we sometimes need to do differential expression on an isotope ratio, e.g. $M/L$. In our case, $M$ and $L$ labelled two different biological conditions, hence the $M/L$ ratio compares them. The null hypothesis is that $M/L = 1$ or $\log H/L = 0$. Because SILAC ratios tend to be symmetric in log space (see figure above), we chose the latter approach. Let's do the differential expression for the time point `T48`.
+
 
 ```{r limma_one_sample}
 res <- limmaRatioDE(prodat.norm, condition="T48")
@@ -172,8 +169,22 @@ res <- res[order(res$P.Value),]
 head(res)
 ```
 
-And here is the volcano plot:
+There are no statistically significant departures from the null hypothesis. Here is the volcano plot:
 
 ```{r volcano_plot, fig.width=4, fig.height=3}
 plotVolcano(res, binhex=FALSE)
+```
+
+Alternatively, we can compare the two time points with a two-condition differential expression:
+
+```{r limma_two_samples}
+res2 <- limmaDE(prodat.norm)
+res2 <- res2[order(res2$P.Value),]
+head(res2)
+```
+
+Though not statistically significant at the assumes 0.05 level, protein P03372-3 stands out. Here is a SILAC ratio plot for this protein:
+
+```{r protein_example, fig.width=4, fig.height=3}
+plotIntensities(prodat.norm, id="P03372-3")
 ```

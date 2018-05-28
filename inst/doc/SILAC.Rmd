@@ -21,16 +21,11 @@ vignette: >
 ```{r setup, include=FALSE}
 library(proteus)
 library(knitr)
-library(dplyr)
-library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis
+This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlaballed and SILAC analysis
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")
@@ -47,7 +42,7 @@ data(proteusSILAC)
 
 ## Columns in evidence file
 
-The default `measure.cols` object is designed for unlabelled data. For SILAC data we need to specify isotope ratios. Our data contain H/L, H/M and M/L ratios, but for the purpose of this document we are only interested in H/L and M/L ratios.
+The default `measure.cols` object is designed for unlabelled data. For SILAC data we need to specify isotope ratios. Our data contain M/L ratios:
 
 ```{r measure_columns, cache=FALSE}
 measCols <- list(
@@ -55,15 +50,10 @@ measCols <- list(
 )
 ```
 
-We are going to use the default `evidenceColumns` object, though we need to modify it, as the main protein column in the evidence file is called `Leading Razor Protein` with capital letters. These things happen!
+
+The column naming convention in our evidence file is different from the default, included in the `evidenceColumns` object. Hence, we need to create a new named list, as follows:
 
 ```{r evidence_columns, cache=FALSE}
-eviCols <- evidenceColumns
-eviCols$protein <- "Leading Razor Protein"
-eviCols$modseq <- "Modified Sequence"
-eviCols$contaminant <- "Contaminant"
-
-
 eviCols <- list(
   sequence = 'pep_sequence',
   modseq = 'modified_sequence',
@@ -75,7 +65,6 @@ eviCols <- list(
   reverse = 'reverse',
   contaminant = 'potential_contaminant'
 )
-
 ```
 
 
@@ -84,12 +73,7 @@ eviCols <- list(
 Due to its large size we do not attach the SILAC evidence file to this package. The command to read the file would be:
 
 ```{r read_evidence, eval=FALSE}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusSILAC")
-#evidenceFile <- "/home/mgierlinski/projects/turnprot/pilot_data/evidence_pilot2.txt"
-#evidenceFile <- "/home/mgierlinski/projects/noprot/evidence_e3_Phn.txt"
-#evidenceFile <- "/home/mgierlinski/projects/temp/evi3.txt"
 evi <- readEvidenceFile(evidenceFile, measure.cols=measCols, data.cols=eviCols, zeroes.are.missing=FALSE)
-#evi <- readRDS("/home/mgierlinski/projects/temp/SILAC_evi_turnprot_selection.rds")
 ```
 
 Please note the argument `zeroes.are.missing=FALSE`. By default, `readEvidenceFile` assumes that zeroes represent missing data (which usually is true for unlabelled and TMT experiments). In this case we read ratios which, in theory, can be zeroes. In most cases its doesn't make any difference.
@@ -159,6 +143,7 @@ summary(prodat)
 
 ## Normalization
 
+We normalize protein ratios to the median, that is, after the normalization each sample is going to have the same median. Median is the default normalization, so we do not need to specify the `norm.fun` parameter:
 
 ```{r normalize_proteins}
 prodat.norm <- normalizeData(prodat)
@@ -166,7 +151,7 @@ prodat.norm <- normalizeData(prodat)
 
 These two figures show reporter intensity distributions before and after normalization.
 
-```{r, sample_dist, fig.width=7, fig.height=4}
+```{r, sample_dist, fig.width=4, fig.height=3}
 plotSampleDistributions(prodat, fill="replicate") + labs(title="Before")
 plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 ```
@@ -174,10 +159,31 @@ plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 
 ## Differential expression
 
-For SILAC data we sometimes need to do a differential expression on an isotope ratio, e.g. M/L. The null hypothesis is that $M/L = 1$ or $\log H/L = 0$. Because SILAC ratios tend to be symmetric in log space (see figure above), we chose the second apprach. 
+For SILAC data we sometimes need to do differential expression on an isotope ratio, e.g. $M/L$. In our case, $M$ and $L$ labelled two different biological conditions, hence the $M/L$ ratio compares them. The null hypothesis is that $M/L = 1$ or $\log H/L = 0$. Because SILAC ratios tend to be symmetric in log space (see figure above), we chose the latter approach. Let's do the differential expression for the time point `T48`.
+
 
 ```{r limma_one_sample}
 res <- limmaRatioDE(prodat.norm, condition="T48")
 res <- res[order(res$P.Value),]
 head(res)
+```
+
+There are no statistically significant departures from the null hypothesis. Here is the volcano plot:
+
+```{r volcano_plot, fig.width=4, fig.height=3}
+plotVolcano(res, binhex=FALSE)
+```
+
+Alternatively, we can compare the two time points with a two-condition differential expression:
+
+```{r limma_two_samples}
+res2 <- limmaDE(prodat.norm)
+res2 <- res2[order(res2$P.Value),]
+head(res2)
+```
+
+Though not statistically significant at the assumes 0.05 level, protein P03372-3 stands out. Here is a SILAC ratio plot for this protein:
+
+```{r protein_example, fig.width=4, fig.height=3}
+plotIntensities(prodat.norm, id="P03372-3")
 ```

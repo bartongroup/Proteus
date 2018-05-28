@@ -21,16 +21,11 @@ vignette: >
 ```{r setup, include=FALSE}
 library(proteus)
 library(knitr)
-library(dplyr)
-library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis
+This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")
@@ -60,7 +55,7 @@ The resulting object is
 str(as.list(measCols))
 ```
 
-We are going to use the default `evidenceColumns` object, but the user should carefully check that the column names correspond to those in the evidence gile.
+We are going to use the default `evidenceColumns` object, but the user should carefully check that the column names correspond to those in the evidence file.
 
 
 ## Read evidence file

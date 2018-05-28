@@ -1,11 +1,6 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 library(proteus)
 library(knitr)
-library(dplyr)
-library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -22,12 +17,6 @@ measCols <- list(
 )
 
 ## ----evidence_columns, cache=FALSE--------------------------------------------
-eviCols <- evidenceColumns
-eviCols$protein <- "Leading Razor Protein"
-eviCols$modseq <- "Modified Sequence"
-eviCols$contaminant <- "Contaminant"
-
-
 eviCols <- list(
   sequence = 'pep_sequence',
   modseq = 'modified_sequence',
@@ -40,14 +29,8 @@ eviCols <- list(
   contaminant = 'potential_contaminant'
 )
 
-
 ## ----read_evidence, eval=FALSE------------------------------------------------
-#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusSILAC")
-#  #evidenceFile <- "/home/mgierlinski/projects/turnprot/pilot_data/evidence_pilot2.txt"
-#  #evidenceFile <- "/home/mgierlinski/projects/noprot/evidence_e3_Phn.txt"
-#  #evidenceFile <- "/home/mgierlinski/projects/temp/evi3.txt"
 #  evi <- readEvidenceFile(evidenceFile, measure.cols=measCols, data.cols=eviCols, zeroes.are.missing=FALSE)
-#  #evi <- readRDS("/home/mgierlinski/projects/temp/SILAC_evi_turnprot_selection.rds")
 
 ## ----head_evidence------------------------------------------------------------
 head(evi)
@@ -77,7 +60,7 @@ summary(prodat)
 ## ----normalize_proteins-------------------------------------------------------
 prodat.norm <- normalizeData(prodat)
 
-## ---- sample_dist, fig.width=7, fig.height=4----------------------------------
+## ---- sample_dist, fig.width=4, fig.height=3----------------------------------
 plotSampleDistributions(prodat, fill="replicate") + labs(title="Before")
 plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 
@@ -85,4 +68,15 @@ plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
 res <- limmaRatioDE(prodat.norm, condition="T48")
 res <- res[order(res$P.Value),]
 head(res)
+
+## ----volcano_plot, fig.width=4, fig.height=3----------------------------------
+plotVolcano(res, binhex=FALSE)
+
+## ----limma_two_samples--------------------------------------------------------
+res2 <- limmaDE(prodat.norm)
+res2 <- res2[order(res2$P.Value),]
+head(res2)
+
+## ----protein_example, fig.width=4, fig.height=3-------------------------------
+plotIntensities(prodat.norm, id="P03372-3")
 

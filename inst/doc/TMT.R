@@ -1,11 +1,6 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 library(proteus)
 library(knitr)
-library(dplyr)
-library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 

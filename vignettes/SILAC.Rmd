@@ -1,0 +1,179 @@
+---
+title: "Using proteus R package: SILAC data"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Using proteus R package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{css, echo=FALSE}
+#pre code, pre, code {
+#  white-space: pre !important;
+#  overflow-x: scroll !important;
+#  word-break: keep-all !important;
+#  word-wrap: initial !important;
+#}
+```
+
+```{r setup, include=FALSE}
+library(proteus)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(grid)
+require(gridExtra)
+library(dendextend)
+options(width = 80)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and SILAC analysis
+
+```{r, eval=FALSE}
+vignette("unlabelled", package="proteus")
+```
+
+Here we use example data distributed in a separate package *proteusSILAC*, which needs loading first:
+
+```{r load_data}
+library(proteusSILAC)
+data(proteusSILAC)
+```
+
+# Input data
+
+## Columns in evidence file
+
+The default `measure.cols` object is designed for unlabelled data. For SILAC data we need to specify isotope ratios. Our data contain M/L ratios:
+
+```{r measure_columns, cache=FALSE}
+measCols <- list(
+  ML = "ratio_ml"
+)
+```
+
+
+The column naming convention in our evidence file is different from the default, included in the `evidenceColumns` object. Hence, we need to create a new named list, as follows:
+
+```{r evidence_columns, cache=FALSE}
+eviCols <- list(
+  sequence = 'pep_sequence',
+  modseq = 'modified_sequence',
+  modifications = 'modifications',
+  proteins = 'proteins',
+  protein = 'leading_razor_protein',
+  experiment = 'experiment',
+  charge = 'charge',
+  reverse = 'reverse',
+  contaminant = 'potential_contaminant'
+)
+```
+
+
+## Read evidence file
+
+Due to its large size we do not attach the SILAC evidence file to this package. The command to read the file would be:
+
+```{r read_evidence, eval=FALSE}
+evi <- readEvidenceFile(evidenceFile, measure.cols=measCols, data.cols=eviCols, zeroes.are.missing=FALSE)
+```
+
+Please note the argument `zeroes.are.missing=FALSE`. By default, `readEvidenceFile` assumes that zeroes represent missing data (which usually is true for unlabelled and TMT experiments). In this case we read ratios which, in theory, can be zeroes. In most cases its doesn't make any difference.
+
+We do attach an example of processed evidence data with this package, it is called `evi`. It contains all reported intensity columns:
+
+```{r head_evidence}
+head(evi)
+```
+
+## <a id="Metadata"></a>Metadata
+
+Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:
+
+```{r metadata, eval=FALSE}
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusSILAC")
+meta <- read.delim(metadataFile, header=TRUE, sep="\t")
+```
+
+```{r show_metadata}
+meta
+```
+
+
+# Peptide data
+
+## Create a peptide dataset
+
+We chose the median to aggregate peptide intensities from multiple entries in the evidence data:
+
+```{r make_peptides, eval=FALSE}
+pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, fun.aggregate=median, experiment.type="SILAC")
+```
+
+We can use generic `summary` function to see more information about `xppepdat`.
+
+```{r summary_peptides}
+summary(pepdat)
+```
+
+## Number of peptides
+
+This is the number of non-zero peptide intensities per sample. 
+
+```{r plot_peptide_count, fig.width=5, fig.height=4}
+plotCount(pepdat)
+```
+
+
+
+
+# Protein data
+
+## Create protein dataset
+
+Now we create protein data. The method `median` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default `hifly` method which only works for unlabelled (or TMT) data.
+
+```{r make_proteins, eval=FALSE}
+prodat <- makeProteinTable(pepdat, method="median")
+```
+
+Again, we can use a generic `summary` function to see its properties.
+
+```{r summary_proteins}
+summary(prodat)
+```
+
+## Normalization
+
+We normalize protein ratios to the median, that is, after the normalization each sample is going to have the same median. Median is the default normalization, so we do not need to specify the `norm.fun` parameter:
+
+```{r normalize_proteins}
+prodat.norm <- normalizeData(prodat)
+```
+
+These two figures show reporter intensity distributions before and after normalization.
+
+```{r, sample_dist, fig.width=7, fig.height=4}
+plotSampleDistributions(prodat, fill="replicate") + labs(title="Before")
+plotSampleDistributions(prodat.norm, fill="replicate") + labs(title="After")
+```
+
+
+## Differential expression
+
+For SILAC data we sometimes need to do a differential expression on an isotope ratio, e.g. M/L. The null hypothesis is that $M/L = 1$ or $\log H/L = 0$. Because SILAC ratios tend to be symmetric in log space (see figure above), we chose the second apprach. 
+
+```{r limma_one_sample}
+res <- limmaRatioDE(prodat.norm, condition="T48")
+res <- res[order(res$P.Value),]
+head(res)
+```
+
+And here is the volcano plot:
+
+```{r volcano_plot, fig.width=4, fig.height=3}
+plotVolcano(res, binhex=FALSE)
+```

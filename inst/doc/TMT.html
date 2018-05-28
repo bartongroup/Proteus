@@ -81,8 +81,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;unlabelled&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteus&quot;</span>)</code></pre></div>
 <p>Here we use example data distributed in a separate package <em>proteusTMT</em>, which needs loading first:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(proteusTMT)
-<span class="kw">data</span>(proteusTMT)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(proteusTMT)</code></pre></div>
+<pre><code>## 
+## Attaching package: 'proteusTMT'</code></pre>
+<pre><code>## The following objects are masked _by_ '.GlobalEnv':
+## 
+##     evi, meta, pepdat, prodat</code></pre>
+<pre><code>## The following objects are masked from 'package:proteusSILAC':
+## 
+##     evi, meta, pepdat, prodat</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(proteusTMT)</code></pre></div>
 <div id="input-data" class="section level1">
 <h1><span class="header-section-number">1</span> Input data</h1>
 <div id="columns-in-evidence-file" class="section level2">
@@ -265,20 +273,20 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <p>The top of the table of differentially expressed proteins:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span>res[<span class="kw">order</span>(res<span class="op">$</span>adj.P.Val),]
 <span class="kw">head</span>(res)</code></pre></div>
-<pre><code>##             protein      logFC    AveExpr         t      P.Value  adj.P.Val
-## 1602 Tb927.11.14750  0.1662656 -0.9333506  12.50562 7.634035e-06 0.01427565
-## 2044  Tb927.11.4180  0.2158991 -0.9193338  12.55081 7.460555e-06 0.01427565
-## 3985   Tb927.6.3240 -0.1920267 -1.1149693 -12.53662 7.514536e-06 0.01427565
-## 957   Tb927.10.6330  0.1479113 -0.9416040  10.89731 1.826511e-05 0.01959362
-## 3110   Tb927.3.4960  0.1182375 -0.9371838  10.50626 2.298460e-05 0.01959362
-## 3954   Tb927.6.2850  0.1470639 -0.9166550  11.26839 1.478651e-05 0.01959362
-##             B significant    mean_C0    mean_C5
-## 1602 4.076862        TRUE -1.0164833 -0.8502178
-## 2044 4.093634        TRUE -1.0272833 -0.8113842
-## 3985 4.088378        TRUE -1.0189559 -1.2109826
-## 957  3.410493        TRUE -1.0155597 -0.8676484
-## 3110 3.225670        TRUE -0.9963025 -0.8780650
-## 3954 3.577079        TRUE -0.9901870 -0.8431231</code></pre>
+<pre><code>##             protein      logFC   AveExpr         t      P.Value  adj.P.Val
+## 1602 Tb927.11.14750  0.5523222 -3.100523  12.50562 7.634035e-06 0.01427565
+## 2044  Tb927.11.4180  0.7172013 -3.053961  12.55081 7.460555e-06 0.01427565
+## 3985   Tb927.6.3240 -0.6378990 -3.703848 -12.53662 7.514536e-06 0.01427565
+## 957   Tb927.10.6330  0.4913507 -3.127941  10.89731 1.826511e-05 0.01959362
+## 3110   Tb927.3.4960  0.3927763 -3.113257  10.50626 2.298460e-05 0.01959362
+## 3954   Tb927.6.2850  0.4885356 -3.045062  11.26839 1.478651e-05 0.01959362
+##             B significant   mean_C0   mean_C5
+## 1602 3.939548        TRUE -3.376685 -2.824362
+## 2044 3.955338        TRUE -3.412561 -2.695360
+## 3985 3.950390        TRUE -3.384898 -4.022797
+## 957  3.309073        TRUE -3.373616 -2.882266
+## 3110 3.133195        TRUE -3.309645 -2.916869
+## 3954 3.467237        TRUE -3.289330 -2.800794</code></pre>
 <p>And the top protein from the table:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prot &lt;-<span class="st"> </span><span class="kw">as.character</span>(res<span class="op">$</span>protein[<span class="dv">1</span>])
 <span class="kw">plotIntensities</span>(prodat.norm, <span class="dt">id=</span>prot)</code></pre></div>

@@ -1287,6 +1287,81 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 }
 
 
+#' Simple one-sample differential expression with limma
+#'
+#' \code{limmaDE} is a wrapper around \code{\link{limma}} to perform a
+#' differential expression for one condition against the null hypothesis of one.
+#' This is designed to be used with SILAC ratios.
+#'
+#' @details
+#'
+#' Performs differential expression for one condition, assuming the measured
+#' values are ratios and the null hypothesis is the ratio of 1. The analysis is
+#' done in logarithmic space, so the actual null hypothesis tested is log ratio
+#' = 0. The log fold change returned is the log mean ratio of the condition.
+#'
+#' Before \code{limma} is called, intensity data are transformed using the
+#' \code{transform.fun} function. The default for this transformation is
+#' \code{log2}. Therefore, by default, the column "logFC" in the output data
+#' frame contains log2 fold change. If you need log10-based fold change, you can
+#' use \code{transform.fun=log10}.
+#'
+#' \code{limmaDE} is only a simple wrapper around \code{\link{limma}}, to
+#' perform differential expression between two conditions. For more complicated
+#' designs we recommend using \code{\link{limma}} functions directly.
+#'
+#'
+#' @param pdat Protein \code{proteusData} object.
+#' @param condition Condition name.
+#' @param transform.fun A function to transform data before differential
+#'   expression.
+#' @param sig.level Significance level for rejecting the null hypothesis.
+#' @return A data frame with DE results. "logFC" colum is a log-fold-change
+#'   (using the \code{transform.fun}). Attributes contain
+#'   additional information about the transformation function, significance
+#'   level and condition name.
+#'
+#' @examples
+#' \dontrun{
+#' library(proteusSILAC)
+#' data(proteusSILAC)
+#' prodat.norm <- normalizeData(prodat)
+#' res <- limmaRatioDE(prodat.norm, condition="T48")
+#' }
+#' @export
+limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.05) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
+  meta <- pdat$metadata
+  tab <- transform.fun(pdat$tab)
+
+  # check condition
+  if(is.null(condition)) stop("Need a condition.")
+  if(length(condition) != 1) stop("Need exactly one condition.")
+
+  # select condition
+  sel <- which(meta$condition == condition)
+  if(length(sel) < 3) stop("Need at least two replicates for one-sample differential expression.")
+  tab <- tab[, sel]
+
+  # limma analysis
+  design <- cbind(Intercept = rep(1, ncol(tab)))
+  fit <- limma::lmFit(tab, design)
+  ebay <- limma::eBayes(fit)
+  res <- limma::topTable(ebay, adjust="BH", sort.by="none", number=1e9)
+  res <- cbind(rownames(res), res)
+  colnames(res)[1] <- pdat$content
+  res$significant <- res$adj.P.Val <= sig.level
+  rownames(res) <- c()
+
+  attr(res, "transform.fun") <- deparse(substitute(transform.fun))
+  attr(res, "sig.level") <- sig.level
+  attr(res, "conditions") <- condition
+
+  return(res)
+}
+
+
 #' Fold-change intensity diagram
 #'
 #' \code{plotFID} makes a log10 fold change versus log10 sum intensity plot,

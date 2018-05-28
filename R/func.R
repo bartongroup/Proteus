@@ -1190,7 +1190,8 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
     pd <- position_dodge(width = 0.15)
     #
     if(is.na(ymin) && !log) ymin=0
-    ylab <- ifelse(log, "log10 intensity", "Intensity")
+    ylab <- ifelse(pdat$type == "SILAC", "Ratio", "Intensity")
+    if(log) ylab <- paste("log10", ylab)
     ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
       simple_theme_grid +
       theme(text = element_text(size=text.size), legend.position = "none") +

@@ -21,11 +21,7 @@ vignette: >
 ```{r setup, include=FALSE}
 library(proteus)
 library(knitr)
-library(dplyr)
 library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -39,7 +35,7 @@ data(proteusUnlabelled)
 
 # Quick start
 
-Here is a minimal example of data analysis in *Proteus*. You will need an evidence file from *MaxQuant* and a very simple text file with metadata  (see below how to create it). Then, you can get from the evidence file to differential expression in just a few steps.
+Here is a minimal example of data analysis in *Proteus*. You will need the evidence file from *MaxQuant* and a very simple text file with metadata  (see below how to create it). Then, you can get from the evidence file to differential expression in just a few steps.
 
 ```{r quick_start, eval=FALSE}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
@@ -67,7 +63,7 @@ Alternatively, a metadata data frame (with the same columns) can be created with
 
 ## Read evidence file
 
-Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file attached to the package:
+Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file from the package `proteusUnlabelled` (you need to install it if you want to follow this tutorial):
 
 ```{r read_evidence, eval=FALSE}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
@@ -80,7 +76,7 @@ evi <- readEvidenceFile(evidenceFile)
 head(evi)
 ```
 
-This can be a large object:
+It can be quite large:
 
 ```{r size_evidence}
 dim(evi)
@@ -90,47 +86,61 @@ format(object.size(evi), units="Mb")
 
 ## Columns in evidence file
 
-*MaxQuant* evidence files come with column names that can differ, depending on the *MaxQuant* version and the parameters used in its run. Many of these column names contain spaces and other characters (e.g. "/") that make R data processing awkward. Therefore, upon reading the evidence file, `proteus` renames its columns to simpler names, conforming with R variable name restrictions. Also, many of the evidence columns are not needed in `proteus` processing, so these are not kept to save memory.
+*MaxQuant* evidence files come with column names that can differ, depending on the *MaxQuant* version and the parameters used in its run. Many of these column names contain spaces and other characters (e.g. "/") that make R data processing awkward. Therefore, upon reading the evidence file, *Proteus* renames its columns to simpler names, conforming with R variable name restrictions. Also, many of the evidence columns are not needed in *Proteus* processing, so these are not kept to save memory.
 
-The selection and naming of columns is controlled by two parameters in function `readEvidenceFile()`: `measure.cols` and `data.cols`. If not provided, `readEvidenceFile()` will use the default lists.
+The selection and naming of columns is controlled by two parameters in function `readEvidenceFile()`: `measure.cols` and `data.cols`. *Proteus* comes with two predefined lists called `measureColumns` and `evidenceColumns`, which are used as defaults. They can be modified, as necessary.
 
-The named list `measureColumns` contains only one column with measurements, as appropriate for unlabelled proteomics:
+### Measurements
+
+The default named list `measureColumns` describes evidence file columns that contain measurements. In case of unlabelled experiment there is only one such column, called `Intensity`.
 
 ```{r str_measure_columns}
 str(measureColumns)
 ```
 
-Different measure columns are needed for TMT and Silac experiments.
+Different measure columns are needed for TMT and Silac experiments. See the appropriate vignettes (`TMT` and `SILAC`) for more details.
 
-The named list `evidenceColumns` contains a minimal set of columns needed for further processing (in addition to measure columns).
+### Other required columns
+
+The default named list `evidenceColumns` describes the minimal set of columns needed for further processing (in addition to measure columns).
 
 ```{r str_evidence_columns}
 str(evidenceColumns)
 ```
 
-The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used. We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
+The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used.
+
+### Updating column names
+
+We suggest not to change the default list, but create a copy, which can be modified. Let's say we want to read column `m/z` as well:
 
 ```{r my_columns, eval=FALSE}
 myColumns <- c(evidenceColumns, mz="m/z")
 ```
 
-The new column list can be used with `readEvidenceFile`:
+If, for example, your evidence file contains a column named `Leading Razor Protein` (each word starting with a capital), we will have to change this value in the list:
+
+```{r rename_column, eval=FALSE}
+myColumns$protein <- "Leading Razor Protein"
+```
+
+The new column list can be then used with `readEvidenceFile`:
 
 ```{r my_columns_evidence, eval=FALSE}
 evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 ```
 
-To quickly check what the column names are in a given evidence file, we can read one row and see its names:
+To quickly check what the column names are in a given evidence file, we provide a simple function to do this:
 
 ```{r evidence_column_names}
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
-evicols <- read.delim(evidenceFile, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
-names(evicols)
+evidence.columns <- readColumnNames(evidenceFile)
+evidence.columns
 ```
 
 ## <a id="Metadata"></a>Metadata
 
-We also need metadata. In our example it is stored in the file attached to the package:
+We also need metadata. In our example it is stored in the file in the `proteusUnlabelled` package:
 
 ```{r metadata}
 metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
@@ -155,11 +165,11 @@ Metadata object should be a data frame with at least four columns: `experiment`,
 unique(evi$experiment)
 ```
 
-- Column `measure` refers to measure columns in the evidence file. In case of an unlabelled experiment there is only one measure column, "Intensity". In multiplexed data there can be several measure columns.
+- Column `measure` refers to columns with measurements in the evidence file. In case of the unlabelled experiment there is only one measure column, "Intensity". In multiplexed data (e.g. TMT) there can be several measurements columns.
 
-- `sample` is a (short) name corresponding to a given experiment and measure. For clarity, we recommend a short name consisting of a condition and replicate (in a simple design where such decomposition is possible). Sample identifies a given experiment/measure uniquely, so sample names must be unique.
+- Column `sample` should contain (short) names corresponding to a given experiment and measure. For clarity, we recommend a short name consisting of a condition and replicate (in a simple design where such decomposition is possible). Sample identifies a given experiment/measure uniquely, so sample names must be unique.
 
-- `condition` contains condition names. This information will be used in differential expression. In our example there are two conditions, hence two values in this column.
+- Column `condition` contains condition names. This information will be used in differential expression. In our example there are two conditions, hence two values in this column.
 
 Other columns can be added and used for the downstream analysis. Here, we added a `replicate` column, but other information, in particular describing batch effects, can be very useful.
 
@@ -167,7 +177,7 @@ Other columns can be added and used for the downstream analysis. Here, we added 
 
 ## Create a peptide dataset
 
-We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` creates table, where rows correspond to peptides and columns correspond to samples (as provided in metadata). Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added in unlabelled data (we warn that this might not be the best approach due to presence of downliers in peptide data - more to come soon).
+We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` aggregates peptide data form the evidence into a single table, where rows correspond to peptide sequences and columns correspond to samples (as provided in metadata). Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added in unlabelled data (we note that this might not be the best approach due to possible high variance in peptide data - more to come soon).
 
 ```{r make_peptides, eval=FALSE}
 pepdat <- makePeptideTable(evi, meta)
@@ -368,7 +378,7 @@ Obviously, not every data set follows the identifier convention in this example.
 
 # Differential expression
 
-We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package `proteus` contains a simple wrapper to limma, that takes a `proteusData` object as input.
+We suggest using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package to do differential expression. Package *Proteus* contains a simple wrapper to limma, that takes a `proteusData` object as input.
 
 ```{r limma, warning=FALSE}
 res <- limmaDE(prodat.med, sig.level=0.05)
@@ -420,7 +430,7 @@ as.character(prodat$proteins[only.1112])
 
 ## Visualization
 
-`proteus` provides with several functions to visualize protein data and the results of the differential expression.
+*Proteus* provides with several functions to visualize protein data and the results of the differential expression.
 
 Fold-change-intensity plot:
 

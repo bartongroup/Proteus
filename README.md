@@ -25,6 +25,7 @@ In order to run examples or vignette code, additional packages with example data
 ```r
 devtools::install_github("bartongroup/proteusUnlabelled", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
 devtools::install_github("bartongroup/proteusTMT", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
+devtools::install_github("bartongroup/proteusSILAC", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
 ```
 
 Finally, you can install proteus:
@@ -42,4 +43,5 @@ Proteus contains tutorial vignettes for unlabelled and TMT analysis
 ```r
 vignette("unlabelled", package="proteus")
 vignette("TMT", package="proteus")
+vignette("SILAC", package="proteus")
 ```

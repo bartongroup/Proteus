@@ -6,8 +6,8 @@
 \usage{
 proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
   npep = NULL, type = "unlabelled", pepseq = "sequence",
-  aggregate.parameters = NULL, min.peptides = NULL, norm.fun = identity,
-  protein.method = NULL)
+  aggregate.fun = NULL, aggregate.parameters = NULL, min.peptides = NULL,
+  norm.fun = identity)
 }
 \arguments{
 \item{tab}{A matrix with data, rows are peptides/proteins, columns are
@@ -34,14 +34,14 @@ columns}
 
 \item{pepseq}{Name of the sequence used, either "sequence" or "modseq"}
 
-\item{aggregate.parameters}{Parameters used to aggregate proteins}
+\item{aggregate.fun}{Function used to aggregate proteins}
+
+\item{aggregate.parameters}{Parameters passed to aggregate.fun}
 
 \item{min.peptides}{Integer, minimum number of peptides to combine into a
 protein}
 
 \item{norm.fun}{Normalizing function}
-
-\item{protein.method}{Name of the method with which proteins were quantified}
 }
 \value{
 A \code{proteusData} object.

@@ -20,3 +20,9 @@ This function should be used from within
 \code{\link{makeProteinTable}}. It aggregates peptides into a protein by
 calculating the median for each sample.
 }
+\examples{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateMedian)
+
+}

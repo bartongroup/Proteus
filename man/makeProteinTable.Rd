@@ -11,14 +11,14 @@ makeProteinTable(pepdat, min.peptides = 1, ncores = 4,
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
 created by \code{\link{makePeptideTable}}}
 
-\item{min.peptides}{Minimum number of peptides per protein.}
+\item{min.peptides}{Minimum number of peptides per protein}
 
 \item{ncores}{Number of cores for parallel processing}
 
 \item{aggregate.fun}{Function to aggregate peptides into a protein. See
 "Details" for more details.}
 
-\item{...}{Additional parameters to pass to aggregate.fun}
+\item{...}{Additional parameters to pass to \code{aggregate.fun}}
 }
 \value{
 A \code{proteusData} object containing protein intensities and

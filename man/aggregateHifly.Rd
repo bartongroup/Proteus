@@ -26,3 +26,9 @@ separetly for each replicate. \item Select n top rows of the ordered table.
 \item In each replicate, find the mean of these three rows. This is the
 estimated protein intensity. }
 }
+\examples{
+library(proteusUnlabelled)
+data(proteusUnlabelled)
+prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
+
+}

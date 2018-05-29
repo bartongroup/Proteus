@@ -578,6 +578,12 @@ makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=agg
 #' @param hifly Number of high-fliers
 #'
 #' @return A data frame row with aggregated protein intensities
+#'
+#' @examples
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
+#'
 #' @export
 aggregateHifly <- function(wp, hifly=3) {
   npep <- nrow(wp)
@@ -601,6 +607,12 @@ aggregateHifly <- function(wp, hifly=3) {
 #' @param wp Intensity table with selection of peptides for this protein
 #'
 #' @return A data frame row with aggregated protein intensities
+#'
+#' @examples
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateMedian)
+#'
 #' @export
 aggregateMedian <- function(wp) {
   row <- apply(wp, 2, function(x) median(x, na.rm=TRUE))
@@ -617,6 +629,12 @@ aggregateMedian <- function(wp) {
 #' @param wp Intensity table with selection of peptides for this protein
 #'
 #' @return A data frame row with aggregated protein intensities
+#'
+#' @examples
+#' library(proteusUnlabelled)
+#' data(proteusUnlabelled)
+#' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateSum)
+#'
 #' @export
 aggregateSum <- function(wp) {
   row <- colSums(wp, na.rm=TRUE)

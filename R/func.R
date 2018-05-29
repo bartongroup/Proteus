@@ -86,16 +86,16 @@ proteinColumns <- list(
 #' @param type Type of experiment: "unlabelled" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
-#' @param hifly Number of high-flyers
+#' @param aggregate.fun Function used to aggregate proteins
+#' @param aggregate.parameters Parameters passed to aggregate.fun
 #' @param min.peptides Integer, minimum number of peptides to combine into a
 #'   protein
 #' @param norm.fun Normalizing function
-#' @param protein.method Name of the method with which proteins were quantified
 #'
 #' @return A \code{proteusData} object.
 proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
-                        npep=NULL, type="unlabelled", pepseq="sequence", hifly=NULL,
-                        min.peptides=NULL, norm.fun=identity, protein.method=NULL) {
+                        npep=NULL, type="unlabelled", pepseq="sequence", aggregate.fun=NULL,
+                        aggregate.parameters=NULL, min.peptides=NULL, norm.fun=identity) {
   stopifnot(
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
@@ -114,9 +114,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
   } else if(content == "protein") {
     stopifnot(
       nrow(tab) == length(proteins),
-      is.numeric(hifly),
       is.numeric(min.peptides),
-      !is.null(protein.method)
+      !is.null(aggregate.fun)
     )
     rownames(tab) <- proteins
   }
@@ -139,14 +138,14 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     nrep = nrep,
     type = type,
     pepseq = pepseq,
-    hifly = hifly,
+    aggregate.fun = aggregate.fun,
+    aggregate.parameters = aggregate.parameters,
     min.peptides = min.peptides,
     norm.fun = deparse(substitute(norm.fun)),
     pep2prot = pep2prot,
     peptides = peptides,
     proteins = proteins,
-    npep = npep,
-    protein.method = protein.method
+    npep = npep
   )
   class(pdat) <- append(class(pdat), "proteusData")
   pdat$stats <- intensityStats(pdat)
@@ -186,12 +185,28 @@ summary.proteusData <- function(object, ...) {
 
   if(object$content == "protein") {
     cat("\n*** Protein data ***\n\n")
-    cat(paste0("  quantification method = ", object$protein.method, "\n"))
-    if(object$protein.method == "hifly") {
-      cat(paste0("  number of high-flyers = ", object$hifly, "\n"))
+    cat(paste0("  quantification method = ", object$aggregate.fun, "\n"))
+    if(!is.null(object$aggregate.parameters)) {
+      cat(paste0("  aggregate parameters : ", object$aggregate.parameters, "\n"))
     }
     cat(paste0("  minimum number of peptides per protein = ", object$min.peptides, "\n"))
   }
+}
+
+#' Read coluns names from a tab-delimted text file
+#'
+#' @param file File name.
+#'
+#' @return A vector with column names.
+#' @export
+#'
+#' @examples
+#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#' evidence.columns <- readColumnNames(evidenceFile)
+#' evidence.columns
+readColumnNames <- function(file) {
+  cols <- read.delim(file, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
+  names(cols)
 }
 
 
@@ -316,7 +331,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 
   # create pdat object
   pdat <- proteusData(tab, meta, "protein", NULL, NULL, rownames(tab), measure.cols,
-                      hifly=0, min.peptides=0, protein.method="MaxQuant")
+                      min.peptides=0, aggregate.fun="MaxQuant")
   return(pdat)
 }
 
@@ -343,7 +358,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #' metadata). Each cell of the table is an aggregated measure values over all
 #' evidence entries corresponding to the given sequence and experiment. How
 #' these measure values are aggregated is controlled by the parameter
-#' \code{fun.aggregate}. We recommend using sum for unlabelled and TMT
+#' \code{aggregate.fun}. We recommend using sum for unlabelled and TMT
 #' experiments and median for SILAC experiments.
 #'
 #' Only samples from metadata are used, regardless of the content of the
@@ -357,7 +372,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #'   "modseq".
 #' @param measure.cols A named list of measure columns; should be the same as
 #'   used in \code{\link{readEvidenceFile}}
-#' @param fun.aggregate A function to aggregate pepetides with the same
+#' @param aggregate.fun A function to aggregate pepetides with the same
 #'   sequence/sample.
 #' @param experiment.type Type of the experiment, "unlabelled", "TMT" or "SILAC".
 #' @return A \code{proteusData} object, containing peptide intensities and
@@ -370,7 +385,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #'
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureColumns,
-                             fun.aggregate=sum, experiment.type=c("unlabelled", "TMT", "SILAC")) {
+                             aggregate.fun=sum, experiment.type=c("unlabelled", "TMT", "SILAC")) {
 
   experiment.type <- match.arg(experiment.type)
 
@@ -397,7 +412,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   # make sure to keep correct order of samples
   meta$sample <- factor(meta$sample, levels=meta$sample)
 
-  f <- function(x) fun.aggregate(x, na.rm=TRUE)
+  f <- function(x) aggregate.fun(x, na.rm=TRUE)
 
   # melt and recast evidence data
   # conflict between reshape and reshape2 requires a direct call to melt.data.frame (note three colons!)
@@ -449,28 +464,31 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' Make protein table
 #'
 #' \code{makeProteinTable} creates a protein table from the peptide table.
-#' Protein intensities or ratios are aggregated from peptide data. There are
-#' three ways of protein quantification: "hifly" and "sum" for intensity data
-#' and "median" for SILAC data.
-#'
+#' Protein intensities or ratios are aggregated from peptide data. An external
+#' function is used to aggregate each protein.
 #'
 #' @details
 #'
-#' The "hifly" method is a follows. \enumerate{ \item For a given protein find
-#' all corresponding peptides. \item In each replicate, order intensities from
-#' the highest to the lowest. This is done separetly for each replicate. \item
-#' Select n top rows of the ordered table. \item In each replicate, find the
-#' mean of these three rows. This is the estimated protein intensity. } The
-#' "sum" method simply adds all intensities for a given protein in each sample.
-#' The "median", well, you can guess.
+#' There are three protein aggregation functions provided in this package:
+#' \code{\link{aggregateHifly}}, \code{\link{aggregateMedian}} and
+#' \code{\link{aggregateSum}}. Depending on the needs, the user can provide any
+#' arbitrary function to perform aggregation.
+#'
+#' The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
+#' is a matrix containing measurements from all peptides for the particular
+#' protein. Rows are peptides, columns are samples. \code{...} are additional
+#' parameters for the function that are passed from \code{makeProteinTable}. The
+#' aggregate function should return a vector of values for each sample. That is
+#' the lenght of the vector should be the same as the number of columns in
+#' \code{wp}.
 #'
 #' @param pepdat A \code{proteusData} object containing peptide data, normally
 #'   created by \code{\link{makePeptideTable}}
-#' @param method Method to create proteins. Can be "hifly", "sum" or "median".
-#' @param hifly The number of top peptides (high-flyers) to be used for protein
-#'   intensity.
-#' @param min.peptides Minimum number of peptides per protein.
+#' @param min.peptides Minimum number of peptides per protein
 #' @param ncores Number of cores for parallel processing
+#' @param aggregate.fun Function to aggregate peptides into a protein. See
+#'   "Details" for more details.
+#' @param ... Additional parameters to pass to \code{aggregate.fun}
 #' @return A \code{proteusData} object containing protein intensities and
 #'   metadata.
 #'
@@ -480,9 +498,8 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' prodat <- makeProteinTable(pepdat.clean, ncores=2)
 #'
 #' @export
-makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, ncores=4) {
+makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=aggregateHifly, ...) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
-  if(!(method %in% c("hifly", "sum", "median"))) stop(paste0("Unknown method ", method))
 
   meta <- pepdat$metadata
   tab <- pepdat$tab
@@ -501,11 +518,12 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, nc
       if(npep >= min.peptides)
       {
         wp <- w[sel,, drop=FALSE]
-        row <- makeProtein(wp, method, hifly)
+        x <- aggregate.fun(wp, ...)
+        row <- as.data.frame(t(x))
       } else {
         row <- as.data.frame(t(rep(NA, length(samples))))
-        names(row) <- samples
       }
+      names(row) <- samples
       row <- data.frame(protein=prot, npep=npep, row)
       return(row)
     }, mc.cores=ncores)
@@ -526,49 +544,86 @@ makeProteinTable <- function(pepdat, method="hifly", hifly=3, min.peptides=1, nc
   rownames(npep) <- proteins                 # a bit redundant, but might be useful
   protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
+  # prepare list of aggregate parameters in string format
+  x <- sapply(list(...), deparse)
+  if(length(x) > 1) {
+    ap <- paste0(names(x), "=", x, collapse=";")
+  } else {
+    ap <- NULL
+  }
+
   prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides,
                         proteins, pepdat$measures,
                         type = pepdat$type,
                         pepseq = pepdat$pepseq,
-                        hifly = hifly,
+                        aggregate.parameters = ap,
                         min.peptides = min.peptides,
-                        protein.method = method,
+                        aggregate.fun = deparse(substitute(aggregate.fun)),
                         npep = npep)
   return(prodat)
 }
 
-#' Helper function, not exported
+
+#' Protein aggregate function using hifly method
 #'
-#' Make protein from a selection of peptides
+#' @details This function should be used from within
+#' \code{\link{makeProteinTable}}. The "hifly" method is a follows. \enumerate{
+#' \item For a given protein find all corresponding peptides. \item In each
+#' replicate, order intensities from the highest to the lowest. This is done
+#' separetly for each replicate. \item Select n top rows of the ordered table.
+#' \item In each replicate, find the mean of these three rows. This is the
+#' estimated protein intensity. }
+#'
 #' @param wp Intensity table with selection of peptides for this protein
-#' @param method Method of creating proteins
 #' @param hifly Number of high-fliers
+#'
 #' @return A data frame row with aggregated protein intensities
-makeProtein <- function(wp, method, hifly=3) {
+#' @export
+aggregateHifly <- function(wp, hifly=3) {
   npep <- nrow(wp)
-  if(npep == 0) stop("No peptides to aggregate.")
-  cols <- colnames(wp)
-  if(method == "hifly") {
-    if(npep > 1) {
-      sp <- as.matrix(apply(wp, 2, function(x) sort(x, na.last=TRUE, decreasing=TRUE)))
-      ntop <- min(npep, hifly)
-      row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
-      row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs
-      row <- as.data.frame(row)
-    } else {
-      row <- wp
-    }
-  } else if(method == "sum") {
-    row <- as.data.frame(t(colSums(wp, na.rm=TRUE)))
-    row[row==0] <- NA    # colSums puts zeroes where the column contains only NAs (!!!)
-  } else if(method == "median") {
-    row <- as.data.frame(t(apply(wp, 2, function(x) median(x, na.rm=TRUE))))
-  } else stop(paste0("Unknown method ", method))
-
-
-  colnames(row) <- cols
+  if(npep > 1) {
+    sp <- as.matrix(apply(wp, 2, function(x) sort(x, na.last=TRUE, decreasing=TRUE)))
+    ntop <- min(npep, hifly)
+    row <- t(colMeans(sp[1:ntop,,drop=FALSE], na.rm=TRUE))
+    row[is.nan(row)] <- NA    # colMeans puts NaNs where the column contains only NAs
+  } else {
+    row <- wp
+  }
   return(row)
 }
+
+#' Protein aggregate function using median
+#'
+#' @details This function should be used from within
+#' \code{\link{makeProteinTable}}. It aggregates peptides into a protein by
+#' calculating the median for each sample.
+#'
+#' @param wp Intensity table with selection of peptides for this protein
+#'
+#' @return A data frame row with aggregated protein intensities
+#' @export
+aggregateMedian <- function(wp) {
+  row <- apply(wp, 2, function(x) median(x, na.rm=TRUE))
+  return(row)
+}
+
+
+#' Protein aggregate function using sum
+#'
+#' @details This function should be used from within
+#' \code{\link{makeProteinTable}}. It aggregates peptides into a protein by
+#' calculating the sum for each sample.
+#'
+#' @param wp Intensity table with selection of peptides for this protein
+#'
+#' @return A data frame row with aggregated protein intensities
+#' @export
+aggregateSum <- function(wp) {
+  row <- colSums(wp, na.rm=TRUE)
+  row[row==0] <- NA    # colSums puts zeroes where the column contains only NAs (!!!)
+  return(row)
+}
+
 
 
 #' Annotate proteins

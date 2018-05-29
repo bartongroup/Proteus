@@ -4,21 +4,21 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(pepdat, method = "hifly", hifly = 3, min.peptides = 1,
-  ncores = 4)
+makeProteinTable(pepdat, min.peptides = 1, ncores = 4,
+  aggregate.fun = aggregateHifly, ...)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
 created by \code{\link{makePeptideTable}}}
 
-\item{method}{Method to create proteins. Can be "hifly", "sum" or "median".}
-
-\item{hifly}{The number of top peptides (high-flyers) to be used for protein
-intensity.}
-
 \item{min.peptides}{Minimum number of peptides per protein.}
 
 \item{ncores}{Number of cores for parallel processing}
+
+\item{aggregate.fun}{Function to aggregate peptides into a protein. See
+"Details" for more details.}
+
+\item{...}{Additional parameters to pass to aggregate.fun}
 }
 \value{
 A \code{proteusData} object containing protein intensities and
@@ -26,18 +26,22 @@ A \code{proteusData} object containing protein intensities and
 }
 \description{
 \code{makeProteinTable} creates a protein table from the peptide table.
-Protein intensities or ratios are aggregated from peptide data. There are
-three ways of protein quantification: "hifly" and "sum" for intensity data
-and "median" for SILAC data.
+Protein intensities or ratios are aggregated from peptide data. An external
+function is used to aggregate each protein.
 }
 \details{
-The "hifly" method is a follows. \enumerate{ \item For a given protein find
-all corresponding peptides. \item In each replicate, order intensities from
-the highest to the lowest. This is done separetly for each replicate. \item
-Select n top rows of the ordered table. \item In each replicate, find the
-mean of these three rows. This is the estimated protein intensity. } The
-"sum" method simply adds all intensities for a given protein in each sample.
-The "median", well, you can guess.
+There are three protein aggregation functions provided in this package:
+\code{\link{aggregateHifly}}, \code{\link{aggregateMedian}} and
+\code{\link{aggregateSum}}. Depending on the needs, the user can provide any
+arbitrary function to perform aggregation.
+
+The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
+is a matrix containing measurements from all peptides for the particular
+protein. Rows are peptides, columns are samples. \code{...} are additional
+parameters for the function that are passed from \code{makeProteinTable}. The
+aggregate function should return a vector of values for each sample. That is
+the lenght of the vector should be the same as the number of columns in
+\code{wp}.
 }
 \examples{
 library(proteusUnlabelled)

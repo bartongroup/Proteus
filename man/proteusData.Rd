@@ -5,8 +5,9 @@
 \title{\code{proteusData} constructor}
 \usage{
 proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
-  npep = NULL, type = "unlabelled", pepseq = "sequence", hifly = NULL,
-  min.peptides = NULL, norm.fun = identity, protein.method = NULL)
+  npep = NULL, type = "unlabelled", pepseq = "sequence",
+  aggregate.parameters = NULL, min.peptides = NULL, norm.fun = identity,
+  protein.method = NULL)
 }
 \arguments{
 \item{tab}{A matrix with data, rows are peptides/proteins, columns are
@@ -33,7 +34,7 @@ columns}
 
 \item{pepseq}{Name of the sequence used, either "sequence" or "modseq"}
 
-\item{hifly}{Number of high-flyers}
+\item{aggregate.parameters}{Parameters used to aggregate proteins}
 
 \item{min.peptides}{Integer, minimum number of peptides to combine into a
 protein}

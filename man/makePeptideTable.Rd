@@ -5,7 +5,7 @@
 \title{Create peptide table from evidence data}
 \usage{
 makePeptideTable(evi, meta, pepseq = "sequence",
-  measure.cols = measureColumns, fun.aggregate = sum,
+  measure.cols = measureColumns, aggregate.fun = sum,
   experiment.type = c("unlabelled", "TMT", "SILAC"))
 }
 \arguments{
@@ -20,7 +20,7 @@ makePeptideTable(evi, meta, pepseq = "sequence",
 \item{measure.cols}{A named list of measure columns; should be the same as
 used in \code{\link{readEvidenceFile}}}
 
-\item{fun.aggregate}{A function to aggregate pepetides with the same
+\item{aggregate.fun}{A function to aggregate pepetides with the same
 sequence/sample.}
 
 \item{experiment.type}{Type of the experiment, "unlabelled", "TMT" or "SILAC".}
@@ -48,7 +48,7 @@ corresponding to peptides and columns corresponding to samples (as defined in
 metadata). Each cell of the table is an aggregated measure values over all
 evidence entries corresponding to the given sequence and experiment. How
 these measure values are aggregated is controlled by the parameter
-\code{fun.aggregate}. We recommend using sum for unlabelled and TMT
+\code{aggregate.fun}. We recommend using sum for unlabelled and TMT
 experiments and median for SILAC experiments.
 
 Only samples from metadata are used, regardless of the content of the

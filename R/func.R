@@ -3,6 +3,7 @@
 #' @import methods
 #' @import stats
 #' @import utils
+#' @import parallel
 
 simple_theme <- ggplot2::theme_bw() +
   ggplot2::theme(
@@ -86,16 +87,20 @@ proteinColumns <- list(
 #' @param type Type of experiment: "unlabelled" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
-#' @param aggregate.fun Function used to aggregate proteins
-#' @param aggregate.parameters Parameters passed to aggregate.fun
+#' @param peptide.aggregate.fun Function used to aggregate peptides
+#' @param peptide.aggregate.parameters Additional parameters passed to peptide aggregate function
+#' @param protein.aggregate.fun Function used to aggregate proteins
+#' @param protein.aggregate.parameters Additional parameters passed to protein aggregate function
 #' @param min.peptides Integer, minimum number of peptides to combine into a
 #'   protein
 #' @param norm.fun Normalizing function
 #'
 #' @return A \code{proteusData} object.
 proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
-                        npep=NULL, type="unlabelled", pepseq="sequence", aggregate.fun=NULL,
-                        aggregate.parameters=NULL, min.peptides=NULL, norm.fun=identity) {
+                        npep=NULL, type="unlabelled", pepseq="sequence",
+                        peptide.aggregate.fun=NULL, peptide.aggregate.parameters=NULL,
+                        protein.aggregate.fun=NULL, protein.aggregate.parameters=NULL,
+                        min.peptides=NULL, norm.fun=identity) {
   stopifnot(
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
@@ -109,13 +114,16 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
 
   colnames(tab) <- metadata$sample
   if(content == "peptide") {
-    stopifnot(nrow(tab) == length(peptides))
+    stopifnot(
+      nrow(tab) == length(peptides),
+      !is.null(peptide.aggregate.fun)
+    )
     rownames(tab) <- peptides
   } else if(content == "protein") {
     stopifnot(
       nrow(tab) == length(proteins),
       is.numeric(min.peptides),
-      !is.null(aggregate.fun)
+      !is.null(protein.aggregate.fun)
     )
     rownames(tab) <- proteins
   }
@@ -138,8 +146,10 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     nrep = nrep,
     type = type,
     pepseq = pepseq,
-    aggregate.fun = aggregate.fun,
-    aggregate.parameters = aggregate.parameters,
+    peptide.aggregate.fun = peptide.aggregate.fun,
+    peptide.aggregate.parameters = peptide.aggregate.parameters,
+    protein.aggregate.fun = protein.aggregate.fun,
+    protein.aggregate.parameters = protein.aggregate.parameters,
     min.peptides = min.peptides,
     norm.fun = deparse(substitute(norm.fun)),
     pep2prot = pep2prot,
@@ -331,11 +341,23 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 
   # create pdat object
   pdat <- proteusData(tab, meta, "protein", NULL, NULL, rownames(tab), measure.cols,
-                      min.peptides=0, aggregate.fun="MaxQuant")
+                      min.peptides=0, protein.aggregate.fun="MaxQuant")
   return(pdat)
 }
 
-
+#' Helper function, not exported
+#'
+#' @param ... Any parameters
+#' @return A string with list of parameters and their values
+parameterString <- function(...) {
+  x <- sapply(list(...), deparse)
+  if(length(x) > 0) {
+    ap <- paste0(names(x), "=", x, collapse=";")
+  } else {
+    ap <- NULL
+  }
+  ap
+}
 
 #' Create peptide table from evidence data
 #'
@@ -358,8 +380,22 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #' metadata). Each cell of the table is an aggregated measure values over all
 #' evidence entries corresponding to the given sequence and experiment. How
 #' these measure values are aggregated is controlled by the parameter
-#' \code{aggregate.fun}. We recommend using sum for unlabelled and TMT
-#' experiments and median for SILAC experiments.
+#' \code{aggregate.fun}.
+#'
+#' There are two aggregation functions provided in this package:
+#' \code{\link{aggregateMedian}} and \code{\link{aggregateSum}}. Depending on
+#' the needs, the user can provide any arbitrary function to perform
+#' aggregation.  We recommend using \code{aggregateSum} for unlabelled and TMT
+#' experiments and \code{aggregateMedian} for SILAC experiments.
+#'
+#' The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
+#' is a matrix containing measurements from for a given peptide. Rows are
+#' evidence file entries, columns are samples. \code{...} are additional
+#' parameters for the function that are passed from \code{makePeptideTable}. The
+#' aggregate function should return a vector of values for each sample. That is
+#' the lenght of the vector should be the same as the number of columns in
+#' \code{wp}. For example, the default aggregate function \code{aggregateSum}
+#' calculates sums in each column of \code{wp}.
 #'
 #' Only samples from metadata are used, regardless of the content of the
 #' evidence data. This makes selection of samples for downstream processing
@@ -374,18 +410,22 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
 #'   used in \code{\link{readEvidenceFile}}
 #' @param aggregate.fun A function to aggregate pepetides with the same
 #'   sequence/sample.
-#' @param experiment.type Type of the experiment, "unlabelled", "TMT" or "SILAC".
+#' @param ... Additional parameters passed to the aggregate function
+#' @param experiment.type Type of the experiment, "unlabelled", "TMT" or
+#'   "SILAC".
+#' @param ncores Number of cores for parallel processing
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'
 #' @examples
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
-#' pepdat <- makePeptideTable(evi, meta)
+#' pepdat <- makePeptideTable(evi, meta, ncores=2)
 #'
 #' @export
 makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureColumns,
-                             aggregate.fun=sum, experiment.type=c("unlabelled", "TMT", "SILAC")) {
+                             aggregate.fun=aggregateSum, ..., experiment.type=c("unlabelled", "TMT", "SILAC"),
+                             ncores = 4) {
 
   experiment.type <- match.arg(experiment.type)
 
@@ -412,8 +452,6 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   # make sure to keep correct order of samples
   meta$sample <- factor(meta$sample, levels=meta$sample)
 
-  f <- function(x) aggregate.fun(x, na.rm=TRUE)
-
   # melt and recast evidence data
   # conflict between reshape and reshape2 requires a direct call to melt.data.frame (note three colons!)
   eviMelted <- reshape2:::melt.data.frame(evi,
@@ -421,28 +459,50 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
                                           measure.vars=measures,
                                           variable.name="measure"
                                           )
+  names(eviMelted)[1] <- "sequence"  # for simplicity, call it sequence
   eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
+  eviMelted$measure <- measure.cols[eviMelted$measure]  # recover original measurement columns
 
-  # translate "experiment" and "measure" into "sample" from metadata
-  m2s <- meta$sample
-  names(m2s) <- paste0(meta$experiment, ".", meta$measure)
-
-  # recover raw evidence names, they are in metadata. merge with experiment
-  eviMelted$expmes <- paste0(eviMelted$experiment, ".", measure.cols[eviMelted$measure])
-  # select only experiment/measure combinations present in metadata
-  eviMelted <- eviMelted[which(eviMelted$expmes %in% names(m2s)),]
-
-  # translate
+  # Add sample column to melted evidence
+  # we tried using merge:
+  #   eviMelted <- merge(eviMelted, meta[, c("experiment", "measure", "sample")], by=c("experiment", "measure"))
+  # but it turns out it is quite slow; translation of concatenated column is significantly faster
+  m2s <- setNames(meta$sample, paste0(meta$experiment, ".", meta$measure)) # named vector for translation
+  eviMelted$expmes <- paste0(eviMelted$experiment, ".", eviMelted$measure)
+  eviMelted <- eviMelted[which(eviMelted$expmes %in% names(m2s)),] # select only experiment.measure present in metadata
   eviMelted$sample <- m2s[eviMelted$expmes]
+  eviMelted <- eviMelted[, c("sequence", "sample", "value")]
 
-  # cast into table: sample vs sequence
-  tab <- reshape2::dcast(eviMelted, paste0(pepseq, " ~ sample"), f)
+  # create unique sequence names
+  eviMelted$seqsam <- paste0(eviMelted$sequence, ".", eviMelted$sample)
+  eviMelted <- eviMelted[order(eviMelted$seqsam),]
+  s2s <- setNames(eviMelted$sequence, eviMelted$seqsam)
+  r <- rle(eviMelted$seqsam)
+  eviMelted$uniseq <- paste0(rep(s2s[r$values], times=r$lengths), ".", unlist(lapply(r$lengths, seq_len)))
 
-  # convert to matrix, keep row names as 'peptides'
-  peptides <- as.character(tab[,1])
+  # cast into table: sample vs unique sequence
+  # in this table there are multiple entries per peptide
+  tab <- reshape2::dcast(eviMelted, uniseq ~ sample, sum, value.var="value")
+
+  # original sequence
+  u2s <- setNames(eviMelted$sequence, eviMelted$uniseq)
+  sequences <- u2s[tab$uniseq]
+
+  # extract numeric data as matrix
   tab <- as.matrix(tab[,2:ncol(tab)])
   tab[tab == 0] <- NA
-  rownames(tab) <- peptides
+
+  # aggregate peptides
+  ptab <- parallel::mclapply(unique(sequences), function(s) {
+    wp <- tab[sequences == s,, drop=FALSE]
+    x <- aggregate.fun(wp, ...)
+    row <- as.data.frame(t(as.vector(x)))
+    rownames(row) <- s
+    return(row)
+  }, mc.cores=ncores)
+  ptab <- as.matrix(do.call(rbind, ptab))
+  colnames(ptab) <- colnames(tab)
+  peptides <- row.names(ptab)
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi[[pepseq]], protein=evi$protein)
@@ -453,8 +513,11 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(tab, meta, 'peptide', pep2prot, peptides, proteins,
-                      as.character(measure.cols), type = experiment.type)
+  pdat <- proteusData(ptab, meta, "peptide", pep2prot, peptides, proteins,
+                      as.character(measure.cols), type = experiment.type,
+                      peptide.aggregate.fun = deparse(substitute(aggregate.fun)),
+                      peptide.aggregate.parameters = parameterString(...)
+  )
 
   return(pdat)
 }
@@ -519,7 +582,7 @@ makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=agg
       {
         wp <- w[sel,, drop=FALSE]
         x <- aggregate.fun(wp, ...)
-        row <- as.data.frame(t(x))
+        row <- as.data.frame(t(as.vector(x)))
       } else {
         row <- as.data.frame(t(rep(NA, length(samples))))
       }
@@ -544,21 +607,15 @@ makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=agg
   rownames(npep) <- proteins                 # a bit redundant, but might be useful
   protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
-  # prepare list of aggregate parameters in string format
-  x <- sapply(list(...), deparse)
-  if(length(x) > 1) {
-    ap <- paste0(names(x), "=", x, collapse=";")
-  } else {
-    ap <- NULL
-  }
-
   prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides,
                         proteins, pepdat$measures,
                         type = pepdat$type,
                         pepseq = pepdat$pepseq,
-                        aggregate.parameters = ap,
                         min.peptides = min.peptides,
-                        aggregate.fun = deparse(substitute(aggregate.fun)),
+                        peptide.aggregate.fun = pepdat$peptide.aggregate.fun,
+                        peptide.aggregate.parameters = pepdat$peptide.aggregate.parameters,
+                        protein.aggregate.fun = deparse(substitute(aggregate.fun)),
+                        protein.aggregate.parameters = parameterString(...),
                         npep = npep)
   return(prodat)
 }
@@ -566,27 +623,33 @@ makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=agg
 
 #' Protein aggregate function using hifly method
 #'
-#' @details This function should be used from within
-#' \code{\link{makeProteinTable}}. The "hifly" method is a follows. \enumerate{
-#' \item For a given protein find all corresponding peptides. \item In each
-#' replicate, order intensities from the highest to the lowest. This is done
-#' separetly for each replicate. \item Select n top rows of the ordered table.
-#' \item In each replicate, find the mean of these three rows. This is the
-#' estimated protein intensity. }
+#' Function to aggregate peptides into proteins using a hi-flyer method of Silva
+#' et al. 2006 (http://www.mcponline.org/content/5/1/144.full.pdf).
+#'
+#' @details
+#'
+#' This function should be used from within \code{\link{makeProteinTable}}. The
+#' "hifly" method is a follows. \enumerate{ \item For a given protein find all
+#' corresponding peptides. \item In each replicate, order intensities from the
+#' highest to the lowest. This is done separetly for each replicate. \item
+#' Select n top rows of the ordered table. \item In each replicate, find the
+#' mean of these three rows. This is the estimated protein intensity. }
 #'
 #' @param wp Intensity table with selection of peptides for this protein
 #' @param hifly Number of high-fliers
 #'
-#' @return A data frame row with aggregated protein intensities
+#' @return A numeric vector with aggregated protein intensities
 #'
 #' @examples
+#' \dontrun{
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
-#'
+#' }
 #' @export
 aggregateHifly <- function(wp, hifly=3) {
   npep <- nrow(wp)
+  stopifnot(npep > 0)
   if(npep > 1) {
     sp <- as.matrix(apply(wp, 2, function(x) sort(x, na.last=TRUE, decreasing=TRUE)))
     ntop <- min(npep, hifly)
@@ -595,51 +658,55 @@ aggregateHifly <- function(wp, hifly=3) {
   } else {
     row <- wp
   }
-  return(row)
+  return(as.vector(row))
 }
 
-#' Protein aggregate function using median
+#' Protein/peptide aggregate function using median
 #'
-#' @details This function should be used from within
-#' \code{\link{makeProteinTable}}. It aggregates peptides into a protein by
-#' calculating the median for each sample.
+#' This function should be used from within \code{\link{makePeptideTable}} or
+#' \code{\link{makeProteinTable}}. It aggregates values by calculating the
+#' median for each column of \code{wp}.
 #'
-#' @param wp Intensity table with selection of peptides for this protein
+#' @param wp Matrix with columns corresponding to samples and rows corresponding
+#'   to peptide entires.
 #'
-#' @return A data frame row with aggregated protein intensities
+#' @return A numeric vector with aggregated values
 #'
 #' @examples
+#' \dontrun{
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateMedian)
-#'
+#' }
 #' @export
 aggregateMedian <- function(wp) {
   row <- apply(wp, 2, function(x) median(x, na.rm=TRUE))
-  return(row)
+  return(as.vector(row))
 }
 
 
-#' Protein aggregate function using sum
+#' Peptide/protein aggregate function using sum
 #'
-#' @details This function should be used from within
-#' \code{\link{makeProteinTable}}. It aggregates peptides into a protein by
-#' calculating the sum for each sample.
+#' This function should be used from within \code{\link{makePeptideTable}} or
+#' \code{\link{makeProteinTable}}. It aggregates values by calculating the sum
+#' for each column of \code{wp}.
 #'
-#' @param wp Intensity table with selection of peptides for this protein
+#' @param wp Matrix with columns corresponding to samples and rows corresponding
+#'   to peptide entires.
 #'
-#' @return A data frame row with aggregated protein intensities
+#' @return A numeric vector with aggregated values
 #'
 #' @examples
+#' \dontrun{
 #' library(proteusUnlabelled)
 #' data(proteusUnlabelled)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateSum)
-#'
+#' }
 #' @export
 aggregateSum <- function(wp) {
   row <- colSums(wp, na.rm=TRUE)
   row[row==0] <- NA    # colSums puts zeroes where the column contains only NAs (!!!)
-  return(row)
+  return(as.vector(row))
 }
 
 

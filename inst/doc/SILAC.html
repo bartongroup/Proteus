@@ -146,7 +146,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <div id="create-a-peptide-dataset" class="section level2">
 <h2><span class="header-section-number">2.1</span> Create a peptide dataset</h2>
 <p>We chose the median to aggregate peptide intensities from multiple entries in the evidence data:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pepdat &lt;-<span class="st"> </span><span class="kw">makePeptideTable</span>(evi, meta, <span class="dt">measure.cols=</span>measCols, <span class="dt">fun.aggregate=</span>median, <span class="dt">experiment.type=</span><span class="st">&quot;SILAC&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pepdat &lt;-<span class="st"> </span><span class="kw">makePeptideTable</span>(evi, meta, <span class="dt">measure.cols=</span>measCols, <span class="dt">aggregate.fun=</span>aggregateMedian, <span class="dt">experiment.type=</span><span class="st">&quot;SILAC&quot;</span>)</code></pre></div>
 <p>We can use generic <code>summary</code> function to see more information about <code>xppepdat</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(pepdat)</code></pre></div>
 <pre><code>## 
@@ -178,7 +178,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <div id="create-protein-dataset" class="section level2">
 <h2><span class="header-section-number">3.1</span> Create protein dataset</h2>
 <p>Now we create protein data. The method <code>median</code> indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default <code>hifly</code> method which only works for unlabelled (or TMT) data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prodat &lt;-<span class="st"> </span><span class="kw">makeProteinTable</span>(pepdat, <span class="dt">method=</span><span class="st">&quot;median&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prodat &lt;-<span class="st"> </span><span class="kw">makeProteinTable</span>(pepdat, <span class="dt">aggregate.fun=</span>aggregateMedian)</code></pre></div>
 <p>Again, we can use a generic <code>summary</code> function to see its properties.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(prodat)</code></pre></div>
 <pre><code>## 
@@ -200,7 +200,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## 
 ## *** Protein data ***
 ## 
-##   quantification method = median
+##   quantification method = 
 ##   minimum number of peptides per protein = 1</code></pre>
 </div>
 <div id="normalization" class="section level2">

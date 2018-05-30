@@ -78,11 +78,19 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 #  word-wrap: initial !important;
 #}
 </style>
-<p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarise themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis</p>
+<p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;unlabelled&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteus&quot;</span>)</code></pre></div>
 <p>Here we use example data distributed in a separate package <em>proteusTMT</em>, which needs loading first:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(proteusTMT)
-<span class="kw">data</span>(proteusTMT)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(proteusTMT)</code></pre></div>
+<pre><code>## 
+## Attaching package: 'proteusTMT'</code></pre>
+<pre><code>## The following objects are masked _by_ '.GlobalEnv':
+## 
+##     evi, meta, pepdat, prodat</code></pre>
+<pre><code>## The following objects are masked from 'package:proteusSILAC':
+## 
+##     evi, meta, pepdat, prodat</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(proteusTMT)</code></pre></div>
 <div id="input-data" class="section level1">
 <h1><span class="header-section-number">1</span> Input data</h1>
 <div id="columns-in-evidence-file" class="section level2">
@@ -103,7 +111,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##  $ reporter_7: chr &quot;Reporter intensity 7&quot;
 ##  $ reporter_8: chr &quot;Reporter intensity 8&quot;
 ##  $ reporter_9: chr &quot;Reporter intensity 9&quot;</code></pre>
-<p>We are going to use the default <code>evidenceColumns</code> object, but the user should carefully check that the column names correspond to those in the evidence gile.</p>
+<p>We are going to use the default <code>evidenceColumns</code> object, but the user should carefully check that the column names correspond to those in the evidence file.</p>
 </div>
 <div id="read-evidence-file" class="section level2">
 <h2><span class="header-section-number">1.2</span> Read evidence file</h2>
@@ -178,7 +186,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <div id="create-a-peptide-dataset" class="section level2">
 <h2><span class="header-section-number">2.1</span> Create a peptide dataset</h2>
 <p>We chose the median to aggregate peptide intensities from multiple entries in the evidence data:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pepdat &lt;-<span class="st"> </span><span class="kw">makePeptideTable</span>(evi, meta, <span class="dt">measure.cols=</span>measCols, <span class="dt">fun.aggregate=</span>median, <span class="dt">experiment.type=</span><span class="st">&quot;TMT&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pepdat &lt;-<span class="st"> </span><span class="kw">makePeptideTable</span>(evi, meta, <span class="dt">measure.cols=</span>measCols, <span class="dt">aggregate.fun=</span>aggregateMedian, <span class="dt">experiment.type=</span><span class="st">&quot;TMT&quot;</span>)</code></pre></div>
 <p>We can use generic <code>summary</code> function to see more information about <code>xppepdat</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(pepdat)</code></pre></div>
 <pre><code>## 
@@ -210,7 +218,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <div id="create-protein-dataset" class="section level2">
 <h2><span class="header-section-number">3.1</span> Create protein dataset</h2>
 <p>We create protein data using the high-flyer method.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prodat &lt;-<span class="st"> </span><span class="kw">makeProteinTable</span>(pepdat, <span class="dt">method=</span><span class="st">&quot;hifly&quot;</span>, <span class="dt">hifly=</span><span class="dv">3</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prodat &lt;-<span class="st"> </span><span class="kw">makeProteinTable</span>(pepdat, <span class="dt">aggregate.fun=</span>aggregateHifly, <span class="dt">hifly=</span><span class="dv">3</span>)</code></pre></div>
 <p>Again, we can use a generic <code>summary</code> function to see its properties.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(prodat)</code></pre></div>
 <pre><code>## 
@@ -228,12 +236,11 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## 
 ##   evidence columns used = Reporter intensity 0, Reporter intensity 1, Reporter intensity 2, Reporter intensity 3, Reporter intensity 4, Reporter intensity 5, Reporter intensity 6, Reporter intensity 7, Reporter intensity 8, Reporter intensity 9
 ##   sequence = 'Sequence'
-##   normalization = pepdat$values
+##   normalization = identity
 ## 
 ## *** Protein data ***
 ## 
-##   quantification method = hifly
-##   number of high-flyers = 3
+##   quantification method = 
 ##   minimum number of peptides per protein = 1</code></pre>
 </div>
 <div id="normalization" class="section level2">

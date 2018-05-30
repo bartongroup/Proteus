@@ -37,7 +37,7 @@ meta.ordered$sample <- factor(meta.ordered$sample, levels=meta.ordered$sample)
 context("Casting evidence into peptide table")
 
 test_that("Test makePeptide", {
-  pep <- makePeptideTable(evi, meta)
+  pep <- makePeptideTable(evi, meta, ncores=1)
   expect_equal(pep$tab, tab.1)
   expect_equal(pep$metadata[,c("experiment", "measure", "sample", "condition", "batch")], meta.ordered)
   expect_equal(pep$content, "peptide")

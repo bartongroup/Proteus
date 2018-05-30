@@ -106,7 +106,7 @@ meta
 We chose the median to aggregate peptide intensities from multiple entries in the evidence data:
 
 ```{r make_peptides, eval=FALSE}
-pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, fun.aggregate=median, experiment.type="SILAC")
+pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, aggregate.fun=aggregateMedian, experiment.type="SILAC")
 ```
 
 We can use generic `summary` function to see more information about `xppepdat`.
@@ -133,7 +133,7 @@ plotCount(pepdat)
 Now we create protein data. The method `median` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default `hifly` method which only works for unlabelled (or TMT) data.
 
 ```{r make_proteins, eval=FALSE}
-prodat <- makeProteinTable(pepdat, method="median")
+prodat <- makeProteinTable(pepdat, aggregate.fun=aggregateMedian)
 ```
 
 Again, we can use a generic `summary` function to see its properties.

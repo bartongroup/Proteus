@@ -12,23 +12,24 @@ aggregateHifly(wp, hifly = 3)
 \item{hifly}{Number of high-fliers}
 }
 \value{
-A data frame row with aggregated protein intensities
+A numeric vector with aggregated protein intensities
 }
 \description{
-Protein aggregate function using hifly method
+Function to aggregate peptides into proteins using a hi-flyer method of Silva
+et al. 2006 (http://www.mcponline.org/content/5/1/144.full.pdf).
 }
 \details{
-This function should be used from within
-\code{\link{makeProteinTable}}. The "hifly" method is a follows. \enumerate{
-\item For a given protein find all corresponding peptides. \item In each
-replicate, order intensities from the highest to the lowest. This is done
-separetly for each replicate. \item Select n top rows of the ordered table.
-\item In each replicate, find the mean of these three rows. This is the
-estimated protein intensity. }
+This function should be used from within \code{\link{makeProteinTable}}. The
+"hifly" method is a follows. \enumerate{ \item For a given protein find all
+corresponding peptides. \item In each replicate, order intensities from the
+highest to the lowest. This is done separetly for each replicate. \item
+Select n top rows of the ordered table. \item In each replicate, find the
+mean of these three rows. This is the estimated protein intensity. }
 }
 \examples{
+\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
-
+}
 }

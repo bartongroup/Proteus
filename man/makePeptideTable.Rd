@@ -5,8 +5,8 @@
 \title{Create peptide table from evidence data}
 \usage{
 makePeptideTable(evi, meta, pepseq = "sequence",
-  measure.cols = measureColumns, aggregate.fun = sum,
-  experiment.type = c("unlabelled", "TMT", "SILAC"))
+  measure.cols = measureColumns, aggregate.fun = aggregateSum, ...,
+  experiment.type = c("unlabelled", "TMT", "SILAC"), ncores = 4)
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -23,7 +23,12 @@ used in \code{\link{readEvidenceFile}}}
 \item{aggregate.fun}{A function to aggregate pepetides with the same
 sequence/sample.}
 
-\item{experiment.type}{Type of the experiment, "unlabelled", "TMT" or "SILAC".}
+\item{...}{Additional parameters passed to the aggregate function}
+
+\item{experiment.type}{Type of the experiment, "unlabelled", "TMT" or
+"SILAC".}
+
+\item{ncores}{Number of cores for parallel processing}
 }
 \value{
 A \code{proteusData} object, containing peptide intensities and
@@ -48,8 +53,22 @@ corresponding to peptides and columns corresponding to samples (as defined in
 metadata). Each cell of the table is an aggregated measure values over all
 evidence entries corresponding to the given sequence and experiment. How
 these measure values are aggregated is controlled by the parameter
-\code{aggregate.fun}. We recommend using sum for unlabelled and TMT
-experiments and median for SILAC experiments.
+\code{aggregate.fun}.
+
+There are two aggregation functions provided in this package:
+\code{\link{aggregateMedian}} and \code{\link{aggregateSum}}. Depending on
+the needs, the user can provide any arbitrary function to perform
+aggregation.  We recommend using \code{aggregateSum} for unlabelled and TMT
+experiments and \code{aggregateMedian} for SILAC experiments.
+
+The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
+is a matrix containing measurements from for a given peptide. Rows are
+evidence file entries, columns are samples. \code{...} are additional
+parameters for the function that are passed from \code{makePeptideTable}. The
+aggregate function should return a vector of values for each sample. That is
+the lenght of the vector should be the same as the number of columns in
+\code{wp}. For example, the default aggregate function \code{aggregateSum}
+calculates sums in each column of \code{wp}.
 
 Only samples from metadata are used, regardless of the content of the
 evidence data. This makes selection of samples for downstream processing
@@ -58,6 +77,6 @@ easy: select only required rows in the metadata data frame.
 \examples{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
-pepdat <- makePeptideTable(evi, meta)
+pepdat <- makePeptideTable(evi, meta, ncores=2)
 
 }

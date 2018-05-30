@@ -1,5 +1,6 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 library(proteus)
+library(ggplot2)
 library(knitr)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
@@ -43,7 +44,7 @@ head(evi)
 meta
 
 ## ----make_peptides, eval=FALSE------------------------------------------------
-#  pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, fun.aggregate=median, experiment.type="SILAC")
+#  pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, aggregate.fun=aggregateMedian, experiment.type="SILAC")
 
 ## ----summary_peptides---------------------------------------------------------
 summary(pepdat)
@@ -52,7 +53,7 @@ summary(pepdat)
 plotCount(pepdat)
 
 ## ----make_proteins, eval=FALSE------------------------------------------------
-#  prodat <- makeProteinTable(pepdat, method="median")
+#  prodat <- makeProteinTable(pepdat, aggregate.fun=aggregateMedian)
 
 ## ----summary_proteins---------------------------------------------------------
 summary(prodat)

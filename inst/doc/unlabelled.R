@@ -1,11 +1,7 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 library(proteus)
 library(knitr)
-library(dplyr)
 library(ggplot2)
-library(grid)
-require(gridExtra)
-library(dendextend)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -45,13 +41,16 @@ str(evidenceColumns)
 ## ----my_columns, eval=FALSE---------------------------------------------------
 #  myColumns <- c(evidenceColumns, mz="m/z")
 
+## ----rename_column, eval=FALSE------------------------------------------------
+#  myColumns$protein <- "Leading Razor Protein"
+
 ## ----my_columns_evidence, eval=FALSE------------------------------------------
 #  evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 
 ## ----evidence_column_names----------------------------------------------------
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
-evicols <- read.delim(evidenceFile, header=TRUE, sep="\t", check.names=FALSE, nrows=1)
-names(evicols)
+evidence.columns <- readColumnNames(evidenceFile)
+evidence.columns
 
 ## ----metadata-----------------------------------------------------------------
 metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")

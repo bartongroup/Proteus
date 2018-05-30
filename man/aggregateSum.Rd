@@ -2,27 +2,26 @@
 % Please edit documentation in R/func.R
 \name{aggregateSum}
 \alias{aggregateSum}
-\title{Protein aggregate function using sum}
+\title{Peptide/protein aggregate function using sum}
 \usage{
 aggregateSum(wp)
 }
 \arguments{
-\item{wp}{Intensity table with selection of peptides for this protein}
+\item{wp}{Matrix with columns corresponding to samples and rows corresponding
+to peptide entires.}
 }
 \value{
-A data frame row with aggregated protein intensities
+A numeric vector with aggregated values
 }
 \description{
-Protein aggregate function using sum
-}
-\details{
-This function should be used from within
-\code{\link{makeProteinTable}}. It aggregates peptides into a protein by
-calculating the sum for each sample.
+This function should be used from within \code{\link{makePeptideTable}} or
+\code{\link{makeProteinTable}}. It aggregates values by calculating the sum
+for each column of \code{wp}.
 }
 \examples{
+\dontrun{
 library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateSum)
-
+}
 }

@@ -12,42 +12,37 @@ colnames(test_wp) <- cols
 
 context("Aggregating peptides into proteins")
 
-test_that("Test makeProtein sum", {
-  p <- makeProtein(test_wp, method="sum")
-  exp_p <- data.frame(t(c(NA, 10, 30, 32)))
-  colnames(exp_p) <- cols
+test_that("Test aggregateSum", {
+  p <- aggregateSum(test_wp)
+  exp_p <- c(NA, 10, 30, 32)
   expect_equal(p, exp_p)
 })
 
-test_that("Test makeProtein median", {
-  p <- makeProtein(test_wp, method="median")
-  exp_p <- data.frame(t(c(NA, 10, 10, 8)))
-  colnames(exp_p) <- cols
+test_that("Test aggregateMedian", {
+  p <- aggregateMedian(test_wp)
+  exp_p <- c(NA, 10, 10, 8)
   expect_equal(p, exp_p)
 })
 
-test_that("Test makeProtein hifly longer", {
-  p <- makeProtein(test_wp, method="hifly", hifly=3)
-  exp_p <- data.frame(t(c(NA, 10, 10, mean(c(10,8,8)))))
-  colnames(exp_p) <- cols
+test_that("Test aggregateHifly hifly longer", {
+  p <- aggregateHifly(test_wp, hifly=3)
+  exp_p <- c(NA, 10, 10, mean(c(10,8,8)))
   expect_equal(p, exp_p)
 })
 
-test_that("Test makeProtein hifly same", {
-  p <- makeProtein(test_wp[1:3,], method="hifly", hifly=3)
-  exp_p <- data.frame(t(c(NA, 10, 9.5, mean(c(1,5,10)))))
-  colnames(exp_p) <- cols
+test_that("Test aggregateHifly hifly same", {
+  p <- aggregateHifly(test_wp[1:3,], hifly=3)
+  exp_p <- c(NA, 10, 9.5, mean(c(1,5,10)))
   expect_equal(p, exp_p)
 })
 
-test_that("Test makeProtein hifly one", {
-  wp <- as.data.frame(t(c(NA, 1, 5, 10)))
-  colnames(wp) <- cols
-  p <- makeProtein(wp, method="hifly", hifly=3)
-  expect_equal(p, wp)
+test_that("Test aggregateHifly hifly one", {
+  wp <- as.matrix(t(c(NA, 1, 5, 10)))
+  p <- aggregateHifly(wp, hifly=3)
+  expect_equal(p, as.vector(wp))
 })
 
-test_that("Test makeProtein no peptides",{
+test_that("Test aggregateHifly no peptides",{
   wp <- test_wp[integer(0),]
-  expect_error(makeProtein())
+  expect_error(aggregateHifly(wp, hifly=3))
 })

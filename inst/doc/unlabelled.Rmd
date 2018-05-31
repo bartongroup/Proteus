@@ -443,7 +443,18 @@ pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
 
 The result will be somehow different from the default summing approach.
 
-## Aggregating protein groups
+## Protein groups
+
+By default protein intensities are aggregated from peptide intensities based on the `Leading razor protein` column from the evidence file (this column is renamed to `protein` by `readEvidenceFile` for simplicity). This means that for a given protein `makeProteinTable` would aggregate data from all peptides having this protein ID in the `Leading razor protein` column. We can change this default approach and, instead of razor proteins, we can use protein groups, as listed in `Proteins` column of the evidence file (this column is renamed to `protein_group` by `readEvidenceFile` to avoid confusion). The choice of column to aggregate protein data is controlled by parameter `protein.col` in the `makePeptideTable` function.
+
+It might look surprising that protein/group selection is done at the peptide level, but this is where peptide-to-protein conversion table is build and stored in the output object. We want to have it in the peptide object, in case peptide-level analysis needs to find out which proteins or protein groups these peptides belong to. The peptide-to-protein table is then used by `makeProteinTable` to aggregate proteins. Hence, if we want to aggregate proteins by protein group, we need to do the following:
+
+```{r protein_groups, eval=FALSE}
+pepdat.group <- makePeptideTable(evi, meta, protein.col="protein_group")
+prodat.group <- makeProteinTable(pepdat.group)
+```
+
+As a result, the object `prodat.group` will contain not individual proteins, but protein groups.
 
 ## Alternative protein aggregation
 

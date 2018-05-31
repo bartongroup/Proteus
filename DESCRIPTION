@@ -25,6 +25,6 @@ Imports:
     parallel,
     shiny,
     DT
-Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled
+Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled, proteusSILAC
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry

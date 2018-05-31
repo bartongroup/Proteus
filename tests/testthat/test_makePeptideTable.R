@@ -13,16 +13,13 @@ tab.1 <- structure(
 )
 
 tab.2 <- structure(
-  c(3.5, 7, 4, 2, 5, 5, 5, 5, 8, 7,
-    3, 8, 2, 7, 2, 8, 5, 2, 2, NA,
-    8, NA, 2, 4, 4, 9, 2, 2, NA, NA,
+  c(3, 8, 2, 7, 2, 8, 5, 2, 2, NA,
     4, 1, 2, NA, 1, 7, NA, 2, NA, NA,
-    9, 5, 4, NA, 7, NA, 2, 4, 5, 3,
     1, NA, 6, NA, 5, 6, 1, 7, 3, 2),
-  .Dim = c(10L, 6L),
+  .Dim = c(10L, 3L),
   .Dimnames = list(
     c("AA", "AB", "AC", "AD", "AE", "BA", "BB", "BC", "BD", "BE"),
-    c("WT1_intensity", "WT1_ratio", "WT2_intensity", "WT2_ratio", "KO1_intensity", "KO1_ratio")
+    c("WT1", "WT2", "KO1")
   )
 )
 
@@ -36,7 +33,7 @@ meta.ordered$sample <- factor(meta.ordered$sample, levels=meta.ordered$sample)
 
 context("Casting evidence into peptide table")
 
-test_that("Test makePeptide", {
+test_that("Test makePeptide unlabelled", {
   pep <- makePeptideTable(evi, meta, ncores=1)
   expect_equal(pep$tab, tab.1)
   expect_equal(pep$metadata[,c("experiment", "measure", "sample", "condition", "batch")], meta.ordered)
@@ -47,13 +44,13 @@ test_that("Test makePeptide", {
   expect_true(is(pep, "proteusData"))
 })
 
-# deprecated, need new tests for TMT
-#test_that("Test makePeptide SILAC", {
-#  pep <- makePeptideTable(evi, meta, fun.aggregate = median, measure.cols=c("intensity", "ratio"), experiment.type="SILAC")
-#  expect_equal(pep$tab, tab.2)
-#  expect_equal(pep$metadata$batch, c(1, 1, 2, 2, 2, 2))
-#  expect_equal(pep$values, c("intensity", "ratio"))
-#  expect_equal(pep$peptides, row.names(tab.2))
-#  expect_equal(pep$proteins, c("A", "B"))
-#  expect_true(is(pep, "proteusData"))
-#})
+meta$measure <- "Ratio"
+test_that("Test makePeptide SILAC", {
+  pep <- makePeptideTable(evi, meta, aggregate.fun = aggregateMedian, measure.cols=c(ratio="Ratio"), experiment.type="SILAC", ncores=1)
+  expect_equal(pep$tab, tab.2)
+  expect_equal(pep$metadata$batch, c(1, 2, 2))
+  expect_equal(pep$measures, "Ratio")
+  expect_equal(pep$peptides, row.names(tab.2))
+  expect_equal(pep$proteins, c("A", "B"))
+  expect_true(is(pep, "proteusData"))
+})

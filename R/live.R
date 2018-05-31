@@ -124,7 +124,7 @@ jitterPlot <- function(tab, input, pdat, max_points) {
       pd <- position_dodge(width = 0.4)
       # colorblind friendly definition (alas, only 7 colours, so doesn't work for more replicates)
       # cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-      ggplot(p, aes(x=condition, y=intensity, ymin=lo, ymax=up, colour=replicate, shape=shape, fill=replicate)) +
+      ggplot(p, aes_(x=~condition, y=~intensity, ymin=~lo, ymax=~up, colour=~replicate, shape=~shape, fill=~replicate)) +
         theme(text = element_text(size=20), legend.position = "bottom", legend.direction = "horizontal") +
         {if (input$intensityScale == '') ylim(0, NA)} +
         geom_point(position=pd, size=4) +

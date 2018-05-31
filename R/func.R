@@ -5,6 +5,10 @@
 #' @import utils
 #' @import parallel
 
+# In this package we deliberately use aes_(x=~x, y=~y) format in ggplot. This
+# gets rid of unwanted NOTEs "no visible binding for global variables" in R CMD
+# check.
+
 simple_theme <- ggplot2::theme_bw() +
   ggplot2::theme(
     panel.border = ggplot2::element_blank(),
@@ -936,8 +940,8 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
   m <- reshape2::melt(corr.mat, varnames=c("Sample1", "Sample2"))
   m$Sample1 <- factor(m$Sample1, levels=pdat$metadata$sample)
   m$Sample2 <- factor(m$Sample2, levels=pdat$metadata$sample)
-  ggplot(m, aes(x=Sample1, y=Sample2)) +
-    geom_tile(aes(fill=value)) +
+  ggplot(m, aes_(x=~Sample1, y=~Sample2)) +
+    geom_tile(aes_(fill=~value)) +
     #scale_fill_manual(values=palette) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),
@@ -995,7 +999,7 @@ plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
   entry.count <- apply(pdat$tab, 2, function(x) sum(!is.na(x)))
   med.count <- median(entry.count)
   df <- data.frame(x=meta$sample, y=entry.count, condition=meta$condition)
-  g <- ggplot(df, aes(x=x,y=y,fill=condition)) +
+  g <- ggplot(df, aes_(x=~x,y=~y,fill=~condition)) +
     geom_col(colour='grey60') +
     simple_theme +
     scale_y_continuous(expand = c(0,0)) +
@@ -1064,7 +1068,7 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
   # Jaccard simliarity for each pair of columns in tab
   sim <- apply(pairs, 1, function(i) jaccardSimilarity(pdat$tab[,i[1]], pdat$tab[,i[2]]))
 
-  ggplot(data.frame(sim), aes(sim, ..density..)) +
+  ggplot(data.frame(sim), aes_(~sim, ~..density..)) +
   {if(plot.grid) simple_theme_grid else simple_theme} +
     geom_histogram(breaks=seq(0, 1, bin.size), colour=hist.colour, fill=hist.colour) +
     labs(x='Jaccard similarity', y='Density') +
@@ -1118,7 +1122,7 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
   lg <- ifelse(log.scale, paste("log", log.base), "")
 
   if(method == "box" | method == "violin") {
-    g <- ggplot(m, aes(x=sample, y=value)) +
+    g <- ggplot(m, aes_(x=~sample, y=~value)) +
       simple_theme +
       ylim(vmin, vmax) +
       theme(axis.text.x = element_text(angle = x.text.angle, hjust = 1, vjust=0.5, size=x.text.size)) +
@@ -1127,18 +1131,18 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
     if(method=="box") g <- g + geom_boxplot(outlier.shape=NA, na.rm=TRUE)
     if(method=="violin") g <- g + geom_violin(na.rm=TRUE, draw_quantiles=c(0.25, 0.5, 0.75), scale="width")
   } else if (method == "dist") {
-    g <- ggplot(m, aes(x=value)) +
+    g <- ggplot(m, aes_(x=~value)) +
       geom_histogram(bins=hist.bins) +
       facet_wrap(~sample, nrow=n.grid.rows) +
       xlim(vmin, vmax)
   } else stop("Wrong method.")
 
   if(!is.null(fill)) {
-    g <- g + aes(fill=fill)
+    g <- g + aes_(fill=~fill)
     if(nlevels(m$fill) <= length(palette)) g <- g + scale_fill_manual(name=fill, values=palette)
   }
   if(!is.null(colour)) {
-    g <- g + aes(colour=colour)
+    g <- g + aes_(colour=~colour)
     if(nlevels(m$colour) <= length(palette)) g <- g + scale_color_manual(name=colour, values=palette)
   }
   g
@@ -1257,7 +1261,7 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     }
   }
 
-  g <- ggplot(stats, aes(x=mean, y=variance)) +
+  g <- ggplot(stats, aes_(x=~mean, y=~variance)) +
     simple_theme +
     theme(panel.border = element_rect(fill=NA, color='black')) +
     xlim(xmin, xmax) +
@@ -1266,8 +1270,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     stat_binhex(bins=bins) +
     theme(text = element_text(size=text.size)) +
     scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
-  if(with.n) g <- g + geom_text(data=protnum, aes(x=xmin+0.5, y=ymax, label=labn))
-  if(with.loess) g <- g + geom_line(data=ldf, aes(x,y), color='black')
+  if(with.n) g <- g + geom_text(data=protnum, aes_(x=~xmin+0.5, y=~ymax, label=~labn))
+  if(with.loess) g <- g + geom_line(data=ldf, aes_(x=~x,y=~y), color='black')
   return(g)
 }
 
@@ -1337,7 +1341,7 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
     if(is.na(ymin) && !log) ymin=0
     ylab <- ifelse(pdat$type == "SILAC", "Ratio", "Intensity")
     if(log) ylab <- paste("log10", ylab)
-    ggplot(p, aes(x=condition, y=expr, ymin=lo, ymax=up, fill=replicates, shape=shape)) +
+    ggplot(p, aes_(x=~condition, y=~expr, ymin=~lo, ymax=~up, fill=~replicates, shape=~shape)) +
       simple_theme_grid +
       theme(text = element_text(size=text.size), legend.position = "none") +
       ylim(ymin, ymax) +
@@ -1577,14 +1581,14 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
   df[!good, "x"] <- colSums(m, na.rm=TRUE)
   df[!good, "y"] <- ifelse(is.na(m[1,]), mx, -mx)
 
-  g <- ggplot(df[good, ], aes(x=x, y=y))
+  g <- ggplot(df[good, ], aes_(x=~x, y=~y))
 
   if(binhex) {
     g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
       scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA)
   } else {
     g <- g + geom_point(size=point.size) +
-      geom_point(data=df[!good,], aes(x=x, y=y), colour="orange", size=point.size)
+      geom_point(data=df[!good,], aes_(x=~x, y=~y), colour="orange", size=point.size)
   }
 
   if(plot.grid) {
@@ -1624,7 +1628,7 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
 #'
 #' @export
 plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
-  ggplot(res, aes(P.Value, ..density..)) +
+  ggplot(res, aes_(~P.Value, ~..density..)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
     geom_histogram(breaks=seq(0, 1, bin.size), colour='blue') +
     labs(x='P-value', y='Density') +
@@ -1670,7 +1674,7 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
   tit <- paste(conds, collapse=":")
   id <- names(res)[1]
 
-  g <- ggplot(res, aes(logFC, -log10(P.Value)))
+  g <- ggplot(res, aes_(~logFC, ~-log10(P.Value)))
 
   if(binhex) {
     g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
@@ -1736,33 +1740,31 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {
   dat$pepnum <- sprintf("%02d", as.numeric(dat$peptide))  # convert sequences into numbers
   dat$intensity <- log10(dat$value)
 
-  # add condition column (is there a simpler way?)
-  s2c <- dplyr::select(pepdat$metadata, condition)
-  rownames(s2c) <- pepdat$metadata$sample
-  dat$condition <- s2c[dat$sample,]
+  # add condition column
+  s2c <- setNames(pepdat$metadata$condition, pepdat$metadata$sample)
+  dat$condition <- s2c[dat$sample]
 
-  # add protein intensity column (is there a simpler way)
+  # add protein intensity column
   if(!is.null(prodat)) {
-    p2p <- data.frame(int=as.numeric(prodat$tab[protein,]))
-    rownames(p2p) <- colnames(prodat$tab)
-    dat$prot.intensity <- log10(p2p[dat$sample,])
+    p2p <- setNames(as.numeric(prodat$tab[protein,]), colnames(prodat$tab))
+    dat$prot.intensity <- log10(p2p[dat$sample])
   }
 
-  g1 <- ggplot(dat, aes(x=pepnum, y=intensity, fill=condition)) +
+  g1 <- ggplot(dat, aes_(x=~pepnum, y=~intensity, fill=~condition)) +
     scale_fill_manual(values=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     facet_wrap(~condition) +
     theme(legend.position="none") +
     labs(x="Peptide", y="log intensity", title=protein)
-  g2 <- ggplot(dat, aes(x=sample, y=intensity, fill=condition)) +
+  g2 <- ggplot(dat, aes_(x=~sample, y=~intensity, fill=~condition)) +
     scale_fill_manual(values=palette) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5)) +
     theme(legend.position="none") +
     labs(x="Sample", y="log intensity")
-  if(!is.null(prodat)) g2 <- g2 + geom_point(aes(x=sample, y=prot.intensity), shape=22, size=3, fill='white')
+  if(!is.null(prodat)) g2 <- g2 + geom_point(aes_(x=~sample, y=~prot.intensity), shape=22, size=3, fill='white')
   gridExtra::grid.arrange(g1, g2, ncol=1)
 }
 

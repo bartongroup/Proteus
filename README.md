@@ -1,8 +1,6 @@
 # Proteus
 
-Proteus is an R package to analyse proteomics data from MaxQuant. It starts with the evidence file, can create peptide and protein tables and perform differential expression.
-
-At this stage only unlabelled data are accepted.
+*Proteus* is an R package for downstream analysis of *MaxQuant* output. The input for *Proteus* is the evidence file. Evidence data are aggregated into peptides and then into proteins. *Proteus* offers many visualisation and data analysis tools both at peptide and protein level. In particular it allows simple differential expression using *limma*.
 
 ## Installation
 
@@ -34,14 +32,17 @@ Finally, you can install proteus:
 devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e", build_vignettes=TRUE)
 ```
 
-
-
 ## Tutorial
 
-Proteus contains tutorial vignettes for unlabelled and TMT analysis
+Proteus contains tutorial vignettes. We suggest starting with the comprehensive tutorial for unlabelled proteomics:
 
 ```r
 vignette("unlabelled", package="proteus")
+```
+
+There are additional, shorter vignettes, showing the specifics of using *Proteus* with TMT and SILAC data:
+
+```r
 vignette("TMT", package="proteus")
 vignette("SILAC", package="proteus")
 ```

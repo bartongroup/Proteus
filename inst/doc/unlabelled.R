@@ -5,8 +5,8 @@ library(ggplot2)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 
-## ----load_data----------------------------------------------------------------
-library(proteusUnlabelled)
+## ----load_data, message=FALSE, warning=FALSE----------------------------------
+library(proteusUnlabelled, warn.conflicts=FALSE)
 data(proteusUnlabelled)
 
 ## ----quick_start, eval=FALSE--------------------------------------------------
@@ -147,6 +147,31 @@ annotations.id <- unique(annotations.id)
 
 ## ----annotate_proteins--------------------------------------------------------
 prodat <- annotateProteins(prodat, annotations.id)
+
+## ----evi_column_names---------------------------------------------------------
+names(evi)
+
+## ----peptide_table_modified_sequence, eval=FALSE------------------------------
+#  pepdat.mod <- makePeptideTable(evi, meta, sequence.col = "modified_sequence")
+#  prodat.mod <- makeProteinTable(pepdat.mod)
+
+## ----peptide_aggregate_matrix-------------------------------------------------
+evitab.example
+
+## ----peptide_aggregate_default------------------------------------------------
+aggregateSum(evitab.example)
+
+## ----peptide_aggregate_maximum_function---------------------------------------
+aggregateMax <- function(wp) {
+  row <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
+  return(as.vector(row))
+}
+
+## ----peptide_aggregate_maximum_example----------------------------------------
+aggregateMax(evitab.example)
+
+## ----peptide_aggregate_maximum_create, eval=FALSE-----------------------------
+#  pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
 
 ## ----limma, warning=FALSE-----------------------------------------------------
 res <- limmaDE(prodat.med, sig.level=0.05)

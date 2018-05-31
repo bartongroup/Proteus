@@ -5,10 +5,11 @@
 \title{\code{proteusData} constructor}
 \usage{
 proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
-  npep = NULL, type = "unlabelled", pepseq = "sequence",
-  peptide.aggregate.fun = NULL, peptide.aggregate.parameters = NULL,
-  protein.aggregate.fun = NULL, protein.aggregate.parameters = NULL,
-  min.peptides = NULL, norm.fun = identity)
+  npep = NULL, type = "unlabelled", sequence.col = "sequence",
+  protein.col = "protein", peptide.aggregate.fun = NULL,
+  peptide.aggregate.parameters = NULL, protein.aggregate.fun = NULL,
+  protein.aggregate.parameters = NULL, min.peptides = NULL,
+  norm.fun = identity)
 }
 \arguments{
 \item{tab}{A matrix with data, rows are peptides/proteins, columns are
@@ -33,7 +34,9 @@ columns}
 
 \item{type}{Type of experiment: "unlabelled" or "SILAC"}
 
-\item{pepseq}{Name of the sequence used, either "sequence" or "modseq"}
+\item{sequence.col}{Name of the sequence used, either "sequence" or "modified_sequence"}
+
+\item{protein.col}{Name of the protein column used, either "protein" or "protein_group"}
 
 \item{peptide.aggregate.fun}{Function used to aggregate peptides}
 

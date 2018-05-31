@@ -4,9 +4,10 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi, meta, pepseq = "sequence",
-  measure.cols = measureColumns, aggregate.fun = aggregateSum, ...,
-  experiment.type = c("unlabelled", "TMT", "SILAC"), ncores = 4)
+makePeptideTable(evi, meta, sequence.col = "sequence",
+  protein.col = "protein", measure.cols = measureColumns,
+  aggregate.fun = aggregateSum, ..., experiment.type = c("unlabelled",
+  "TMT", "SILAC"), ncores = 4)
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -14,8 +15,8 @@ makePeptideTable(evi, meta, pepseq = "sequence",
 \item{meta}{Data frame with metadata. As a minimum, it should contain
 "sample" and "condition" columns.}
 
-\item{pepseq}{A column name to identify peptides. Can be either "sequence" or
-"modseq".}
+\item{sequence.col}{A column name to identify peptides. Can be either "sequence" or
+"modified_sequence".}
 
 \item{measure.cols}{A named list of measure columns; should be the same as
 used in \code{\link{readEvidenceFile}}}

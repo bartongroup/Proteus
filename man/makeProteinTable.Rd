@@ -4,21 +4,21 @@
 \alias{makeProteinTable}
 \title{Make protein table}
 \usage{
-makeProteinTable(pepdat, min.peptides = 1, ncores = 4,
-  aggregate.fun = aggregateHifly, ...)
+makeProteinTable(pepdat, aggregate.fun = aggregateHifly, ...,
+  min.peptides = 1, ncores = 4)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally
 created by \code{\link{makePeptideTable}}}
 
-\item{min.peptides}{Minimum number of peptides per protein}
-
-\item{ncores}{Number of cores for parallel processing}
-
 \item{aggregate.fun}{Function to aggregate peptides into a protein. See
 "Details" for more details.}
 
 \item{...}{Additional parameters to pass to \code{aggregate.fun}}
+
+\item{min.peptides}{Minimum number of peptides per protein}
+
+\item{ncores}{Number of cores for parallel processing}
 }
 \value{
 A \code{proteusData} object containing protein intensities and

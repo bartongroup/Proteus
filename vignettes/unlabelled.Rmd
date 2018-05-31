@@ -1,22 +1,17 @@
 ---
 title: "Using proteus R package: unlabelled data"
+author: "Marek Gierlinski"
+date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     number_sections: true
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Using proteus R package}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
-
-```{css, echo=FALSE}
-#pre code, pre, code {
-#  white-space: pre !important;
-#  overflow-x: scroll !important;
-#  word-break: keep-all !important;
-#  word-wrap: initial !important;
-#}
-```
 
 ```{r setup, include=FALSE}
 library(proteus)
@@ -28,8 +23,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. It uses example data distributed in a package *proteusUnlabelled*, which needs loading first:
 
-```{r load_data}
-library(proteusUnlabelled)
+```{r load_data, message=FALSE, warning=FALSE}
+library(proteusUnlabelled, warn.conflicts=FALSE)
 data(proteusUnlabelled)
 ```
 
@@ -375,6 +370,84 @@ prodat <- annotateProteins(prodat, annotations.id)
 The annotations are merged into `prodat` based on the `protein` column in the annotation data frame. They are stored in `prodat$annotation` and rows of this data frame correspond to the order of proteins in the intensity table.
 
 Obviously, not every data set follows the identifier convention in this example. For any data set the user will need to create a data frame with the appropriate annotations, using available resources. The only requirement is that the annotation data frame contains a column called `protein` and this column contains protein identifiers as provided in the evidence file and available from the `proteusData` object in the field `proteins`.
+
+# Alternative processing
+
+## Modified sequence
+
+Peptide intensities are aggregated based on the `Sequence` column in the evidence file. That is, the intensity for a peptide (for a given sample) is the sum (or other user-specified function) of the intensities for all entries for this sequence and experiment in the evidence file. Instead, we can use the `Modified sequence` column and focus on protein modifications. Then, the aggregation will be done for a given modified sequence.
+
+Let us recall, that the evidence object in *Proteus* package is a data frame with column names as defined by the `data.cols` parameter in `readEvidenceFile` function. Here are the colum names we have in `evi`:
+
+```{r evi_column_names}
+names(evi)
+```
+
+Hence, if we want to base peptide aggregation on the modified sequence, we need to specify the appropriate column name when creating peptide table, using `sequence.col="modified_sequence"`. The usual protein aggregation will follow:
+
+```{r peptide_table_modified_sequence, eval=FALSE}
+pepdat.mod <- makePeptideTable(evi, meta, sequence.col = "modified_sequence")
+prodat.mod <- makeProteinTable(pepdat.mod)
+```
+
+## Peptide aggregation
+
+Evidence file often contains multiple entries for the same peptide sequence and experiment. By default (and this is also done by *MaxQuant* when creating peptides table) these entries are summed up. The aggregation method is controlled by the parameter `aggregate.fun` and can be easily modified. `aggregate.fun` points to a function that performs aggregation across all entries. The default function is `aggregateSum`, but it can be replaced with any user-provided function, if necessary.
+
+### Aggregator function
+
+The aggregator function should have the following form:
+
+```
+function(wp, ...)
+```
+
+The input for this function is a matrix `wp` with peptide intensities. The elipsis (...) indicates additional parameters passed to the function. Columns of the intensity matrix correspond to samples and rows correspond to different entries from the evidence file. For example, for a peptide with sequence `AASESIKVGDPFDESTFQGAQTSQMQLNK` we have the following matrix:
+
+```{r peptide_aggregate_matrix}
+evitab.example
+```
+
+There are up to 6 evidence entires per sample for this sequence. The output of the aggregator function should be a vector of aggregated intensities. In the case of the default aggregator, the output is the sum of columns of the above matrix:
+
+```{r peptide_aggregate_default}
+aggregateSum(evitab.example)
+```
+
+The elements of this vector correspond to the samples - columns of the input matrix. The peptide creator function, `makePeptideTable` uses the aggregator function to combine data for each peptide.
+
+The other peptide aggregator function provided in the package is `aggregateMedian`. It calculates median of each column. We recommend using this function with SILAC data.
+
+### User-defined aggregation function
+
+Let us assume that instead of the default sums we want to find a maximum intensity across all entries for each peptide. We are not saying that this is a better apprach, we just want to show an example of how to create user-define peptide aggregators. The function we need takes a two-dimentional matrix as an input and returns the maximum of each columm. It can be encoded as
+
+```{r peptide_aggregate_maximum_function}
+aggregateMax <- function(wp) {
+  row <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
+  return(as.vector(row))
+}
+```
+
+Please note that `na.rm=TRUE` is necessary to igore data gaps. Otherwise the returned vector would cosist mostly of NAs. When applied to our example matrix the function returns
+
+```{r peptide_aggregate_maximum_example}
+aggregateMax(evitab.example)
+```
+
+Now, we can use it to create an alternative peptide table:
+
+```{r peptide_aggregate_maximum_create, eval=FALSE}
+pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
+```
+
+The result will be somehow different from the default summing approach.
+
+## Aggregating protein groups
+
+## Alternative protein aggregation
+
+
 
 # Differential expression
 

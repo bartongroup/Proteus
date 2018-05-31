@@ -37,9 +37,9 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 #' @export
 evidenceColumns <- list(
   sequence = 'Sequence',
-  modseq = 'Modified sequence',
+  modified_sequence = 'Modified sequence',
   modifications = 'Modifications',
-  proteins = 'Proteins',
+  protein_group = 'Proteins',
   protein = 'Leading razor protein',
   experiment = 'Experiment',
   charge = 'Charge',
@@ -91,7 +91,8 @@ proteinColumns <- list(
 #'   columns
 #' @param type Type of experiment: "unlabelled" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
-#' @param pepseq Name of the sequence used, either "sequence" or "modseq"
+#' @param sequence.col Name of the sequence used, either "sequence" or "modified_sequence"
+#' @param protein.col Name of the protein column used, either "protein" or "protein_group"
 #' @param peptide.aggregate.fun Function used to aggregate peptides
 #' @param peptide.aggregate.parameters Additional parameters passed to peptide
 #'   aggregate function
@@ -104,7 +105,7 @@ proteinColumns <- list(
 #'
 #' @return A \code{proteusData} object.
 proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
-                        npep=NULL, type="unlabelled", pepseq="sequence",
+                        npep=NULL, type="unlabelled", sequence.col="sequence", protein.col="protein",
                         peptide.aggregate.fun=NULL, peptide.aggregate.parameters=NULL,
                         protein.aggregate.fun=NULL, protein.aggregate.parameters=NULL,
                         min.peptides=NULL, norm.fun=identity) {
@@ -113,7 +114,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     is(tab, "matrix"),
     content %in% c("peptide", "protein", "other"),
     type %in% c("unlabelled", "SILAC", "TMT"),
-    pepseq %in% c("sequence", "modseq")
+    sequence.col %in% c("sequence", "modified_sequence"),
+    protein.col %in% c("protein", "protein_group")
   )
 
   # make sure to keep correct order of samples
@@ -152,7 +154,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     conditions = levels(cnd.fac),
     nrep = nrep,
     type = type,
-    pepseq = pepseq,
+    sequence.col = sequence.col,
+    protein.col = protein.col,
     peptide.aggregate.fun = peptide.aggregate.fun,
     peptide.aggregate.parameters = peptide.aggregate.parameters,
     protein.aggregate.fun = protein.aggregate.fun,
@@ -197,7 +200,8 @@ summary.proteusData <- function(object, ...) {
 
   cat("\n*** Data processing ***\n\n")
   cat(paste0("  evidence columns used = ", paste0(object$measures, collapse = ", "), "\n"))
-  cat(paste0("  sequence = '", ifelse(object$pepseq == 'sequence', "Sequence", "Modified sequence"), "'\n"))
+  cat(paste0("  sequence = '", ifelse(object$sequence.col == 'sequence', "Sequence", "Modified sequence"), "'\n"))
+  cat(paste0("  protein = '", ifelse(object$protein.col == 'protein', "Leading razor protein", "Proteins"), "'\n"))
   cat(paste0("  normalization = ", object$norm.fun, "\n"))
 
   if(object$content == "protein") {
@@ -412,8 +416,8 @@ parameterString <- function(...) {
 #' @param evi Evidence table created with \code{\link{readEvidenceFile}}.
 #' @param meta Data frame with metadata. As a minimum, it should contain
 #'   "sample" and "condition" columns.
-#' @param pepseq A column name to identify peptides. Can be either "sequence" or
-#'   "modseq".
+#' @param sequence.col A column name to identify peptides. Can be either "sequence" or
+#'   "modified_sequence".
 #' @param measure.cols A named list of measure columns; should be the same as
 #'   used in \code{\link{readEvidenceFile}}
 #' @param aggregate.fun A function to aggregate pepetides with the same
@@ -431,7 +435,7 @@ parameterString <- function(...) {
 #' pepdat <- makePeptideTable(evi, meta, ncores=2)
 #'
 #' @export
-makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureColumns,
+makePeptideTable <- function(evi, meta, sequence.col="sequence", protein.col="protein", measure.cols=measureColumns,
                              aggregate.fun=aggregateSum, ..., experiment.type=c("unlabelled", "TMT", "SILAC"),
                              ncores = 4) {
 
@@ -466,7 +470,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   # "variable.name" parameter and default to the column name "variable". This is
   # changed manually to "measure", because we want it this way. See
   # https://github.com/hadley/reshape/issues/63 for more details.
-  eviMelted <- reshape2::melt(evi, id.vars = c(pepseq, "experiment"), measure.vars=measures)
+  eviMelted <- reshape2::melt(evi, id.vars = c(sequence.col, "experiment"), measure.vars=measures)
   names(eviMelted)[1] <- "sequence"  # for simplicity, call it sequence
   names(eviMelted)[3] <- "measure" # see note above
   eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
@@ -514,9 +518,9 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   peptides <- row.names(ptab)
 
   # peptide to protein conversion
-  pep2prot <- data.frame(sequence=evi[[pepseq]], protein=evi$protein)
+  pep2prot <- data.frame(sequence=evi[[sequence.col]], protein=evi[[protein.col]])
   pep2prot <- unique(pep2prot)
-  if(anyDuplicated(pep2prot$sequence) > 0) stop("Non-unique peptide-to-protein association found. Proteus requires that peptide sequence is uniquely associated with a leading razor protein.")
+  if(anyDuplicated(pep2prot$sequence) > 0) stop("Non-unique peptide-to-protein association found. Proteus requires that peptide sequence is uniquely associated with a protein or protein group.")
   rownames(pep2prot) <- pep2prot$sequence
   pep2prot <- pep2prot[peptides,]
   proteins <- levels(as.factor(pep2prot$protein))
@@ -524,6 +528,7 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   # create pdat object
   pdat <- proteusData(ptab, meta, "peptide", pep2prot, peptides, proteins,
                       as.character(measure.cols), type = experiment.type,
+                      sequence.col = sequence.col, protein.col = protein.col,
                       peptide.aggregate.fun = deparse(substitute(aggregate.fun)),
                       peptide.aggregate.parameters = parameterString(...)
   )
@@ -556,11 +561,12 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #'
 #' @param pepdat A \code{proteusData} object containing peptide data, normally
 #'   created by \code{\link{makePeptideTable}}
-#' @param min.peptides Minimum number of peptides per protein
-#' @param ncores Number of cores for parallel processing
 #' @param aggregate.fun Function to aggregate peptides into a protein. See
 #'   "Details" for more details.
 #' @param ... Additional parameters to pass to \code{aggregate.fun}
+#' @param min.peptides Minimum number of peptides per protein
+#' @param ncores Number of cores for parallel processing
+#'
 #' @return A \code{proteusData} object containing protein intensities and
 #'   metadata.
 #'
@@ -570,7 +576,8 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
 #' prodat <- makeProteinTable(pepdat.clean, ncores=2)
 #'
 #' @export
-makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=aggregateHifly, ...) {
+makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
+                             min.peptides=1, ncores=4) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pepdat$metadata
@@ -619,7 +626,7 @@ makeProteinTable <- function(pepdat, min.peptides=1, ncores=4, aggregate.fun=agg
   prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides,
                         proteins, pepdat$measures,
                         type = pepdat$type,
-                        pepseq = pepdat$pepseq,
+                        sequence.col = pepdat$sequence.col,
                         min.peptides = min.peptides,
                         peptide.aggregate.fun = pepdat$peptide.aggregate.fun,
                         peptide.aggregate.parameters = pepdat$peptide.aggregate.parameters,

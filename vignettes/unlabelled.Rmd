@@ -108,7 +108,7 @@ The default named list `evidenceColumns` describes the minimal set of columns ne
 str(evidenceColumns)
 ```
 
-The names (`sequence`, `modseq`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used.
+The names (`sequence`, `modified_sequence`, and so on) are used internally in the package and should not be changed. The values (`Sequence`, `Modified sequence`) are the actual column names in the evidence file and can be adjusted if different naming convention is used.
 
 ### Updating column names
 

@@ -461,15 +461,14 @@ makePeptideTable <- function(evi, meta, pepseq="sequence", measure.cols=measureC
   meta$sample <- factor(meta$sample, levels=meta$sample)
 
   # melt and recast evidence data
-  # potential conflict between reshape and reshape2 requires a direct call to unexported melt.data.frame (note three colons!)
-  # we realise this is not the best practice, but otherwise it might lead to nasty errors
-  # see https://github.com/hadley/reshape/issues/63
-  eviMelted <- reshape2:::melt.data.frame(evi,
-                                         id.vars = c(pepseq, "experiment"),
-                                         measure.vars=measures,
-                                         variable.name="measure"
-                                         )
+  #
+  # NOTE: due to a potential conflict between reshape and reshape2 we do not use
+  # "variable.name" parameter and default to the column name "variable". This is
+  # changed manually to "measure", because we want it this way. See
+  # https://github.com/hadley/reshape/issues/63 for more details.
+  eviMelted <- reshape2::melt(evi, id.vars = c(pepseq, "experiment"), measure.vars=measures)
   names(eviMelted)[1] <- "sequence"  # for simplicity, call it sequence
+  names(eviMelted)[3] <- "measure" # see note above
   eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
   eviMelted$measure <- measure.cols[eviMelted$measure]  # recover original measurement columns
 

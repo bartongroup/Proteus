@@ -26,6 +26,8 @@ library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med,sig.level = 0.05)
-# plotFID_live(prodat.med, res)
+\dontrun{
+plotFID_live(prodat.med, res)
+}
 
 }

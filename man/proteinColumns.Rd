@@ -9,7 +9,8 @@
 proteinColumns
 }
 \description{
-To be used as the default \code{data.cols} parameter in \code{\link{readProteinGroups}}.
+To be used as the default \code{data.cols} parameter in
+\code{\link{readProteinGroups}}.
 }
 \examples{
 str(proteinColumns)

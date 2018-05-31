@@ -175,7 +175,9 @@ allProteinTable <- function(res) {
 #' data(proteusUnlabelled)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
-#' # plotVolcano_live(prodat.med, res)
+#' \dontrun{
+#' plotVolcano_live(prodat.med, res)
+#' }
 #'
 #' @export
 plotVolcano_live <- function(pdat, res, max_points=100){
@@ -267,7 +269,9 @@ plotVolcano_live <- function(pdat, res, max_points=100){
 #' data(proteusUnlabelled)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med,sig.level = 0.05)
-#' # plotFID_live(prodat.med, res)
+#' \dontrun{
+#' plotFID_live(prodat.med, res)
+#' }
 #'
 #' @export
 plotFID_live <- function(pdat, res, max_points=100){

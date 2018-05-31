@@ -25,6 +25,8 @@ library(proteusUnlabelled)
 data(proteusUnlabelled)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med)
-# plotVolcano_live(prodat.med, res)
+\dontrun{
+plotVolcano_live(prodat.med, res)
+}
 
 }

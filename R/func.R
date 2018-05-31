@@ -58,7 +58,8 @@ measureColumns <- list(
 
 #' Protein columns
 #'
-#' To be used as the default \code{data.cols} parameter in \code{\link{readProteinGroups}}.
+#' To be used as the default \code{data.cols} parameter in
+#' \code{\link{readProteinGroups}}.
 #'
 #' @examples
 #' str(proteinColumns)
@@ -88,9 +89,11 @@ proteinColumns <- list(
 #' @param npep A data frame with number of peptides per protein
 #' @param pepseq Name of the sequence used, either "sequence" or "modseq"
 #' @param peptide.aggregate.fun Function used to aggregate peptides
-#' @param peptide.aggregate.parameters Additional parameters passed to peptide aggregate function
+#' @param peptide.aggregate.parameters Additional parameters passed to peptide
+#'   aggregate function
 #' @param protein.aggregate.fun Function used to aggregate proteins
-#' @param protein.aggregate.parameters Additional parameters passed to protein aggregate function
+#' @param protein.aggregate.parameters Additional parameters passed to protein
+#'   aggregate function
 #' @param min.peptides Integer, minimum number of peptides to combine into a
 #'   protein
 #' @param norm.fun Normalizing function
@@ -240,7 +243,8 @@ readColumnNames <- function(file) {
 #' @param measure.cols Named list with measure columns to read.
 #' @param data.cols Named list with other columns to read (in addition to
 #'   measure columns).
-#' @param zeroes.are.missing Logical. If TRUE zeroes are interpreted as missing data and replaced with NAs.
+#' @param zeroes.are.missing Logical. If TRUE zeroes are interpreted as missing
+#'   data and replaced with NAs.
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
@@ -932,7 +936,6 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
   m <- reshape2::melt(corr.mat, varnames=c("Sample1", "Sample2"))
   m$Sample1 <- factor(m$Sample1, levels=pdat$metadata$sample)
   m$Sample2 <- factor(m$Sample2, levels=pdat$metadata$sample)
-  #gplots::heatmap.2(corr.mat, trace="none", density.info="none", dendrogram="none", Rowv=FALSE, Colv=FALSE, key.xlab = "Correlation coefficient")
   ggplot(m, aes(x=Sample1, y=Sample2)) +
     geom_tile(aes(fill=value)) +
     #scale_fill_manual(values=palette) +

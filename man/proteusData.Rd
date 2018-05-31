@@ -37,11 +37,13 @@ columns}
 
 \item{peptide.aggregate.fun}{Function used to aggregate peptides}
 
-\item{peptide.aggregate.parameters}{Additional parameters passed to peptide aggregate function}
+\item{peptide.aggregate.parameters}{Additional parameters passed to peptide
+aggregate function}
 
 \item{protein.aggregate.fun}{Function used to aggregate proteins}
 
-\item{protein.aggregate.parameters}{Additional parameters passed to protein aggregate function}
+\item{protein.aggregate.parameters}{Additional parameters passed to protein
+aggregate function}
 
 \item{min.peptides}{Integer, minimum number of peptides to combine into a
 protein}

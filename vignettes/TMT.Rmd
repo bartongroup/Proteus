@@ -9,15 +9,6 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{css, echo=FALSE}
-#pre code, pre, code {
-#  white-space: pre !important;
-#  overflow-x: scroll !important;
-#  word-break: keep-all !important;
-#  word-wrap: initial !important;
-#}
-```
-
 ```{r setup, include=FALSE}
 library(proteus)
 library(knitr)
@@ -68,7 +59,6 @@ We are going to use the default `evidenceColumns` object, but the user should ca
 Due to its large size we do not attach the TMT evidence file to this package. The command to read the file would be:
 
 ```{r read_evidence, eval=FALSE}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusTMT")
 evi <- readEvidenceFile(evidenceFile, measure.cols=measCols)
 ```
 

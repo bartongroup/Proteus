@@ -24,9 +24,9 @@ measCols <- list(
 ## ----evidence_columns, cache=FALSE--------------------------------------------
 eviCols <- list(
   sequence = 'pep_sequence',
-  modseq = 'modified_sequence',
+  modified_sequence = 'modified_sequence',
   modifications = 'modifications',
-  proteins = 'proteins',
+  protein_group = 'proteins',
   protein = 'leading_razor_protein',
   experiment = 'experiment',
   charge = 'charge',

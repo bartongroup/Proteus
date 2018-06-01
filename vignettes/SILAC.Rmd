@@ -9,15 +9,6 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{css, echo=FALSE}
-#pre code, pre, code {
-#  white-space: pre !important;
-#  overflow-x: scroll !important;
-#  word-break: keep-all !important;
-#  word-wrap: initial !important;
-#}
-```
-
 ```{r setup, include=FALSE}
 library(proteus)
 library(ggplot2)
@@ -62,9 +53,9 @@ The column naming convention in our evidence file is different from the default,
 ```{r evidence_columns, cache=FALSE}
 eviCols <- list(
   sequence = 'pep_sequence',
-  modseq = 'modified_sequence',
+  modified_sequence = 'modified_sequence',
   modifications = 'modifications',
-  proteins = 'proteins',
+  protein_group = 'proteins',
   protein = 'leading_razor_protein',
   experiment = 'experiment',
   charge = 'charge',
@@ -90,7 +81,7 @@ We do attach an example of processed evidence data with this package, it is call
 head(evi)
 ```
 
-## <a id="Metadata"></a>Metadata
+## Metadata
 
 Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:
 
@@ -135,7 +126,7 @@ plotCount(pepdat)
 
 ## Create protein dataset
 
-Now we create protein data. The method `median` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default `hifly` method which only works for unlabelled (or TMT) data.
+Now we create protein data. The `aggregate.fun=aggregateMedian` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default hi-flyer method which only works for unlabelled (or TMT) data.
 
 ```{r make_proteins, eval=FALSE}
 prodat <- makeProteinTable(pepdat, aggregate.fun=aggregateMedian)

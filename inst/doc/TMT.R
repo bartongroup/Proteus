@@ -23,7 +23,6 @@ names(measCols) <- paste0("reporter_", 0:9)
 str(as.list(measCols))
 
 ## ----read_evidence, eval=FALSE------------------------------------------------
-#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusTMT")
 #  evi <- readEvidenceFile(evidenceFile, measure.cols=measCols)
 
 ## ----head_evidence------------------------------------------------------------

@@ -70,14 +70,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<style type="text/css">
-#pre code, pre, code {
-#  white-space: pre !important;
-#  overflow-x: scroll !important;
-#  word-break: keep-all !important;
-#  word-wrap: initial !important;
-#}
-</style>
 <p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlabelled and TMT analysis</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;unlabelled&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteus&quot;</span>)</code></pre></div>
 <p>Here we use example data distributed in a separate package <em>proteusTMT</em>, which needs loading first:</p>
@@ -108,17 +100,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="read-evidence-file" class="section level2">
 <h2><span class="header-section-number">1.2</span> Read evidence file</h2>
 <p>Due to its large size we do not attach the TMT evidence file to this package. The command to read the file would be:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">evidenceFile &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;evidence.txt.gz&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteusTMT&quot;</span>)
-evi &lt;-<span class="st"> </span><span class="kw">readEvidenceFile</span>(evidenceFile, <span class="dt">measure.cols=</span>measCols)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">evi &lt;-<span class="st"> </span><span class="kw">readEvidenceFile</span>(evidenceFile, <span class="dt">measure.cols=</span>measCols)</code></pre></div>
 <p>We do attach an example processed evidence data with the package, it is called <code>evi</code>. It contains all reported intensity columns:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(evi)</code></pre></div>
-<pre><code>##        sequence          modseq modifications      proteins       protein
-## 1 AAAAAASVGSSNK _AAAAAASVGSSNK_    Unmodified   Tb927.1.840   Tb927.1.840
-## 2  AAAAALLSALLR  _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 3  AAAAALLSALLR  _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 4  AAAAALLSALLR  _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 5  AAAAALLSALLR  _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 6  AAAAALLSALLR  _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
+<pre><code>##        sequence modified_sequence protein_group      proteins       protein
+## 1 AAAAAASVGSSNK   _AAAAAASVGSSNK_    Unmodified   Tb927.1.840   Tb927.1.840
+## 2  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
+## 3  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
+## 4  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
+## 5  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
+## 6  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
 ##   experiment charge reverse contaminant reporter_0 reporter_1 reporter_2
 ## 1      E5016      2                             NA         NA     45.638
 ## 2      E5015      2                        4079.90     5038.5   8193.700
@@ -195,8 +186,8 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## *** Data processing ***
 ## 
 ##   evidence columns used = Reporter intensity 0, Reporter intensity 1, Reporter intensity 2, Reporter intensity 3, Reporter intensity 4, Reporter intensity 5, Reporter intensity 6, Reporter intensity 7, Reporter intensity 8, Reporter intensity 9
-##   sequence = ''
-##   protein = ''
+##   sequence = 'Sequence'
+##   protein = 'Leading razor protein'
 ##   normalization = identity</code></pre>
 </div>
 <div id="number-of-peptides" class="section level2">
@@ -228,8 +219,8 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## *** Data processing ***
 ## 
 ##   evidence columns used = Reporter intensity 0, Reporter intensity 1, Reporter intensity 2, Reporter intensity 3, Reporter intensity 4, Reporter intensity 5, Reporter intensity 6, Reporter intensity 7, Reporter intensity 8, Reporter intensity 9
-##   sequence = ''
-##   protein = ''
+##   sequence = 'Sequence'
+##   protein = 'Leading razor protein'
 ##   normalization = identity
 ## 
 ## *** Protein data ***

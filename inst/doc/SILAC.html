@@ -70,14 +70,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<style type="text/css">
-#pre code, pre, code {
-#  white-space: pre !important;
-#  overflow-x: scroll !important;
-#  word-break: keep-all !important;
-#  word-wrap: initial !important;
-#}
-</style>
 <p>This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlabelled and SILAC analysis</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;unlabelled&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteus&quot;</span>)</code></pre></div>
 <p>Here we use example data distributed in a separate package <em>proteusSILAC</em>, which needs loading first:</p>
@@ -94,9 +86,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>The column naming convention in our evidence file is different from the default, included in the <code>evidenceColumns</code> object. Hence, we need to create a new named list, as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eviCols &lt;-<span class="st"> </span><span class="kw">list</span>(
   <span class="dt">sequence =</span> <span class="st">'pep_sequence'</span>,
-  <span class="dt">modseq =</span> <span class="st">'modified_sequence'</span>,
+  <span class="dt">modified_sequence =</span> <span class="st">'modified_sequence'</span>,
   <span class="dt">modifications =</span> <span class="st">'modifications'</span>,
-  <span class="dt">proteins =</span> <span class="st">'proteins'</span>,
+  <span class="dt">protein_group =</span> <span class="st">'proteins'</span>,
   <span class="dt">protein =</span> <span class="st">'leading_razor_protein'</span>,
   <span class="dt">experiment =</span> <span class="st">'experiment'</span>,
   <span class="dt">charge =</span> <span class="st">'charge'</span>,
@@ -111,13 +103,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Please note the argument <code>zeroes.are.missing=FALSE</code>. By default, <code>readEvidenceFile</code> assumes that zeroes represent missing data (which usually is true for unlabelled and TMT experiments). In this case we read ratios which, in theory, can be zeroes. In most cases its doesn’t make any difference.</p>
 <p>We do attach an example of processed evidence data with this package, it is called <code>evi</code>. It contains all reported intensity columns:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(evi)</code></pre></div>
-<pre><code>##       sequence        modseq modifications                 proteins protein
-## 5   LTLNSPIFDK  _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
-## 11  LTLNSPIFDK  _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
-## 12  LTLNSPIFDK  _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
-## 13  LTLNSPIFDK  _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
-## 18 LTLPEEHPCLK _LTLPEEHPCLK_    Unmodified                   Q9HCU4  Q9HCU4
-## 19 LTLPEEHPCLK _LTLPEEHPCLK_    Unmodified                   Q9HCU4  Q9HCU4
+<pre><code>##       sequence modified_sequence modifications            protein_group protein
+## 5   LTLNSPIFDK      _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
+## 11  LTLNSPIFDK      _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
+## 12  LTLNSPIFDK      _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
+## 13  LTLNSPIFDK      _LTLNSPIFDK_    Unmodified Q00536;Q00536-3;Q00536-2  Q00536
+## 18 LTLPEEHPCLK     _LTLPEEHPCLK_    Unmodified                   Q9HCU4  Q9HCU4
+## 19 LTLPEEHPCLK     _LTLPEEHPCLK_    Unmodified                   Q9HCU4  Q9HCU4
 ##            experiment charge reverse contaminant      ML
 ## 5  LM_VEHvsOHT_T01_R2      2                     0.93639
 ## 11 LM_VEHvsOHT_T48_R2      2                     0.42157
@@ -127,7 +119,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 19 LM_VEHvsOHT_T01_R3      3                     0.71851</code></pre>
 </div>
 <div id="metadata" class="section level2">
-<h2><span class="header-section-number">1.3</span> <a id="Metadata"></a>Metadata</h2>
+<h2><span class="header-section-number">1.3</span> Metadata</h2>
 <p>Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metadataFile &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;metadata.txt&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteusSILAC&quot;</span>)
 meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFile, <span class="dt">header=</span><span class="ot">TRUE</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</code></pre></div>
@@ -163,8 +155,8 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## *** Data processing ***
 ## 
 ##   evidence columns used = ratio_ml
-##   sequence = ''
-##   protein = ''
+##   sequence = 'Sequence'
+##   protein = 'Leading razor protein'
 ##   normalization = identity</code></pre>
 </div>
 <div id="number-of-peptides" class="section level2">
@@ -178,7 +170,7 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <h1><span class="header-section-number">3</span> Protein data</h1>
 <div id="create-protein-dataset" class="section level2">
 <h2><span class="header-section-number">3.1</span> Create protein dataset</h2>
-<p>Now we create protein data. The method <code>median</code> indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default <code>hifly</code> method which only works for unlabelled (or TMT) data.</p>
+<p>Now we create protein data. The <code>aggregate.fun=aggregateMedian</code> indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default hi-flyer method which only works for unlabelled (or TMT) data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prodat &lt;-<span class="st"> </span><span class="kw">makeProteinTable</span>(pepdat, <span class="dt">aggregate.fun=</span>aggregateMedian)</code></pre></div>
 <p>Again, we can use a generic <code>summary</code> function to see its properties.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(prodat)</code></pre></div>
@@ -196,8 +188,8 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## *** Data processing ***
 ## 
 ##   evidence columns used = ratio_ml
-##   sequence = ''
-##   protein = ''
+##   sequence = 'Sequence'
+##   protein = 'Leading razor protein'
 ##   normalization = identity
 ## 
 ## *** Protein data ***

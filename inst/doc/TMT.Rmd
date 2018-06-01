@@ -33,7 +33,12 @@ vignette("unlabelled", package="proteus")
 
 Here we use example data distributed in a separate package *proteusTMT*, which needs loading first:
 
-```{r load_data}
+```{r load_data, echo=FALSE}
+library(proteusTMT, warn.conflicts=FALSE)
+data(proteusTMT)
+```
+
+```{r load_data_dummy, eval=FALSE}
 library(proteusTMT)
 data(proteusTMT)
 ```

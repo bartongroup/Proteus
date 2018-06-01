@@ -5,9 +5,13 @@ library(ggplot2)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 
-## ----load_data, message=FALSE, warning=FALSE----------------------------------
+## ----load_data, echo=FALSE----------------------------------------------------
 library(proteusUnlabelled, warn.conflicts=FALSE)
 data(proteusUnlabelled)
+
+## ----load_data_dummy, eval=FALSE----------------------------------------------
+#  library(proteusUnlabelled)
+#  data(proteusUnlabelled)
 
 ## ----quick_start, eval=FALSE--------------------------------------------------
 #  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")

@@ -23,8 +23,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. It uses example data distributed in a package *proteusUnlabelled*, which needs loading first:
 
-```{r load_data, message=FALSE, warning=FALSE}
+```{r load_data, echo=FALSE}
 library(proteusUnlabelled, warn.conflicts=FALSE)
+data(proteusUnlabelled)
+```
+
+```{r load_data_dummy, eval=FALSE}
+library(proteusUnlabelled)
 data(proteusUnlabelled)
 ```
 

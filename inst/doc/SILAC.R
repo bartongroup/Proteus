@@ -8,9 +8,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ## ---- eval=FALSE--------------------------------------------------------------
 #  vignette("unlabelled", package="proteus")
 
-## ----load_data----------------------------------------------------------------
-library(proteusSILAC)
+## ----load_data, echo=FALSE----------------------------------------------------
+library(proteusSILAC, warn.conflicts=FALSE)
 data(proteusSILAC)
+
+## ----load_data_dummy, eval=FALSE----------------------------------------------
+#  library(proteusSILAC)
+#  data(proteusSILAC)
 
 ## ----measure_columns, cache=FALSE---------------------------------------------
 measCols <- list(

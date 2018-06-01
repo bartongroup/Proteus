@@ -7,9 +7,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ## ---- eval=FALSE--------------------------------------------------------------
 #  vignette("unlabelled", package="proteus")
 
-## ----load_data----------------------------------------------------------------
-library(proteusTMT)
+## ----load_data, echo=FALSE----------------------------------------------------
+library(proteusTMT, warn.conflicts=FALSE)
 data(proteusTMT)
+
+## ----load_data_dummy, eval=FALSE----------------------------------------------
+#  library(proteusTMT)
+#  data(proteusTMT)
 
 ## ----measure_columns, cache=FALSE---------------------------------------------
 measCols <- paste0("Reporter intensity ", 0:9)

@@ -100,7 +100,7 @@ significanceTable <- function(tab, res, input) {
 #' @param pdat \code{proteusData} object with data and annotations
 #' @param max_points Maximum number of points to select
 #'
-#' @return A ggplot object.
+#' @return A ggplot2 object.
 jitterPlot <- function(tab, input, pdat, max_points) {
   renderPlot({
     sel <- selectProtein(tab, input)

@@ -25,7 +25,7 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlaballed and TMT analysis
+This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlabelled and TMT analysis
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")

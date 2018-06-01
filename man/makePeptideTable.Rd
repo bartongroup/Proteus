@@ -4,10 +4,10 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi, meta, sequence.col = "sequence",
-  protein.col = "protein", measure.cols = measureColumns,
-  aggregate.fun = aggregateSum, ..., experiment.type = c("unlabelled",
-  "TMT", "SILAC"), ncores = 4)
+makePeptideTable(evi, meta, sequence.col = c("sequence", "modified_sequence"),
+  protein.col = c("protein", "protein_group"),
+  measure.cols = measureColumns, aggregate.fun = aggregateSum, ...,
+  experiment.type = c("unlabelled", "TMT", "SILAC"), ncores = 4)
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -15,8 +15,11 @@ makePeptideTable(evi, meta, sequence.col = "sequence",
 \item{meta}{Data frame with metadata. As a minimum, it should contain
 "sample" and "condition" columns.}
 
-\item{sequence.col}{A column name to identify peptides. Can be either "sequence" or
-"modified_sequence".}
+\item{sequence.col}{A column name to identify peptides. Can be either
+"sequence" or "modified_sequence".}
+
+\item{protein.col}{A column name to use for peptide-to-protein reference. Can
+be either "protein" or "protein_group".}
 
 \item{measure.cols}{A named list of measure columns; should be the same as
 used in \code{\link{readEvidenceFile}}}
@@ -70,6 +73,18 @@ aggregate function should return a vector of values for each sample. That is
 the lenght of the vector should be the same as the number of columns in
 \code{wp}. For example, the default aggregate function \code{aggregateSum}
 calculates sums in each column of \code{wp}.
+
+This function, apart from aggregating evidence data into peptides, builds a
+peptide-to-protein reference and stores is in the returned object ($pep2prot
+field). It can be used at peptide level, to identify which protein peptides
+belong to. It is then passed to \code{\link{makeProteinTable}} function and
+used to aggregate peptides to proteins. Here we can decide how peptides are
+aggregated to proteins. This is controlled by the \code{protein.col}
+parameter, which indicates which evidence column should be used to build
+peptide-to-protein relation. If "protein" is used (default) the
+peptite-to-protein relation is build on leading razor proteins. If
+"protein_group" is used, then peptide-to-protein relation is based on protein
+groups.
 
 Only samples from metadata are used, regardless of the content of the
 evidence data. This makes selection of samples for downstream processing

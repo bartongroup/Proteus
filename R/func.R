@@ -214,7 +214,7 @@ summary.proteusData <- function(object, ...) {
   }
 }
 
-#' Read coluns names from a tab-delimted text file
+#' Read coluns names from a tab-delimited text file
 #'
 #' @param file File name.
 #'
@@ -405,9 +405,21 @@ parameterString <- function(...) {
 #' evidence file entries, columns are samples. \code{...} are additional
 #' parameters for the function that are passed from \code{makePeptideTable}. The
 #' aggregate function should return a vector of values for each sample. That is
-#' the lenght of the vector should be the same as the number of columns in
+#' the length of the vector should be the same as the number of columns in
 #' \code{wp}. For example, the default aggregate function \code{aggregateSum}
 #' calculates sums in each column of \code{wp}.
+#'
+#' This function, apart from aggregating evidence data into peptides, builds a
+#' peptide-to-protein reference and stores is in the returned object ($pep2prot
+#' field). It can be used at peptide level, to identify which protein peptides
+#' belong to. It is then passed to \code{\link{makeProteinTable}} function and
+#' used to aggregate peptides to proteins. Here we can decide how peptides are
+#' aggregated to proteins. This is controlled by the \code{protein.col}
+#' parameter, which indicates which evidence column should be used to build
+#' peptide-to-protein relation. If "protein" is used (default) the
+#' peptite-to-protein relation is build on leading razor proteins. If
+#' "protein_group" is used, then peptide-to-protein relation is based on protein
+#' groups.
 #'
 #' Only samples from metadata are used, regardless of the content of the
 #' evidence data. This makes selection of samples for downstream processing
@@ -416,8 +428,10 @@ parameterString <- function(...) {
 #' @param evi Evidence table created with \code{\link{readEvidenceFile}}.
 #' @param meta Data frame with metadata. As a minimum, it should contain
 #'   "sample" and "condition" columns.
-#' @param sequence.col A column name to identify peptides. Can be either "sequence" or
-#'   "modified_sequence".
+#' @param sequence.col A column name to identify peptides. Can be either
+#'   "sequence" or "modified_sequence".
+#' @param protein.col A column name to use for peptide-to-protein reference. Can
+#'   be either "protein" or "protein_group".
 #' @param measure.cols A named list of measure columns; should be the same as
 #'   used in \code{\link{readEvidenceFile}}
 #' @param aggregate.fun A function to aggregate pepetides with the same
@@ -435,10 +449,13 @@ parameterString <- function(...) {
 #' pepdat <- makePeptideTable(evi, meta, ncores=2)
 #'
 #' @export
-makePeptideTable <- function(evi, meta, sequence.col="sequence", protein.col="protein", measure.cols=measureColumns,
+makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_sequence"),
+                             protein.col=c("protein", "protein_group"), measure.cols=measureColumns,
                              aggregate.fun=aggregateSum, ..., experiment.type=c("unlabelled", "TMT", "SILAC"),
                              ncores = 4) {
 
+  sequence.col <- match.arg(sequence.col)
+  protein.col <- match.arg(protein.col)
   experiment.type <- match.arg(experiment.type)
 
   # check if measure.cols are in the evidence file
@@ -556,7 +573,7 @@ makePeptideTable <- function(evi, meta, sequence.col="sequence", protein.col="pr
 #' protein. Rows are peptides, columns are samples. \code{...} are additional
 #' parameters for the function that are passed from \code{makeProteinTable}. The
 #' aggregate function should return a vector of values for each sample. That is
-#' the lenght of the vector should be the same as the number of columns in
+#' the length of the vector should be the same as the number of columns in
 #' \code{wp}.
 #'
 #' @param pepdat A \code{proteusData} object containing peptide data, normally
@@ -647,7 +664,7 @@ makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
 #' This function should be used from within \code{\link{makeProteinTable}}. The
 #' "hifly" method is a follows. \enumerate{ \item For a given protein find all
 #' corresponding peptides. \item In each replicate, order intensities from the
-#' highest to the lowest. This is done separetly for each replicate. \item
+#' highest to the lowest. This is done separately for each replicate. \item
 #' Select n top rows of the ordered table. \item In each replicate, find the
 #' mean of these three rows. This is the estimated protein intensity. }
 #'
@@ -684,7 +701,7 @@ aggregateHifly <- function(wp, hifly=3) {
 #' median for each column of \code{wp}.
 #'
 #' @param wp Matrix with columns corresponding to samples and rows corresponding
-#'   to peptide entires.
+#'   to peptide entries.
 #'
 #' @return A numeric vector with aggregated values
 #'
@@ -708,7 +725,7 @@ aggregateMedian <- function(wp) {
 #' for each column of \code{wp}.
 #'
 #' @param wp Matrix with columns corresponding to samples and rows corresponding
-#'   to peptide entires.
+#'   to peptide entries.
 #'
 #' @return A numeric vector with aggregated values
 #'
@@ -825,7 +842,7 @@ normalizeMedian <- function(tab) {
 #' @param norm.fun A normalizing function.
 #' @return A \code{proteusData} object with normalized intensities.
 #'
-#' @details The normalizng function, specified by \code{norm.fun} needs to
+#' @details The normalizing function, specified by \code{norm.fun} needs to
 #'   normalize columns of a numerical matrix. The input is a matrix and the
 #'   output is a normalized matrix. The default value points to
 #'   \code{\link{normalizeMedian}}, Proteus's function normalizing each column
@@ -1384,8 +1401,8 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #' @param transform.fun A function to transform data before differential
 #'   expression.
 #' @param sig.level Significance level for rejecting the null hypothesis.
-#' @return A data frame with DE results. "logFC" colum is a log-fold-change
-#'   (using the \code{transform.fun}). Two columns wiht mean log-intensity
+#' @return A data frame with DE results. "logFC" column is a log-fold-change
+#'   (using the \code{transform.fun}). Two columns with mean log-intensity
 #'   (again, using \code{transform.fun}) are added. Attributes contain
 #'   additional information about the transformation function, significance
 #'   level, formula and conditions.
@@ -1472,7 +1489,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 #' @param transform.fun A function to transform data before differential
 #'   expression.
 #' @param sig.level Significance level for rejecting the null hypothesis.
-#' @return A data frame with DE results. "logFC" colum is a log-fold-change
+#' @return A data frame with DE results. "logFC" column is a log-fold-change
 #'   (using the \code{transform.fun}). Attributes contain
 #'   additional information about the transformation function, significance
 #'   level and condition name.
@@ -1535,7 +1552,7 @@ limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.0
 #' @param point.size Size of points in the plot.
 #' @param show.legend Logical to show legend (colour key).
 #' @param plot.grid Logical to plot a grid.
-#' @param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+#' @param binhex Logical. If TRUE, a hexagonal density plot is made, otherwise it
 #'   is a simple point plot.
 #' @param transform.fun A function to transform data before plotting.
 #'
@@ -1644,7 +1661,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'Volcano plot
 #'
 #'\code{plotVolcano} makes a volcano plot from limma results. Uses
-#'\code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
+#'\code{\link{stat_binhex}} function from ggplot2 to make a hexagonal heatmap.
 #'
 #'@param res Result table from  \code{\link{limmaDE}}.
 #'@param bins Number of bins for binhex.
@@ -1654,7 +1671,7 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #'@param text.size Text size.
 #'@param show.legend Logical to show legend (colour key).
 #'@param plot.grid Logical to plot grid.
-#'@param binhex Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+#'@param binhex Logical. If TRUE, a hexagonal density plot is made, otherwise it
 #'  is a simple point plot.
 #'
 #' @return A \code{ggplot} object.

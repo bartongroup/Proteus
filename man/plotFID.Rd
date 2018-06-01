@@ -33,7 +33,7 @@ Can be skipped if there are only two conditions.}
 
 \item{plot.grid}{Logical to plot a grid.}
 
-\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+\item{binhex}{Logical. If TRUE, a hexagonal density plot is made, otherwise it
 is a simple point plot.}
 
 \item{transform.fun}{A function to transform data before plotting.}

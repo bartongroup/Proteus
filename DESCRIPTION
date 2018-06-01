@@ -28,3 +28,4 @@ Imports:
 Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled, proteusSILAC
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry
+Language: en-GB

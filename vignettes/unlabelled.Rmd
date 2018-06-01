@@ -98,7 +98,7 @@ The default named list `measureColumns` describes evidence file columns that con
 str(measureColumns)
 ```
 
-Different measure columns are needed for TMT and Silac experiments. See the appropriate vignettes (`TMT` and `SILAC`) for more details.
+Different measure columns are needed for TMT and SILAC experiments. See the appropriate vignettes (`TMT` and `SILAC`) for more details.
 
 ### Other required columns
 

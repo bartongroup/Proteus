@@ -19,7 +19,7 @@ A \code{proteusData} object with normalized intensities.
 object, using the provided normalizing function.
 }
 \details{
-The normalizng function, specified by \code{norm.fun} needs to
+The normalizing function, specified by \code{norm.fun} needs to
   normalize columns of a numerical matrix. The input is a matrix and the
   output is a normalized matrix. The default value points to
   \code{\link{normalizeMedian}}, Proteus's function normalizing each column

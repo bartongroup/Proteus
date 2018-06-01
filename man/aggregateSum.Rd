@@ -8,7 +8,7 @@ aggregateSum(wp)
 }
 \arguments{
 \item{wp}{Matrix with columns corresponding to samples and rows corresponding
-to peptide entires.}
+to peptide entries.}
 }
 \value{
 A numeric vector with aggregated values

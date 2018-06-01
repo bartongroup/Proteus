@@ -23,7 +23,7 @@ Normalize protein/peptide data using CONSTANd normalization
 \code{normalizeTMT} implements CONSTANd algorithm from Maes et al. (2016)
 \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4974351/pdf/zjw2779.pdf}.
 It normalizes TMT table, for each experiment separately. After normalization
-each row shows the precentage of total row intensity and each column is
+each row shows the percentage of total row intensity and each column is
 normalized to their mean value. Hence, both row and column means are equal
 1/n, where n is the number of columns (reporters).
 }

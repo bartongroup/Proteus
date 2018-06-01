@@ -79,7 +79,7 @@ replicateTable <- function(tab, input, pdat, max_points) {
 #' @param res Result from limma
 #' @param input Input variable from shiny server
 #'
-#' @return A rendered table with pvalue and adjusted p-value
+#' @return A rendered table with p-value and adjusted p-value
 significanceTable <- function(tab, res, input) {
   renderTable({
     sel <- selectProtein(tab, input)

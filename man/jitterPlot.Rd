@@ -16,7 +16,7 @@ jitterPlot(tab, input, pdat, max_points)
 \item{max_points}{Maximum number of points to select}
 }
 \value{
-A ggplot object.
+A ggplot2 object.
 }
 \description{
 Internal function to create a jitter plot with replicate intensities versus

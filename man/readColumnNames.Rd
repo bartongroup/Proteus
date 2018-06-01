@@ -2,7 +2,7 @@
 % Please edit documentation in R/func.R
 \name{readColumnNames}
 \alias{readColumnNames}
-\title{Read coluns names from a tab-delimted text file}
+\title{Read column names from a tab-delimited text file}
 \usage{
 readColumnNames(file)
 }
@@ -13,7 +13,7 @@ readColumnNames(file)
 A vector with column names.
 }
 \description{
-Read coluns names from a tab-delimted text file
+Read column names from a tab-delimited text file
 }
 \examples{
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")

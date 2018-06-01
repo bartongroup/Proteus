@@ -18,7 +18,7 @@ expression.}
 \item{sig.level}{Significance level for rejecting the null hypothesis.}
 }
 \value{
-A data frame with DE results. "logFC" colum is a log-fold-change
+A data frame with DE results. "logFC" column is a log-fold-change
   (using the \code{transform.fun}). Attributes contain
   additional information about the transformation function, significance
   level and condition name.

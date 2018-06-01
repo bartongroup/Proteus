@@ -28,7 +28,7 @@ reverse sequences are filtered out.
 \details{
 There are two parameters controlling which columns are read from the evidence
 file. Parameter \code{measure.cols} selects columns with measurements: these
-are intensities (unlabelled, TMT) or ratios (Silac). In the simplest case of
+are intensities (unlabelled, TMT) or ratios (SILAC). In the simplest case of
 unlabelled data, there is only one measure column: "Intensity". Parameter
 \code{data.columns} selects all other columns read from the evidence file.
 There are two default lists, supplied with the package, appropriate for an

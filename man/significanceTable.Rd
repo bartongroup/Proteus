@@ -14,7 +14,7 @@ significanceTable(tab, res, input)
 \item{input}{Input variable from shiny server}
 }
 \value{
-A rendered table with pvalue and adjusted p-value
+A rendered table with p-value and adjusted p-value
 }
 \description{
 Significance table

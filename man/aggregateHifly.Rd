@@ -22,7 +22,7 @@ et al. 2006 (http://www.mcponline.org/content/5/1/144.full.pdf).
 This function should be used from within \code{\link{makeProteinTable}}. The
 "hifly" method is a follows. \enumerate{ \item For a given protein find all
 corresponding peptides. \item In each replicate, order intensities from the
-highest to the lowest. This is done separetly for each replicate. \item
+highest to the lowest. This is done separately for each replicate. \item
 Select n top rows of the ordered table. \item In each replicate, find the
 mean of these three rows. This is the estimated protein intensity. }
 }

@@ -70,7 +70,7 @@ is a matrix containing measurements from for a given peptide. Rows are
 evidence file entries, columns are samples. \code{...} are additional
 parameters for the function that are passed from \code{makePeptideTable}. The
 aggregate function should return a vector of values for each sample. That is
-the lenght of the vector should be the same as the number of columns in
+the length of the vector should be the same as the number of columns in
 \code{wp}. For example, the default aggregate function \code{aggregateSum}
 calculates sums in each column of \code{wp}.
 

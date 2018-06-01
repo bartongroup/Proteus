@@ -214,7 +214,7 @@ summary.proteusData <- function(object, ...) {
   }
 }
 
-#' Read coluns names from a tab-delimited text file
+#' Read column names from a tab-delimited text file
 #'
 #' @param file File name.
 #'
@@ -240,7 +240,7 @@ readColumnNames <- function(file) {
 #'
 #' There are two parameters controlling which columns are read from the evidence
 #' file. Parameter \code{measure.cols} selects columns with measurements: these
-#' are intensities (unlabelled, TMT) or ratios (Silac). In the simplest case of
+#' are intensities (unlabelled, TMT) or ratios (SILAC). In the simplest case of
 #' unlabelled data, there is only one measure column: "Intensity". Parameter
 #' \code{data.columns} selects all other columns read from the evidence file.
 #' There are two default lists, supplied with the package, appropriate for an
@@ -909,7 +909,7 @@ RAS <- function(K, max.iter=50, eps=1e-5) {
 #' \code{normalizeTMT} implements CONSTANd algorithm from Maes et al. (2016)
 #' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4974351/pdf/zjw2779.pdf}.
 #' It normalizes TMT table, for each experiment separately. After normalization
-#' each row shows the precentage of total row intensity and each column is
+#' each row shows the percentage of total row intensity and each column is
 #' normalized to their mean value. Hence, both row and column means are equal
 #' 1/n, where n is the number of columns (reporters).
 #'

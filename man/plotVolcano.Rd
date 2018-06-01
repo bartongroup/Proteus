@@ -25,7 +25,7 @@ plotVolcano(res, bins = 80, xmax = NULL, ymax = NULL,
 
 \item{plot.grid}{Logical to plot grid.}
 
-\item{binhex}{Logical. If TRUE, a hexagonal densit plot is made, otherwise it
+\item{binhex}{Logical. If TRUE, a hexagonal density plot is made, otherwise it
 is a simple point plot.}
 }
 \value{
@@ -33,7 +33,7 @@ A \code{ggplot} object.
 }
 \description{
 \code{plotVolcano} makes a volcano plot from limma results. Uses
-\code{\link{stat_binhex}} function from ggplo2 to make a hexagonal heatmap.
+\code{\link{stat_binhex}} function from ggplot2 to make a hexagonal heatmap.
 }
 \examples{
 library(proteusUnlabelled)

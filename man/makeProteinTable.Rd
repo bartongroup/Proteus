@@ -40,7 +40,7 @@ is a matrix containing measurements from all peptides for the particular
 protein. Rows are peptides, columns are samples. \code{...} are additional
 parameters for the function that are passed from \code{makeProteinTable}. The
 aggregate function should return a vector of values for each sample. That is
-the lenght of the vector should be the same as the number of columns in
+the length of the vector should be the same as the number of columns in
 \code{wp}.
 }
 \examples{

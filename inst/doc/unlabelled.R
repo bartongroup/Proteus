@@ -155,6 +155,10 @@ names(evi)
 #  pepdat.mod <- makePeptideTable(evi, meta, sequence.col = "modified_sequence")
 #  prodat.mod <- makeProteinTable(pepdat.mod)
 
+## ----protein_groups, eval=FALSE-----------------------------------------------
+#  pepdat.group <- makePeptideTable(evi, meta, protein.col="protein_group")
+#  prodat.group <- makeProteinTable(pepdat.group)
+
 ## ----peptide_aggregate_matrix-------------------------------------------------
 evitab.example
 
@@ -163,8 +167,8 @@ aggregateSum(evitab.example)
 
 ## ----peptide_aggregate_maximum_function---------------------------------------
 aggregateMax <- function(wp) {
-  row <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
-  return(as.vector(row))
+  s <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
+  return(as.vector(s))
 }
 
 ## ----peptide_aggregate_maximum_example----------------------------------------
@@ -172,10 +176,6 @@ aggregateMax(evitab.example)
 
 ## ----peptide_aggregate_maximum_create, eval=FALSE-----------------------------
 #  pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
-
-## ----protein_groups, eval=FALSE-----------------------------------------------
-#  pepdat.group <- makePeptideTable(evi, meta, protein.col="protein_group")
-#  prodat.group <- makeProteinTable(pepdat.group)
 
 ## ----limma, warning=FALSE-----------------------------------------------------
 res <- limmaDE(prodat.med, sig.level=0.05)

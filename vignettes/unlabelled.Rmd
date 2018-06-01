@@ -23,8 +23,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. It uses example data distributed in a package *proteusUnlabelled*, which needs loading first:
 
-```{r load_data, message=FALSE, warning=FALSE}
+```{r load_data, echo=FALSE}
 library(proteusUnlabelled, warn.conflicts=FALSE)
+data(proteusUnlabelled)
+```
+
+```{r load_data_dummy, eval=FALSE}
+library(proteusUnlabelled)
 data(proteusUnlabelled)
 ```
 
@@ -51,7 +56,7 @@ plotVolcano_live(prodat.med, res)
 
 *Proteus* needs one input file: the evidence file from *MaxQuant*.
 
-In this tutorial we are also going to use a metadata file. It should be created manually as a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "experiment", "measure", "sample" and "condition" (see section [Metadata](#Metadata)).
+In this tutorial we are also going to use a metadata file. It should be created manually as a tab-delimited text file with a header containing several columns of metadata. The mandatory columns are "experiment", "measure", "sample" and "condition" (see section [Metadata]).
 
 Alternatively, a metadata data frame (with the same columns) can be created within the R session.
 
@@ -133,7 +138,7 @@ evidence.columns <- readColumnNames(evidenceFile)
 evidence.columns
 ```
 
-## <a id="Metadata"></a>Metadata
+## Metadata
 
 We also need metadata. In our example it is stored in the file in the `proteusUnlabelled` package:
 
@@ -254,7 +259,7 @@ plotClustering(pepdat.clean)
 
 # Protein data
 
-There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. For unlabelled data, we quantify protein abundances using a simple, but robust method of high-fliers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
+There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. For unlabelled data, we quantify protein abundances using a simple, but robust method of high-flyers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
 
 ## Create protein dataset
 
@@ -377,22 +382,37 @@ Obviously, not every data set follows the identifier convention in this example.
 
 Peptide intensities are aggregated based on the `Sequence` column in the evidence file. That is, the intensity for a peptide (for a given sample) is the sum (or other user-specified function) of the intensities for all entries for this sequence and experiment in the evidence file. Instead, we can use the `Modified sequence` column and focus on protein modifications. Then, the aggregation will be done for a given modified sequence.
 
-Let us recall, that the evidence object in *Proteus* package is a data frame with column names as defined by the `data.cols` parameter in `readEvidenceFile` function. Here are the colum names we have in `evi`:
+Let us recall, that the evidence object in *Proteus* package is a data frame with column names as defined by the `data.cols` parameter in `readEvidenceFile` function. These column names are different from the original names in the evidence file, so they conform with R object naming standards. Here are the colum names we have in `evi`:
 
 ```{r evi_column_names}
 names(evi)
 ```
 
-Hence, if we want to base peptide aggregation on the modified sequence, we need to specify the appropriate column name when creating peptide table, using `sequence.col="modified_sequence"`. The usual protein aggregation will follow:
+Therefore, if we want to base peptide aggregation on the modified sequence, we need to specify the appropriate column name when creating peptide table, by the parameter `sequence.col`. The usual protein aggregation will follow:
 
 ```{r peptide_table_modified_sequence, eval=FALSE}
 pepdat.mod <- makePeptideTable(evi, meta, sequence.col = "modified_sequence")
 prodat.mod <- makeProteinTable(pepdat.mod)
 ```
 
-## Peptide aggregation
+The default value of `sequence.col` is "sequence", so if no parameter is given, peptides will be aggregated based on their (unmodified) sequence.
 
-Evidence file often contains multiple entries for the same peptide sequence and experiment. By default (and this is also done by *MaxQuant* when creating peptides table) these entries are summed up. The aggregation method is controlled by the parameter `aggregate.fun` and can be easily modified. `aggregate.fun` points to a function that performs aggregation across all entries. The default function is `aggregateSum`, but it can be replaced with any user-provided function, if necessary.
+## Protein groups
+
+By default protein intensities are aggregated from peptide intensities based on the `Leading razor protein` column from the evidence file (this column is renamed to `protein` by `readEvidenceFile` for simplicity). This means that for a given protein `makeProteinTable` would aggregate data from all peptides having this protein ID in the `Leading razor protein` column. We can change this default approach and, instead of razor proteins, we can use protein groups, as listed in `Proteins` column of the evidence file (this column is renamed to `protein_group` by `readEvidenceFile` to avoid confusion). The choice of column to aggregate protein data is controlled by parameter `protein.col` in the `makePeptideTable` function.
+
+It might look surprising that protein/group selection is done at the peptide level, but this is where peptide-to-protein conversion table is build and stored in the output object (have a look at `pepdat$pep2prot` - it's a data frame with two columns, `peptide` and `protein`). We want to have it in the peptide object, in case peptide-level analysis needs to find out which proteins or protein groups these peptides belong to. The peptide-to-protein table is then used by `makeProteinTable` to aggregate proteins. Hence, if we want to aggregate proteins by protein group rather than razor proteins (which is the default), we need to do the following:
+
+```{r protein_groups, eval=FALSE}
+pepdat.group <- makePeptideTable(evi, meta, protein.col="protein_group")
+prodat.group <- makeProteinTable(pepdat.group)
+```
+
+As a result, the object `prodat.group` will contain not individual proteins, but protein groups.
+
+## Evidence-to-peptide aggregation
+
+Evidence file often contains multiple entries for the same peptide sequence and experiment. By default (and this is also done by *MaxQuant* when creating peptides table) these entries are summed. In *proteus* the aggregation method is controlled by the parameter `aggregate.fun` and can be easily modified. `aggregate.fun` points to a function that performs aggregation across all entries. The default function is `aggregateSum`, but it can be replaced with any user-provided function, if necessary.
 
 ### Aggregator function
 
@@ -402,13 +422,13 @@ The aggregator function should have the following form:
 function(wp, ...)
 ```
 
-The input for this function is a matrix `wp` with peptide intensities. The elipsis (...) indicates additional parameters passed to the function. Columns of the intensity matrix correspond to samples and rows correspond to different entries from the evidence file. For example, for a peptide with sequence `AASESIKVGDPFDESTFQGAQTSQMQLNK` we have the following matrix:
+The input for this function is a matrix `wp` with peptide intensities. The elipsis (...) indicates additional parameters passed to the function. Columns of the matrix `wp` correspond to samples and rows correspond to different entries from the evidence file. For example, for a peptide with sequence `AASESIKVGDPFDESTFQGAQTSQMQLNK` we have the following matrix:
 
 ```{r peptide_aggregate_matrix}
 evitab.example
 ```
 
-There are up to 6 evidence entires per sample for this sequence. The output of the aggregator function should be a vector of aggregated intensities. In the case of the default aggregator, the output is the sum of columns of the above matrix:
+There are up to 6 evidence entires per sample for this sequence. The output of the aggregator function should be a vector of aggregated intensities. In case of the default aggregator, the output is the sum of columns of the above matrix:
 
 ```{r peptide_aggregate_default}
 aggregateSum(evitab.example)
@@ -416,20 +436,20 @@ aggregateSum(evitab.example)
 
 The elements of this vector correspond to the samples - columns of the input matrix. The peptide creator function, `makePeptideTable` uses the aggregator function to combine data for each peptide.
 
-The other peptide aggregator function provided in the package is `aggregateMedian`. It calculates median of each column. We recommend using this function with SILAC data.
+The other peptide aggregator function provided in the package is `aggregateMedian`. It calculates median of each column. We recommend using this function with SILAC data. You can do this by specifying `aggregate.fun=aggregateMedian` in the `makePeptideTable` call. See SILAC vignette for details.
 
 ### User-defined aggregation function
 
-Let us assume that instead of the default sums we want to find a maximum intensity across all entries for each peptide. We are not saying that this is a better apprach, we just want to show an example of how to create user-define peptide aggregators. The function we need takes a two-dimentional matrix as an input and returns the maximum of each columm. It can be encoded as
+Let us assume that instead of the default sums we want to find the maximum intensity across all entries for each peptide. We are not saying that this is a better apprach, we just want to show an example of how to create a user-define peptide aggregator. The function we need takes a two-dimentional matrix as an input and returns the maximum of each columm. It can be encoded as
 
 ```{r peptide_aggregate_maximum_function}
 aggregateMax <- function(wp) {
-  row <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
-  return(as.vector(row))
+  s <- apply(wp, 2, function(x) max(x, na.rm=TRUE))
+  return(as.vector(s))
 }
 ```
 
-Please note that `na.rm=TRUE` is necessary to igore data gaps. Otherwise the returned vector would cosist mostly of NAs. When applied to our example matrix the function returns
+Please note that `na.rm=TRUE` is necessary to ignore data gaps. Otherwise the returned vector would cosist mostly of NAs. When applied to our example matrix the function returns
 
 ```{r peptide_aggregate_maximum_example}
 aggregateMax(evitab.example)
@@ -443,22 +463,13 @@ pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
 
 The result will be somehow different from the default summing approach.
 
-## Protein groups
+## Peptide-to-protein aggregation
 
-By default protein intensities are aggregated from peptide intensities based on the `Leading razor protein` column from the evidence file (this column is renamed to `protein` by `readEvidenceFile` for simplicity). This means that for a given protein `makeProteinTable` would aggregate data from all peptides having this protein ID in the `Leading razor protein` column. We can change this default approach and, instead of razor proteins, we can use protein groups, as listed in `Proteins` column of the evidence file (this column is renamed to `protein_group` by `readEvidenceFile` to avoid confusion). The choice of column to aggregate protein data is controlled by parameter `protein.col` in the `makePeptideTable` function.
+By default `makeProteinTable` aggregates peptides to proteins using the high-flyer method of ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)). The protein intensity is the mean intensity of 3 top-intensity peptides associated with the given protein (or group of proteins). The peptide-to-protein aggregation method is controlled by the parameter `aggregate.fun` in `makeProteinTable`. It points to an aggregator function.
 
-It might look surprising that protein/group selection is done at the peptide level, but this is where peptide-to-protein conversion table is build and stored in the output object. We want to have it in the peptide object, in case peptide-level analysis needs to find out which proteins or protein groups these peptides belong to. The peptide-to-protein table is then used by `makeProteinTable` to aggregate proteins. Hence, if we want to aggregate proteins by protein group, we need to do the following:
+The aggregator function has exactly the same format as in evidence-to-peptide aggregator (see [above][Evidence-to-peptide aggregation]). That is, it takes a two-dimentional matrix (columns are samples, rows are peptides) and calculates an aggregated vector. There are three aggregators in the package: the default `aggregateHifly` plus the same functions we used for evidence-to-peptide aggregation, `aggregateSum` and `aggregateMedian`.
 
-```{r protein_groups, eval=FALSE}
-pepdat.group <- makePeptideTable(evi, meta, protein.col="protein_group")
-prodat.group <- makeProteinTable(pepdat.group)
-```
-
-As a result, the object `prodat.group` will contain not individual proteins, but protein groups.
-
-## Alternative protein aggregation
-
-
+A user-defined function can be used to aggregate proteins. Please see [section on evidence-to-peptide aggregation][Evidence-to-peptide aggregation] for details.
 
 # Differential expression
 

@@ -29,7 +29,7 @@ devtools::install_github("bartongroup/proteusSILAC", username="MarekGierlinski",
 Finally, you can install proteus:
 
 ```r
-devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e", build_vignettes=TRUE)
+devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
 ```
 
 ## Tutorial

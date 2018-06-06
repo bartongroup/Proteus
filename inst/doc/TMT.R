@@ -1,6 +1,7 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 library(proteus)
 library(knitr)
+library(ggplot2)
 options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 

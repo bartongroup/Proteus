@@ -17,13 +17,13 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlabelled and TMT analysis
+This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. 
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")
 ```
 
-Here we use example data distributed in a separate package *proteusTMT*, which needs loading first:
+Here, we are only going to point out the differences between unlabelled and TMT analysis. For this, we use data from [Crozier et al. 2017](http://www.mcponline.org/content/16/12/2254.long), Pride accession [PXD005968](ttps://www.ebi.ac.uk/pride/archive/projects/PXD005968). These data are distributed in a separate package *proteusTMT*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusTMT, warn.conflicts=FALSE)

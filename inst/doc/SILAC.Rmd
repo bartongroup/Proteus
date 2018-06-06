@@ -17,13 +17,13 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. Here, we are only going to point out the differences between unlabelled and SILAC analysis
+This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package.
 
 ```{r, eval=FALSE}
 vignette("unlabelled", package="proteus")
 ```
 
-Here we use example data distributed in a separate package *proteusSILAC*, which needs loading first:
+Here, we are only going to point out the differences between unlabelled and SILAC analysis. For this, we use a small subset of data from [Ly et al. (2018)](https://wellcomeopenresearch.org/articles/3-51/). These data are distributed in a separate package *proteusSILAC*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusSILAC, warn.conflicts=FALSE)

@@ -21,7 +21,7 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. It uses example data distributed in a package *proteusUnlabelled*, which needs loading first:
+This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk and Matthias Trost. The data are distributed in a package *proteusUnlabelled*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusUnlabelled, warn.conflicts=FALSE)
@@ -485,7 +485,7 @@ This function creates a data frame with DE results.
 head(res)
 ```
 
-Before `limma` is called, intensity data are transformed using the `transform.fun` function (a parameter of `limmaDE`). The default value for this transformation is `log10`. Therefore, by default, the column `logFC` in the output data frame contains log10(M_1/M_2), where M_k represent the mean of condition k. If you need log2-based fold change, you can use `transform.fun=log2`.
+Before `limma` is called, intensity data are transformed using the `transform.fun` function (a parameter of `limmaDE`). The default value for this transformation is `log10`. Therefore, by default, the column `logFC` in the output data frame contains $\log_{10}(M_1/M_2)$, where $M_k$ represent the mean of condition $k$. If you need log2-based fold change, you can use `transform.fun=log2`.
 
 The `significant` column indicates significantly differentially expressed proteins, based on the Benjamini-Hochberg corrected p-values (column `adj.P.Val`) and the significance level defined when calling `limmaDE` (`sig.level=0.05`). It allows for simple filtering of the significant results (below we show only the most important columns, for simplicity):
 

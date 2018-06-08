@@ -23,9 +23,10 @@ expression.}
 \value{
 A data frame with DE results. "logFC" column is a log-fold-change
   (using the \code{transform.fun}). Two columns with mean log-intensity
-  (again, using \code{transform.fun}) are added. Attributes contain
-  additional information about the transformation function, significance
-  level, formula and conditions.
+  (again, using \code{transform.fun}) and two columns with the number of good
+  replicates (per condition) are added. Attributes contain additional
+  information about the transformation function, significance level, formula
+  and conditions.
 }
 \description{
 \code{limmaDE} is a wrapper around \code{\link{limma}} to perform a

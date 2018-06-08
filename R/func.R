@@ -1403,9 +1403,10 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #' @param sig.level Significance level for rejecting the null hypothesis.
 #' @return A data frame with DE results. "logFC" column is a log-fold-change
 #'   (using the \code{transform.fun}). Two columns with mean log-intensity
-#'   (again, using \code{transform.fun}) are added. Attributes contain
-#'   additional information about the transformation function, significance
-#'   level, formula and conditions.
+#'   (again, using \code{transform.fun}) and two columns with the number of good
+#'   replicates (per condition) are added. Attributes contain additional
+#'   information about the transformation function, significance level, formula
+#'   and conditions.
 #'
 #' @examples
 #' library(proteusUnlabelled)
@@ -1450,6 +1451,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
     m[which(is.nan(m))] <- NA
     res[, cname] <- m
   }
+
+  # add columns with number of good replicates
+  ngood <- reshape2::dcast(pdat$stats, id ~ condition, fun.aggregate=sum, value.var="ngood")
+  names(ngood)[2:ncol(ngood)] <- paste0("ngood_", names(ngood)[2:ncol(ngood)])
+  res <- merge(res, ngood, by.x="protein", by.y="id")
 
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level
@@ -1526,6 +1532,10 @@ limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.0
   colnames(res)[1] <- pdat$content
   res$significant <- res$adj.P.Val <= sig.level
   rownames(res) <- c()
+
+  # add column with number of good replicates
+  ngood <- pdat$stats[pdat$stats$condition == condition, c("id", "ngood")]
+  res <- merge(res, ngood, by.x="protein", by.y="id")
 
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level

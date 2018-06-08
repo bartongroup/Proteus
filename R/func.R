@@ -344,7 +344,7 @@ readProteinGroups <- function(file, meta, measure.cols=NULL, data.cols=proteinCo
     names(measure.cols) <- meta$sample
   }
 
-  dat <- readEvidenceFile(file, measure.cols=measure.cols, data.cols=proteinColumns)
+  dat <- readEvidenceFile(file, measure.cols=measure.cols, data.cols=data.cols)
   tab <- as.matrix(dat[names(measure.cols)])
   tab[tab==0] <- NA
   tab[is.nan(tab)] <- NA

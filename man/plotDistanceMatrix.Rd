@@ -25,8 +25,8 @@ Computes a distance matrix and plots it as a shade-plot. The default distance
 is Pearson's correlation coefficient. Other methods will be introduced later.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotDistanceMatrix(pepdat)
 
 }

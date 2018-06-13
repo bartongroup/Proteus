@@ -21,23 +21,25 @@ install.packages("devtools")
 In order to run examples or vignette code, additional packages with example data need to be installed:
 
 ```r
-devtools::install_github("bartongroup/proteusUnlabelled", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
-devtools::install_github("bartongroup/proteusTMT", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
-devtools::install_github("bartongroup/proteusSILAC", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
+devtools::install_github("bartongroup/proteusLabelFree")
+devtools::install_github("bartongroup/proteusTMT")
+devtools::install_github("bartongroup/proteusSILAC")
 ```
 
 Finally, you can install proteus:
 
 ```r
-devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e")
+devtools::install_github("bartongroup/Proteus", username="MarekGierlinski", auth_token = "7f457d5e442ac05d675c8de77ac6c7bea696d32e", build_vignettes = TRUE)
 ```
+
+Note: use `build_vignettes = FALSE` if you run into problems with vignettes installation.
 
 ## Tutorial
 
-Proteus contains tutorial vignettes. We suggest starting with the comprehensive tutorial for unlabelled proteomics:
+Proteus contains tutorial vignettes. We suggest starting with the comprehensive tutorial for label-free proteomics:
 
 ```r
-vignette("unlabelled", package="proteus")
+vignette("proteus", package="proteus")
 ```
 
 There are additional, shorter vignettes, showing the specifics of using *Proteus* with TMT and SILAC data:

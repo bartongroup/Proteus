@@ -28,8 +28,8 @@ mean of these three rows. This is the estimated protein intensity. }
 }
 \examples{
 \dontrun{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
 }
 }

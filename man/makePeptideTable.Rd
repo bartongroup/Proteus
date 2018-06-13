@@ -7,7 +7,7 @@
 makePeptideTable(evi, meta, sequence.col = c("sequence", "modified_sequence"),
   protein.col = c("protein", "protein_group"),
   measure.cols = measureColumns, aggregate.fun = aggregateSum, ...,
-  experiment.type = c("unlabelled", "TMT", "SILAC"), ncores = 4)
+  experiment.type = c("label-free", "TMT", "SILAC"), ncores = 4)
 }
 \arguments{
 \item{evi}{Evidence table created with \code{\link{readEvidenceFile}}.}
@@ -29,7 +29,7 @@ sequence/sample.}
 
 \item{...}{Additional parameters passed to the aggregate function}
 
-\item{experiment.type}{Type of the experiment, "unlabelled", "TMT" or
+\item{experiment.type}{Type of the experiment, "label-free", "TMT" or
 "SILAC".}
 
 \item{ncores}{Number of cores for parallel processing}
@@ -45,7 +45,7 @@ corresponding to peptide sequences.
 }
 \details{
 The evidence file contains a column called "Experiment" and one or more
-columns with measure values. In case of unlabelled experiment there is only
+columns with measure values. In case of label-free experiment there is only
 one measure column: "Intensity". In case of TMT experiment there are several
 measure columns, usually called "Reporter intensity 0", "Reporter intensity
 1", and so on. \code{makePeptideTable} will combine "Experiment" and measure
@@ -62,7 +62,7 @@ these measure values are aggregated is controlled by the parameter
 There are two aggregation functions provided in this package:
 \code{\link{aggregateMedian}} and \code{\link{aggregateSum}}. Depending on
 the needs, the user can provide any arbitrary function to perform
-aggregation.  We recommend using \code{aggregateSum} for unlabelled and TMT
+aggregation.  We recommend using \code{aggregateSum} for label-free and TMT
 experiments and \code{aggregateMedian} for SILAC experiments.
 
 The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
@@ -91,8 +91,8 @@ evidence data. This makes selection of samples for downstream processing
 easy: select only required rows in the metadata data frame.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 pepdat <- makePeptideTable(evi, meta, ncores=2)
 
 }

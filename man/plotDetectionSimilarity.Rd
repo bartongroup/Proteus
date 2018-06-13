@@ -28,8 +28,8 @@ as the size of the intersection divided by the size of the union. This plot
 can be used to assess quality of data.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotDetectionSimilarity(pepdat)
 
 

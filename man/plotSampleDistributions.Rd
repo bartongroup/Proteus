@@ -49,8 +49,8 @@ A \code{ggplot} object.
 distribution for each sample.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotSampleDistributions(prodat)
 plotSampleDistributions(normalizeData(prodat))
 

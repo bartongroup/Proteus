@@ -10,7 +10,7 @@ measureColumns
 }
 \description{
 \code{measureColumns} contains measurement columns from evidence file. In
-case of unlabelled data, there is only one column: Intensity.
+case of label-free data, there is only one column: Intensity.
 }
 \examples{
 str(measureColumns)

@@ -46,8 +46,8 @@ A \code{ggplot} object.
 usually known as MA plot.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 plotFID(prodat.med)
 

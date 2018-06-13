@@ -26,8 +26,8 @@ intensity. Each box represents one sample. White boxes show derived protein
 intensities (if \code{prodat} is provided).
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 

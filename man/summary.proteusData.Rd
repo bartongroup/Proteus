@@ -18,8 +18,8 @@ Text output with object summary
 Summary of \code{proteusData} object
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 summary(prodat)
 
 }

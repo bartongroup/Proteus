@@ -44,8 +44,8 @@ the length of the vector should be the same as the number of columns in
 \code{wp}.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat <- makeProteinTable(pepdat.clean, ncores=2)
 
 }

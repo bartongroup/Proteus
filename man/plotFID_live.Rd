@@ -22,8 +22,8 @@ usually known as MA plot.
 }
 \examples{
 library(shiny)
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med,sig.level = 0.05)
 \dontrun{

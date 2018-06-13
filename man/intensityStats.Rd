@@ -17,8 +17,8 @@ A data frame with several statistics.
 points for peptide or protein intensities.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 stats <- intensityStats(prodat)
 
 }

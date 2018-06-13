@@ -38,8 +38,8 @@ A \code{ggplot} object.
 log-intensity.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotMV(prodat, with.loess=TRUE)
 
 }

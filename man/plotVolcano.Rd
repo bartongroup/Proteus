@@ -36,8 +36,8 @@ A \code{ggplot} object.
 \code{\link{stat_binhex}} function from ggplot2 to make a hexagonal heatmap.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med)
 plotVolcano(res)

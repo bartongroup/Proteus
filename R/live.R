@@ -171,8 +171,8 @@ allProteinTable <- function(res) {
 #'
 #' @examples
 #' library(shiny)
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
 #' \dontrun{
@@ -265,8 +265,8 @@ plotVolcano_live <- function(pdat, res, max_points=100){
 #'
 #' @examples
 #' library(shiny)
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med,sig.level = 0.05)
 #' \dontrun{

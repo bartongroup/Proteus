@@ -5,7 +5,7 @@
 \title{\code{proteusData} constructor}
 \usage{
 proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
-  npep = NULL, type = "unlabelled", sequence.col = "sequence",
+  npep = NULL, type = "label-free", sequence.col = "sequence",
   protein.col = "protein", peptide.aggregate.fun = NULL,
   peptide.aggregate.parameters = NULL, protein.aggregate.fun = NULL,
   protein.aggregate.parameters = NULL, min.peptides = NULL,
@@ -32,7 +32,7 @@ columns}
 
 \item{npep}{A data frame with number of peptides per protein}
 
-\item{type}{Type of experiment: "unlabelled" or "SILAC"}
+\item{type}{Type of experiment: "label-free" or "SILAC"}
 
 \item{sequence.col}{Name of the sequence used, either "sequence" or "modified_sequence"}
 

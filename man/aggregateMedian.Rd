@@ -20,8 +20,8 @@ median for each column of \code{wp}.
 }
 \examples{
 \dontrun{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateMedian)
 }
 }

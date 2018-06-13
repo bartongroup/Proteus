@@ -1,7 +1,7 @@
 Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
-Version: 0.2.2
+Version: 0.2.3
 Depends: R (>= 3.4)
 Author: MG
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>
@@ -26,7 +26,7 @@ Imports:
     parallel,
     shiny,
     DT
-Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusUnlabelled, proteusSILAC
+Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusLabelFree, proteusSILAC
 VignetteBuilder: knitr
 biocViews: Proteomics, MassSpectrometry
 Language: en-GB

@@ -28,15 +28,15 @@ reverse sequences are filtered out.
 \details{
 There are two parameters controlling which columns are read from the evidence
 file. Parameter \code{measure.cols} selects columns with measurements: these
-are intensities (unlabelled, TMT) or ratios (SILAC). In the simplest case of
-unlabelled data, there is only one measure column: "Intensity". Parameter
+are intensities (label-free, TMT) or ratios (SILAC). In the simplest case of
+label-free data, there is only one measure column: "Intensity". Parameter
 \code{data.columns} selects all other columns read from the evidence file.
 There are two default lists, supplied with the package, appropriate for an
-unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
+label-free experiment, \code{measureColumns} and \code{evidenceColumns}.
 }
 \examples{
-library(proteusUnlabelled)
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+library(proteusLabelFree)
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evi <- readEvidenceFile(evidenceFile)
 
 }

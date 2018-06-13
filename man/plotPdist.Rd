@@ -23,8 +23,8 @@ A \code{ggplot} object.
 \code{\link{limmaDE}}.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med)
 plotPdist(res)

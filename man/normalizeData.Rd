@@ -27,8 +27,8 @@ The normalizing function, specified by \code{norm.fun} needs to
   \code{normalizeQuantiles} from the \code{limma} package.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat, norm.fun=normalizeMedian)
 
 }

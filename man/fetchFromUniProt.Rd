@@ -36,8 +36,8 @@ parameter, unless alternative names are provided in parameter
 \code{col.names}. The \code{id} column is added by default.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 
 # Extract UniProt identifiers from protein IDs
 unis <- sapply(as.character(prodat$proteins), function(prot) {

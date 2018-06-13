@@ -44,8 +44,8 @@ perform differential expression between two conditions. For more complicated
 designs we recommend using \code{\link{limma}} functions directly.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 res <- limmaDE(prodat.med)
 

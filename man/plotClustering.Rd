@@ -17,8 +17,8 @@ Creates a plot
 hierarchical clustering.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotClustering(pepdat)
 
 }

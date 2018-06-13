@@ -33,8 +33,8 @@ function of the condition and replicate. When multiple IDs are entered, the
 mean and standard error is plotted.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 prodat.med <- normalizeData(prodat)
 plotIntensities(prodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
 

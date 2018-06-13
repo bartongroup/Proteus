@@ -18,8 +18,8 @@ Normalized matrix.
 medians. It should be used with \code{\link{normalizeData}} function.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 normtab <- normalizeMedian(prodat$tab)
 
 }

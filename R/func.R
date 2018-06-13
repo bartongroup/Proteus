@@ -50,7 +50,7 @@ evidenceColumns <- list(
 #' Measure columns
 #'
 #' \code{measureColumns} contains measurement columns from evidence file. In
-#' case of unlabelled data, there is only one column: Intensity.
+#' case of label-free data, there is only one column: Intensity.
 #'
 #' @examples
 #' str(measureColumns)
@@ -89,7 +89,7 @@ proteinColumns <- list(
 #' @param proteins A character vector with protein names
 #' @param measures A character vector with names of intensity and/or ratio
 #'   columns
-#' @param type Type of experiment: "unlabelled" or "SILAC"
+#' @param type Type of experiment: "label-free" or "SILAC"
 #' @param npep A data frame with number of peptides per protein
 #' @param sequence.col Name of the sequence used, either "sequence" or "modified_sequence"
 #' @param protein.col Name of the protein column used, either "protein" or "protein_group"
@@ -105,7 +105,7 @@ proteinColumns <- list(
 #'
 #' @return A \code{proteusData} object.
 proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, measures,
-                        npep=NULL, type="unlabelled", sequence.col="sequence", protein.col="protein",
+                        npep=NULL, type="label-free", sequence.col="sequence", protein.col="protein",
                         peptide.aggregate.fun=NULL, peptide.aggregate.parameters=NULL,
                         protein.aggregate.fun=NULL, protein.aggregate.parameters=NULL,
                         min.peptides=NULL, norm.fun=identity) {
@@ -113,7 +113,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
     content %in% c("peptide", "protein", "other"),
-    type %in% c("unlabelled", "SILAC", "TMT"),
+    type %in% c("label-free", "SILAC", "TMT"),
     sequence.col %in% c("sequence", "modified_sequence"),
     protein.col %in% c("protein", "protein_group")
   )
@@ -183,8 +183,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
 #' @return Text output with object summary
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' summary(prodat)
 #'
 #' @export
@@ -222,7 +222,7 @@ summary.proteusData <- function(object, ...) {
 #' @export
 #'
 #' @examples
-#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 #' evidence.columns <- readColumnNames(evidenceFile)
 #' evidence.columns
 readColumnNames <- function(file) {
@@ -240,11 +240,11 @@ readColumnNames <- function(file) {
 #'
 #' There are two parameters controlling which columns are read from the evidence
 #' file. Parameter \code{measure.cols} selects columns with measurements: these
-#' are intensities (unlabelled, TMT) or ratios (SILAC). In the simplest case of
-#' unlabelled data, there is only one measure column: "Intensity". Parameter
+#' are intensities (label-free, TMT) or ratios (SILAC). In the simplest case of
+#' label-free data, there is only one measure column: "Intensity". Parameter
 #' \code{data.columns} selects all other columns read from the evidence file.
 #' There are two default lists, supplied with the package, appropriate for an
-#' unlabelled experiment, \code{measureColumns} and \code{evidenceColumns}.
+#' label-free experiment, \code{measureColumns} and \code{evidenceColumns}.
 #'
 #'
 #' @param file File name.
@@ -256,8 +256,8 @@ readColumnNames <- function(file) {
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#' library(proteusLabelFree)
+#' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 #' evi <- readEvidenceFile(evidenceFile)
 #'
 #' @export
@@ -332,8 +332,8 @@ readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=eviden
 #' @return A \code{proteusData} object with protein intensity data.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusUnlabelled")
+#' library(proteusLabelFree)
+#' proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusLabelFree")
 #' prot.MQ <- readProteinGroups(proteinGroupsFile, meta)
 #'
 #' @export
@@ -380,7 +380,7 @@ parameterString <- function(...) {
 #' @details
 #'
 #' The evidence file contains a column called "Experiment" and one or more
-#' columns with measure values. In case of unlabelled experiment there is only
+#' columns with measure values. In case of label-free experiment there is only
 #' one measure column: "Intensity". In case of TMT experiment there are several
 #' measure columns, usually called "Reporter intensity 0", "Reporter intensity
 #' 1", and so on. \code{makePeptideTable} will combine "Experiment" and measure
@@ -397,7 +397,7 @@ parameterString <- function(...) {
 #' There are two aggregation functions provided in this package:
 #' \code{\link{aggregateMedian}} and \code{\link{aggregateSum}}. Depending on
 #' the needs, the user can provide any arbitrary function to perform
-#' aggregation.  We recommend using \code{aggregateSum} for unlabelled and TMT
+#' aggregation.  We recommend using \code{aggregateSum} for label-free and TMT
 #' experiments and \code{aggregateMedian} for SILAC experiments.
 #'
 #' The aggregate function should be in form: \code{function(wp, ...)}. \code{wp}
@@ -437,21 +437,21 @@ parameterString <- function(...) {
 #' @param aggregate.fun A function to aggregate pepetides with the same
 #'   sequence/sample.
 #' @param ... Additional parameters passed to the aggregate function
-#' @param experiment.type Type of the experiment, "unlabelled", "TMT" or
+#' @param experiment.type Type of the experiment, "label-free", "TMT" or
 #'   "SILAC".
 #' @param ncores Number of cores for parallel processing
 #' @return A \code{proteusData} object, containing peptide intensities and
 #'   metadata.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' pepdat <- makePeptideTable(evi, meta, ncores=2)
 #'
 #' @export
 makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_sequence"),
                              protein.col=c("protein", "protein_group"), measure.cols=measureColumns,
-                             aggregate.fun=aggregateSum, ..., experiment.type=c("unlabelled", "TMT", "SILAC"),
+                             aggregate.fun=aggregateSum, ..., experiment.type=c("label-free", "TMT", "SILAC"),
                              ncores = 4) {
 
   sequence.col <- match.arg(sequence.col)
@@ -588,8 +588,8 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
 #'   metadata.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat <- makeProteinTable(pepdat.clean, ncores=2)
 #'
 #' @export
@@ -675,8 +675,8 @@ makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
 #'
 #' @examples
 #' \dontrun{
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateHifly, hifly=3)
 #' }
 #' @export
@@ -707,8 +707,8 @@ aggregateHifly <- function(wp, hifly=3) {
 #'
 #' @examples
 #' \dontrun{
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateMedian)
 #' }
 #' @export
@@ -731,8 +731,8 @@ aggregateMedian <- function(wp) {
 #'
 #' @examples
 #' \dontrun{
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat <- makeProteinTable(pepdat.clean, aggregate.fun=aggregateSum)
 #' }
 #' @export
@@ -784,8 +784,8 @@ aggregateSum <- function(wp) {
 #' @return A \code{proteusData} with annotation field added.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #'
 #' # annotations.id is a data frame with annotations
 #' prodat <- annotateProteins(prodat, annotations.id)
@@ -820,8 +820,8 @@ annotateProteins <- function(pdat, annotation) {
 #' @return Normalized matrix.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' normtab <- normalizeMedian(prodat$tab)
 #'
 #' @export
@@ -850,8 +850,8 @@ normalizeMedian <- function(tab) {
 #'   \code{normalizeQuantiles} from the \code{limma} package.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat, norm.fun=normalizeMedian)
 #'
 #' @export
@@ -950,8 +950,8 @@ normalizeTMT <- function(pdat, max.iter=50, eps=1e-5) {
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotDistanceMatrix(pepdat)
 #'
 #' @export
@@ -983,8 +983,8 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
 #' @return Creates a plot
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotClustering(pepdat)
 #'
 #' @export
@@ -1011,8 +1011,8 @@ plotClustering <- function(pdat) {
 #'   detected in each sample.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotCount(pepdat)
 #'
 #' @export
@@ -1045,8 +1045,8 @@ plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
 #' @return Jaccard similarity between x and y
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' sim <- jaccardSimilarity(pepdat$tab[,1], pepdat$tab[,2])
 #'
 #' @export
@@ -1075,8 +1075,8 @@ jaccardSimilarity <- function(x, y) {
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotDetectionSimilarity(pepdat)
 #'
 #'
@@ -1125,8 +1125,8 @@ plotDetectionSimilarity <- function(pdat, bin.size=0.01, text.size=12, plot.grid
 #' @export
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotSampleDistributions(prodat)
 #' plotSampleDistributions(normalizeData(prodat))
 #'
@@ -1181,8 +1181,8 @@ function(pdat, title="", method=c("violin", "dist", "box"), x.text.size=7, n.gri
 #' @return A data frame with several statistics.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' stats <- intensityStats(prodat)
 #'
 #' @export
@@ -1214,8 +1214,8 @@ intensityStats <- function(pdat) {
 #'   replicate is available (TRUE) or if all replicates are missing (FALSE).
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' detect <- goodData(prodat)
 #'
 #' @export
@@ -1252,8 +1252,8 @@ goodData <- function(pdat) {
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' plotMV(prodat, with.loess=TRUE)
 #'
 #' @export
@@ -1316,8 +1316,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' plotIntensities(prodat.med, id='sp|P26263|PDC6_YEAST', log=TRUE)
 #'
@@ -1409,8 +1409,8 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
 #'   and conditions.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
 #'
@@ -1569,8 +1569,8 @@ limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.0
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' plotFID(prodat.med)
 #'
@@ -1653,8 +1653,8 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
 #' plotPdist(res)
@@ -1687,8 +1687,8 @@ plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' res <- limmaDE(prodat.med)
 #' plotVolcano(res)
@@ -1751,8 +1751,8 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #' prodat.med <- normalizeData(prodat)
 #' plotProtPeptides(pepdat.clean, 'sp|P26263|PDC6_YEAST', prodat.med)
 #'

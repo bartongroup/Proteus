@@ -47,8 +47,8 @@ data frame correspond one-to-one to the rows in \code{pdat$tab} and
 \code{pdat$detect}, if pdat contains proteins (not peptides).
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 
 # annotations.id is a data frame with annotations
 prodat <- annotateProteins(prodat, annotations.id)

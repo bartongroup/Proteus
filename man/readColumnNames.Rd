@@ -16,7 +16,7 @@ A vector with column names.
 Read column names from a tab-delimited text file
 }
 \examples{
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evidence.columns <- readColumnNames(evidenceFile)
 evidence.columns
 }

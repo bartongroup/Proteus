@@ -46,8 +46,8 @@ tryQuery <- function(url, maxtry=5) {
 #' @export
 #'
 #' @examples
-#' library(proteusUnlabelled)
-#' data(proteusUnlabelled)
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
 #'
 #' # Extract UniProt identifiers from protein IDs
 #' unis <- sapply(as.character(prodat$proteins), function(prot) {

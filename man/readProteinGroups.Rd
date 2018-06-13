@@ -43,8 +43,8 @@ reading and processing the evidence file. Apart from the proteinGroups file
 name, a metadata data frame needs to be provided.
 }
 \examples{
-library(proteusUnlabelled)
-proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusUnlabelled")
+library(proteusLabelFree)
+proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusLabelFree")
 prot.MQ <- readProteinGroups(proteinGroupsFile, meta)
 
 }

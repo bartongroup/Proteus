@@ -21,8 +21,8 @@ A plot (\code{ggplot} object) of the number of peptides/proteins
 \code{plotCount} makes a plot of peptide/protein count per sample.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 plotCount(pepdat)
 
 }

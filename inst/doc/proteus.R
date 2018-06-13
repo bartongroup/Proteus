@@ -6,16 +6,16 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 
 ## ----load_data, echo=FALSE----------------------------------------------------
-library(proteusUnlabelled, warn.conflicts=FALSE)
-data(proteusUnlabelled)
+library(proteusLabelFree, warn.conflicts=FALSE)
+data(proteusLabelFree)
 
 ## ----load_data_dummy, eval=FALSE----------------------------------------------
-#  library(proteusUnlabelled)
-#  data(proteusUnlabelled)
+#  library(proteusLabelFree)
+#  data(proteusLabelFree)
 
 ## ----quick_start, eval=FALSE--------------------------------------------------
-#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
-#  metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
+#  metadataFile <- system.file("extdata", "metadata.txt", package="proteusLabelFree")
 #  
 #  evi <- readEvidenceFile(evidenceFile)
 #  meta <- read.delim(metadataFile, header=TRUE, sep="\t")
@@ -26,7 +26,7 @@ data(proteusUnlabelled)
 #  plotVolcano_live(prodat.med, res)
 
 ## ----read_evidence, eval=FALSE------------------------------------------------
-#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+#  evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 #  evi <- readEvidenceFile(evidenceFile)
 
 ## ----head_evidence------------------------------------------------------------
@@ -52,12 +52,12 @@ str(evidenceColumns)
 #  evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 
 ## ----evidence_column_names----------------------------------------------------
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evidence.columns <- readColumnNames(evidenceFile)
 evidence.columns
 
 ## ----metadata-----------------------------------------------------------------
-metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusLabelFree")
 meta <- read.delim(metadataFile, header=TRUE, sep="\t")
 
 ## ----show_metadata------------------------------------------------------------

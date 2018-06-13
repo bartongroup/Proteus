@@ -1,5 +1,5 @@
 ---
-title: "Using proteus R package: unlabelled data"
+title: "Using proteus R package: label-free data"
 author: "Marek Gierlinski"
 date: "`r Sys.Date()`"
 output: 
@@ -21,16 +21,16 @@ options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from unlabelled MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk and Matthias Trost. The data are distributed in a package *proteusUnlabelled*, which needs loading first:
+This tutorial demonstrates how to analyse data from label free MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk and Matthias Trost. The data are distributed in a package *proteusLabelFree*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
-library(proteusUnlabelled, warn.conflicts=FALSE)
-data(proteusUnlabelled)
+library(proteusLabelFree, warn.conflicts=FALSE)
+data(proteusLabelFree)
 ```
 
 ```{r load_data_dummy, eval=FALSE}
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 ```
 
 # Quick start
@@ -38,8 +38,8 @@ data(proteusUnlabelled)
 Here is a minimal example of data analysis in *Proteus*. You will need the evidence file from *MaxQuant* and a very simple text file with metadata  (see below how to create it). Then, you can get from the evidence file to differential expression in just a few steps.
 
 ```{r quick_start, eval=FALSE}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
-metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusLabelFree")
 
 evi <- readEvidenceFile(evidenceFile)
 meta <- read.delim(metadataFile, header=TRUE, sep="\t")
@@ -63,10 +63,10 @@ Alternatively, a metadata data frame (with the same columns) can be created with
 
 ## Read evidence file
 
-Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file from the package `proteusUnlabelled` (you need to install it if you want to follow this tutorial):
+Function `readEvidenceFile()` reads *MaxQuant* evidence file, filters out contaminants and reverse sequences. In this example we use the evidence file from the package `proteusLabelFree` (you need to install it if you want to follow this tutorial):
 
 ```{r read_evidence, eval=FALSE}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evi <- readEvidenceFile(evidenceFile)
 ```
 
@@ -92,7 +92,7 @@ The selection and naming of columns is controlled by two parameters in function 
 
 ### Measurements
 
-The default named list `measureColumns` describes evidence file columns that contain measurements. In case of unlabelled experiment there is only one such column, called `Intensity`.
+The default named list `measureColumns` describes evidence file columns that contain measurements. In case of label-free experiment there is only one such column, called `Intensity`.
 
 ```{r str_measure_columns}
 str(measureColumns)
@@ -133,17 +133,17 @@ evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
 To quickly check what the column names are in a given evidence file, we provide a simple function to do this:
 
 ```{r evidence_column_names}
-evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusUnlabelled")
+evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evidence.columns <- readColumnNames(evidenceFile)
 evidence.columns
 ```
 
 ## Metadata
 
-We also need metadata. In our example it is stored in the file in the `proteusUnlabelled` package:
+We also need metadata. In our example it is stored in the file in the `proteusLabelFree` package:
 
 ```{r metadata}
-metadataFile <- system.file("extdata", "metadata.txt", package="proteusUnlabelled")
+metadataFile <- system.file("extdata", "metadata.txt", package="proteusLabelFree")
 meta <- read.delim(metadataFile, header=TRUE, sep="\t")
 ```
 
@@ -165,7 +165,7 @@ Metadata object should be a data frame with at least four columns: `experiment`,
 unique(evi$experiment)
 ```
 
-- Column `measure` refers to columns with measurements in the evidence file. In case of the unlabelled experiment there is only one measure column, "Intensity". In multiplexed data (e.g. TMT) there can be several measurements columns.
+- Column `measure` refers to columns with measurements in the evidence file. In case of the label-free experiment there is only one measure column, "Intensity". In multiplexed data (e.g. TMT) there can be several measurements columns.
 
 - Column `sample` should contain (short) names corresponding to a given experiment and measure. For clarity, we recommend a short name consisting of a condition and replicate (in a simple design where such decomposition is possible). Sample identifies a given experiment/measure uniquely, so sample names must be unique.
 
@@ -177,7 +177,7 @@ Other columns can be added and used for the downstream analysis. Here, we added 
 
 ## Create a peptide dataset
 
-We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` aggregates peptide data form the evidence into a single table, where rows correspond to peptide sequences and columns correspond to samples (as provided in metadata). Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added in unlabelled data (we note that this might not be the best approach due to possible high variance in peptide data - more to come soon).
+We can now create a peptide data object from the evidence and metadata. The function `makePeptideTable()` aggregates peptide data form the evidence into a single table, where rows correspond to peptide sequences and columns correspond to samples (as provided in metadata). Where there are multiple peptides corresponding to the same sequence/sample (e.g., with different charges) their intensities are added in label-free data (we note that this might not be the best approach due to possible high variance in peptide data - more to come soon).
 
 ```{r make_peptides, eval=FALSE}
 pepdat <- makePeptideTable(evi, meta)
@@ -259,7 +259,7 @@ plotClustering(pepdat.clean)
 
 # Protein data
 
-There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. For unlabelled data, we quantify protein abundances using a simple, but robust method of high-flyers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
+There are many approaches to aggregating peptides into proteins. For simplicity, we assign peptides to proteins based on the Leading Razor Protein. For label-free data, we quantify protein abundances using a simple, but robust method of high-flyers ([Silva et al. 2006](http://www.mcponline.org/content/5/1/144.full.pdf)).
 
 ## Create protein dataset
 

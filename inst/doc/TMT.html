@@ -264,13 +264,20 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 ## 957   Tb927.10.6330  0.4913507 -3.127941  10.89731 1.826511e-05 0.01959362
 ## 3110   Tb927.3.4960  0.3927763 -3.113257  10.50626 2.298460e-05 0.01959362
 ## 3954   Tb927.6.2850  0.4885356 -3.045062  11.26839 1.478651e-05 0.01959362
-##             B significant   mean_C0   mean_C5
-## 1602 3.939548        TRUE -3.376685 -2.824362
-## 2044 3.955338        TRUE -3.412561 -2.695360
-## 3985 3.950390        TRUE -3.384898 -4.022797
-## 957  3.309073        TRUE -3.373616 -2.882266
-## 3110 3.133195        TRUE -3.309645 -2.916869
-## 3954 3.467237        TRUE -3.289330 -2.800794</code></pre>
+##             B significant   mean_C0   mean_C5 ngood_C0 ngood_C1 ngood_C2
+## 1602 3.939548        TRUE -3.376685 -2.824362        3        3        3
+## 2044 3.955338        TRUE -3.412561 -2.695360        3        3        3
+## 3985 3.950390        TRUE -3.384898 -4.022797        3        3        3
+## 957  3.309073        TRUE -3.373616 -2.882266        3        3        3
+## 3110 3.133195        TRUE -3.309645 -2.916869        3        3        3
+## 3954 3.467237        TRUE -3.289330 -2.800794        3        3        3
+##      ngood_C3 ngood_C4 ngood_C5 ngood_C6 ngood_C7 ngood_C8 ngood_C9
+## 1602        3        3        3        3        3        3        3
+## 2044        3        3        3        3        3        3        3
+## 3985        3        3        3        3        3        3        3
+## 957         3        3        3        3        3        3        3
+## 3110        3        3        3        3        3        3        3
+## 3954        3        3        3        3        3        3        3</code></pre>
 <p>And the top protein from the table:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prot &lt;-<span class="st"> </span><span class="kw">as.character</span>(res<span class="op">$</span>protein[<span class="dv">1</span>])
 <span class="kw">plotIntensities</span>(prodat.norm, <span class="dt">id=</span>prot)</code></pre></div>

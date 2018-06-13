@@ -18,8 +18,8 @@ A data frame with rows corresponding to peptides/proteins and columns
 Create a table indicating good data.
 }
 \examples{
-library(proteusUnlabelled)
-data(proteusUnlabelled)
+library(proteusLabelFree)
+data(proteusLabelFree)
 detect <- goodData(prodat)
 
 }

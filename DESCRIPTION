@@ -16,6 +16,7 @@ Imports:
     ggplot2,
     ggExtra,
     gridExtra,
+    hexbin,
     dendextend,
     limma,
     methods,

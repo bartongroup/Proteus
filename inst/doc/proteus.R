@@ -150,7 +150,7 @@ annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
 annotations.id <- unique(annotations.id)
 
 ## ----annotate_proteins--------------------------------------------------------
-prodat <- annotateProteins(prodat, annotations.id)
+prodat.med <- annotateProteins(prodat.med, annotations.id)
 
 ## ----evi_column_names---------------------------------------------------------
 names(evi)

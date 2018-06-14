@@ -1463,6 +1463,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   names(ngood)[2:ncol(ngood)] <- paste0("ngood_", names(ngood)[2:ncol(ngood)])
   res <- merge(res, ngood, by.x="protein", by.y="id")
 
+  # add annotations
+  if(!is.null(pdat$annotation)) {
+    res <- merge(res, pdat$annotation, by="protein", all.x=TRUE)
+  }
+
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level
   attr(res, "formula") <- formula

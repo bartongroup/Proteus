@@ -366,10 +366,10 @@ annotations.id <- merge(ids, annotations, by.x="uniprot", by.y="id")
 annotations.id <- unique(annotations.id)
 ```
 
-The second command is to remove duplicated entries. This is the data frame we need. The function `annotateProteins` will add it to the `prodat` object.
+The second command is to remove duplicated entries. This is the data frame we need. The function `annotateProteins` will add it to the `prodat.med` object.
 
 ```{r annotate_proteins}
-prodat <- annotateProteins(prodat, annotations.id)
+prodat.med <- annotateProteins(prodat.med, annotations.id)
 ```
 
 The annotations are merged into `prodat` based on the `protein` column in the annotation data frame. They are stored in `prodat$annotation` and rows of this data frame correspond to the order of proteins in the intensity table.

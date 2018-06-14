@@ -10,6 +10,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<meta name="author" content="Marek Gierlinski" />
 
 
 <title>Using proteus R package: TMT data</title>
@@ -67,19 +68,20 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Using proteus R package: TMT data</h1>
+<h4 class="author"><em>Marek Gierlinski</em></h4>
 
 
 
-<p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the “unlabelled” tutorial first and familiarize themselves with the package.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;unlabelled&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteus&quot;</span>)</code></pre></div>
-<p>Here, we are only going to point out the differences between unlabelled and TMT analysis. For this, we use data from <a href="http://www.mcponline.org/content/16/12/2254.long">Crozier et al. 2017</a>, Pride accession <a href="ttps://www.ebi.ac.uk/pride/archive/projects/PXD005968">PXD005968</a>. These data are distributed in a separate package <em>proteusTMT</em>, which needs loading first:</p>
+<p>This tutorial demonstrates how to analyse data from TMT MS/MS experiment in <em>Proteus</em>. We strongly suggest the user should read the main tutorial first and familiarize themselves with the package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;proteus&quot;</span>)</code></pre></div>
+<p>Here, we are only going to point out the differences between label-free and TMT analysis. For this, we use data from <a href="http://www.mcponline.org/content/16/12/2254.long">Crozier et al. 2017</a>, Pride accession <a href="ttps://www.ebi.ac.uk/pride/archive/projects/PXD005968">PXD005968</a>. These data are distributed in a separate package <em>proteusTMT</em>, which needs loading first:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(proteusTMT)
 <span class="kw">data</span>(proteusTMT)</code></pre></div>
 <div id="input-data" class="section level1">
 <h1><span class="header-section-number">1</span> Input data</h1>
 <div id="columns-in-evidence-file" class="section level2">
 <h2><span class="header-section-number">1.1</span> Columns in evidence file</h2>
-<p>The default <code>measure.cols</code> object is designed for unlabelled data. For TMT data we need to specify all reporter intensity columns. In out example we have 10 reporter columns, numbered from 0 to 9:</p>
+<p>The default <code>measure.cols</code> object is designed for label-free data. For TMT data we need to specify all reporter intensity columns. In out example we have 10 reporter columns, numbered from 0 to 9:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">measCols &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;Reporter intensity &quot;</span>, <span class="dv">0</span><span class="op">:</span><span class="dv">9</span>)
 <span class="kw">names</span>(measCols) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;reporter_&quot;</span>, <span class="dv">0</span><span class="op">:</span><span class="dv">9</span>)</code></pre></div>
 <p>The resulting object is</p>
@@ -103,30 +105,37 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">evi &lt;-<span class="st"> </span><span class="kw">readEvidenceFile</span>(evidenceFile, <span class="dt">measure.cols=</span>measCols)</code></pre></div>
 <p>We do attach an example processed evidence data with the package, it is called <code>evi</code>. It contains all reported intensity columns:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(evi)</code></pre></div>
-<pre><code>##        sequence modified_sequence protein_group      proteins       protein
-## 1 AAAAAASVGSSNK   _AAAAAASVGSSNK_    Unmodified   Tb927.1.840   Tb927.1.840
-## 2  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 3  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 4  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 5  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-## 6  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310 Tb927.10.1310
-##   experiment charge reverse contaminant reporter_0 reporter_1 reporter_2
-## 1      E5016      2                             NA         NA     45.638
-## 2      E5015      2                        4079.90     5038.5   8193.700
-## 3      E5015      3                        1201.50     1824.5   3049.600
-## 4      E5016      2                        1075.00     3102.3   2391.800
-## 5      E5016      3                         594.79     1756.6   1663.700
-## 6      E5014      2                         961.38     1533.8   1059.900
-##   reporter_3 reporter_4 reporter_5 reporter_6 reporter_7 reporter_8 reporter_9
-## 1     190.24     83.692     55.347         NA     117.83     109.15      69.12
-## 2   10170.00   8853.500   7637.100    7555.20    5632.60    5961.00    6240.70
-## 3    4098.00   3595.300   2940.000    3060.60    2111.50    2433.60    2748.20
-## 4    2790.30   3421.500   2874.200    3057.50    2392.30    3070.20    3067.40
-## 5    1874.20   1809.300   1547.000    1719.60    1443.40    1905.20    1884.00
-## 6    1097.10    929.030   1036.400     729.57    1179.10     872.27     557.23</code></pre>
+<pre><code>##        sequence modified_sequence protein_group      proteins
+## 1 AAAAAASVGSSNK   _AAAAAASVGSSNK_    Unmodified   Tb927.1.840
+## 2  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310
+## 3  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310
+## 4  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310
+## 5  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310
+## 6  AAAAALLSALLR    _AAAAALLSALLR_    Unmodified Tb927.10.1310
+##         protein experiment charge reverse contaminant reporter_0
+## 1   Tb927.1.840      E5016      2                             NA
+## 2 Tb927.10.1310      E5015      2                        4079.90
+## 3 Tb927.10.1310      E5015      3                        1201.50
+## 4 Tb927.10.1310      E5016      2                        1075.00
+## 5 Tb927.10.1310      E5016      3                         594.79
+## 6 Tb927.10.1310      E5014      2                         961.38
+##   reporter_1 reporter_2 reporter_3 reporter_4 reporter_5 reporter_6
+## 1         NA     45.638     190.24     83.692     55.347         NA
+## 2     5038.5   8193.700   10170.00   8853.500   7637.100    7555.20
+## 3     1824.5   3049.600    4098.00   3595.300   2940.000    3060.60
+## 4     3102.3   2391.800    2790.30   3421.500   2874.200    3057.50
+## 5     1756.6   1663.700    1874.20   1809.300   1547.000    1719.60
+## 6     1533.8   1059.900    1097.10    929.030   1036.400     729.57
+##   reporter_7 reporter_8 reporter_9
+## 1     117.83     109.15      69.12
+## 2    5632.60    5961.00    6240.70
+## 3    2111.50    2433.60    2748.20
+## 4    2392.30    3070.20    3067.40
+## 5    1443.40    1905.20    1884.00
+## 6    1179.10     872.27     557.23</code></pre>
 </div>
 <div id="metadata" class="section level2">
-<h2><span class="header-section-number">1.3</span> <a id="Metadata"></a>Metadata</h2>
+<h2><span class="header-section-number">1.3</span> Metadata</h2>
 <p>Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metadataFile &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;metadata.txt&quot;</span>, <span class="dt">package=</span><span class="st">&quot;proteusTMT&quot;</span>)
 meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFile, <span class="dt">header=</span><span class="ot">TRUE</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</code></pre></div>
@@ -168,8 +177,10 @@ meta &lt;-<span class="st"> </span><span class="kw">read.delim</span>(metadataFi
 <p>It is possible to run <em>MaxQuant</em> for one experiment where conditions are encoded in reporter columns only. In this case the evidence file will not contain the column ‘Experiment’. <em>Proteus</em> can deal with such configuration. All you need is to remove the ‘experiment’ field from the default column list:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eviCols &lt;-<span class="st"> </span>evidenceColumns
 eviCols<span class="op">$</span>experiment &lt;-<span class="st"> </span><span class="ot">NULL</span></code></pre></div>
-<p>and use argument <code>data.cols = eviCols</code> in <code>readEvidenceFile</code> function. The ‘Experiment’ column will be skipped. Obviously, metadata should not contain ‘Experiment’ column either.</p>
-<p>Please note that in such case peptide and protein objects created by <em>Proteus</em> will contain a metadata data frame (<code>metadata</code> field in the object, see, e.g., <code>pepdat$metadata</code>) with column <code>experiment</code> filled with dummy values. This is done for easier internal processing. OK, we are lazy and it was easier to do it this way.</p>
+<p>and read evidence file with an additional argument:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">evi &lt;-<span class="st"> </span><span class="kw">readEvidenceFile</span>(evidenceFile, <span class="dt">measure.cols=</span>measCols, <span class="dt">data.cols =</span> eviCols)</code></pre></div>
+<p>The ‘Experiment’ column will be skipped. Obviously, metadata should not contain ‘Experiment’ column either.</p>
+<p>Please note that in such case peptide and protein objects created by <em>Proteus</em> will contain a metadata data frame (<code>metadata</code> field in the object, see, e.g., <code>pepdat$metadata</code>) with column <code>experiment</code> filled with dummy values. This is done for consistent internal processing. OK, we are lazy and it was easier to do it this way.</p>
 </div>
 </div>
 <div id="peptide-data" class="section level1">

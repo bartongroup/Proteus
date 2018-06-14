@@ -1,29 +1,30 @@
 ---
 title: "Using proteus R package: SILAC data"
+author: "Marek Gierlinski"
+package: "proteus"
 output: 
   rmarkdown::html_vignette:
     number_sections: true
 vignette: >
   %\VignetteIndexEntry{Using proteus R package}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 library(proteus)
 library(ggplot2)
 library(knitr)
-options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package.
+This tutorial demonstrates how to analyse data from SILAC MS/MS experiment in *Proteus*. We strongly suggest the user should read the main tutorial first and familiarize themselves with the package.
 
 ```{r, eval=FALSE}
-vignette("unlabelled", package="proteus")
+vignette("proteus")
 ```
 
-Here, we are only going to point out the differences between unlabelled and SILAC analysis. For this, we use a small subset of data from [Ly et al. (2018)](https://wellcomeopenresearch.org/articles/3-51/). These data are distributed in a separate package *proteusSILAC*, which needs loading first:
+Here, we are only going to point out the differences between label-free and SILAC analysis. For this, we use a small subset of data from [Ly et al. (2018)](https://wellcomeopenresearch.org/articles/3-51/). These data are distributed in a separate package *proteusSILAC*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusSILAC, warn.conflicts=FALSE)
@@ -39,7 +40,7 @@ data(proteusSILAC)
 
 ## Columns in evidence file
 
-The default `measure.cols` object is designed for unlabelled data. For SILAC data we need to specify isotope ratios. Our data contain M/L ratios:
+The default `measure.cols` object is designed for label-free data. For SILAC data we need to specify isotope ratios. Our data contain M/L ratios:
 
 ```{r measure_columns, cache=FALSE}
 measCols <- list(
@@ -73,7 +74,7 @@ Due to its large size we do not attach the SILAC evidence file to this package. 
 evi <- readEvidenceFile(evidenceFile, measure.cols=measCols, data.cols=eviCols, zeroes.are.missing=FALSE)
 ```
 
-Please note the argument `zeroes.are.missing=FALSE`. By default, `readEvidenceFile` assumes that zeroes represent missing data (which usually is true for unlabelled and TMT experiments). In this case we read ratios which, in theory, can be zeroes. In most cases its doesn't make any difference.
+Please note the argument `zeroes.are.missing=FALSE`. By default, `readEvidenceFile` assumes that zeroes represent missing data (which usually is true for label-free and TMT experiments). In this case we read ratios which, in theory, can be zeroes. In most cases its doesn't make any difference.
 
 We do attach an example of processed evidence data with this package, it is called `evi`. It contains all reported intensity columns:
 
@@ -126,7 +127,7 @@ plotCount(pepdat)
 
 ## Create protein dataset
 
-Now we create protein data. The `aggregate.fun=aggregateMedian` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default hi-flyer method which only works for unlabelled (or TMT) data.
+Now we create protein data. The `aggregate.fun=aggregateMedian` indicates that protein ratios are medians of constituent peptide ratios. This approach is appropriate for SILAC data, unlike the default hi-flyer method which only works for label-free (or TMT) data.
 
 ```{r make_proteins, eval=FALSE}
 prodat <- makeProteinTable(pepdat, aggregate.fun=aggregateMedian)

@@ -1,29 +1,30 @@
 ---
 title: "Using proteus R package: TMT data"
+author: "Marek Gierlinski"
+package: "proteus"
 output: 
   rmarkdown::html_vignette:
     number_sections: true
 vignette: >
   %\VignetteIndexEntry{Using proteus R package}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 library(proteus)
 library(knitr)
 library(ggplot2)
-options(width = 80)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the "unlabelled" tutorial first and familiarize themselves with the package. 
+This tutorial demonstrates how to analyse data from TMT MS/MS experiment in *Proteus*. We strongly suggest the user should read the main tutorial first and familiarize themselves with the package. 
 
 ```{r, eval=FALSE}
-vignette("unlabelled", package="proteus")
+vignette("proteus")
 ```
 
-Here, we are only going to point out the differences between unlabelled and TMT analysis. For this, we use data from [Crozier et al. 2017](http://www.mcponline.org/content/16/12/2254.long), Pride accession [PXD005968](ttps://www.ebi.ac.uk/pride/archive/projects/PXD005968). These data are distributed in a separate package *proteusTMT*, which needs loading first:
+Here, we are only going to point out the differences between label-free and TMT analysis. For this, we use data from [Crozier et al. 2017](http://www.mcponline.org/content/16/12/2254.long), Pride accession [PXD005968](ttps://www.ebi.ac.uk/pride/archive/projects/PXD005968). These data are distributed in a separate package *proteusTMT*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusTMT, warn.conflicts=FALSE)
@@ -39,7 +40,7 @@ data(proteusTMT)
 
 ## Columns in evidence file
 
-The default `measure.cols` object is designed for unlabelled data. For TMT data we need to specify all reporter intensity columns. In out example we have 10 reporter columns, numbered from 0 to 9:
+The default `measure.cols` object is designed for label-free data. For TMT data we need to specify all reporter intensity columns. In out example we have 10 reporter columns, numbered from 0 to 9:
 
 ```{r measure_columns, cache=FALSE}
 measCols <- paste0("Reporter intensity ", 0:9)
@@ -69,7 +70,7 @@ We do attach an example processed evidence data with the package, it is called `
 head(evi)
 ```
 
-## <a id="Metadata"></a>Metadata
+## Metadata
 
 Metadata for this experiment needs to specify all the reporter columns, experiments and corresponding condition and replicates:
 
@@ -91,9 +92,15 @@ eviCols <- evidenceColumns
 eviCols$experiment <- NULL
 ```
 
-and use argument `data.cols = eviCols` in `readEvidenceFile` function. The 'Experiment' column will be skipped. Obviously, metadata should not contain 'Experiment' column either.
+and read evidence file with an additional argument:
 
-Please note that in such case peptide and protein objects created by *Proteus* will contain a metadata data frame (`metadata` field in the object, see, e.g., `pepdat$metadata`) with column `experiment` filled with dummy values. This is done for easier internal processing. OK, we are lazy and it was easier to do it this way.
+```{r read_evidence_without_experiment, eval=FALSE}
+evi <- readEvidenceFile(evidenceFile, measure.cols=measCols, data.cols = eviCols)
+```
+
+The 'Experiment' column will be skipped. Obviously, metadata should not contain 'Experiment' column either.
+
+Please note that in such case peptide and protein objects created by *Proteus* will contain a metadata data frame (`metadata` field in the object, see, e.g., `pepdat$metadata`) with column `experiment` filled with dummy values. This is done for consistent internal processing. OK, we are lazy and it was easier to do it this way.
 
 # Peptide data
 

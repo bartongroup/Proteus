@@ -82,6 +82,18 @@ meta <- read.delim(metadataFile, header=TRUE, sep="\t")
 meta
 ```
 
+## No 'Experiment' column?
+
+It is possible to run *MaxQuant* for one experiment where conditions are encoded in reporter columns only. In this case the evidence file will not contain the column 'Experiment'. *Proteus* can deal with such configuration. All you need is to remove the 'experiment' field from the default column list:
+
+```{r evidence_without_experiment}
+eviCols <- evidenceColumns
+eviCols$experiment <- NULL
+```
+
+and use argument `data.cols = eviCols` in `readEvidenceFile` function. The 'Experiment' column will be skipped. Obviously, metadata should not contain 'Experiment' column either.
+
+Please note that in such case peptide and protein objects created by *Proteus* will contain a metadata data frame (`metadata` field in the object, see, e.g., `pepdat$metadata`) with column `experiment` filled with dummy values. This is done for easier internal processing. OK, we are lazy and it was easier to do it this way.
 
 # Peptide data
 

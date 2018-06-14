@@ -127,7 +127,7 @@ myColumns$protein <- "Leading Razor Protein"
 The new column list can be then used with `readEvidenceFile`:
 
 ```{r my_columns_evidence, eval=FALSE}
-evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
+evi_mz <- readEvidenceFile(evidenceFile, data.cols=myColumns)
 ```
 
 To quickly check what the column names are in a given evidence file, we provide a simple function to do this:
@@ -157,9 +157,9 @@ This metadata information will be attached to every peptide and protein object u
 
 ### Metadata columns
 
-Metadata object should be a data frame with at least four columns: `experiment`, `measure`, `sample` and `condition`.
+Metadata object should be a data frame with at least these columns: `experiment` (not always necessary), `measure`, `sample` and `condition`.
 
-- Column `experiment` should contain the same values as in the `Experiment` column in the evidence file. In our case there are 14 unique experiments. We can see all unique experiment names in the evidence data using `unique` function:
+- Column `experiment` should contain the same values as in the `Experiment` column in the evidence file. In case of multiplexed experiments it is possible to have an evidence file without the experiment column. In such case it should not be included in metadata (see `TMT` vignette for more details). Here, there are 14 unique experiments. We can see all unique experiment names in the evidence data using `unique` function:
 
 ```{r metadata_samples}
 unique(evi$experiment)

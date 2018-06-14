@@ -36,6 +36,10 @@ head(evi)
 ## ----show_metadata------------------------------------------------------------
 meta
 
+## ----evidence_without_experiment----------------------------------------------
+eviCols <- evidenceColumns
+eviCols$experiment <- NULL
+
 ## ----make_peptides, eval=FALSE------------------------------------------------
 #  pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, aggregate.fun=aggregateMedian, experiment.type="TMT")
 

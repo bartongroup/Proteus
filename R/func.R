@@ -458,10 +458,16 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   protein.col <- match.arg(protein.col)
   experiment.type <- match.arg(experiment.type)
 
-  # check if measure.cols are in the evidence file
+  # check if measure.cols, sequence.col and protein.col are in the evidence file
   measures <- names(measure.cols)
-  for(col in measures) {
+  for(col in c(measures, sequence.col, protein.col)) {
     if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
+  }
+
+  # dummy experiment if experiment column not present
+  if(!("experiment" %in% names(evi)) && !("experiment" %in% names(meta))) {
+    evi$experiment = "dummy"
+    meta$experiment = "dummy"
   }
 
   # test metadata integrity

@@ -49,7 +49,7 @@ str(evidenceColumns)
 #  myColumns$protein <- "Leading Razor Protein"
 
 ## ----my_columns_evidence, eval=FALSE------------------------------------------
-#  evi_mz <- readEvidenceFile(evidenceFile, columns=myColumns)
+#  evi_mz <- readEvidenceFile(evidenceFile, data.cols=myColumns)
 
 ## ----evidence_column_names----------------------------------------------------
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")

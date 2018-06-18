@@ -1461,11 +1461,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   # add columns with number of good replicates
   ngood <- reshape2::dcast(pdat$stats, id ~ condition, fun.aggregate=sum, value.var="ngood")
   names(ngood)[2:ncol(ngood)] <- paste0("ngood_", names(ngood)[2:ncol(ngood)])
-  res <- merge(res, ngood, by.x="protein", by.y="id")
+  res <- merge(res, ngood, by.x=pdat$content, by.y="id")
 
   # add annotations
   if(!is.null(pdat$annotation)) {
-    res <- merge(res, pdat$annotation, by="protein", all.x=TRUE)
+    res <- merge(res, pdat$annotation, by=pdat$content, all.x=TRUE)
   }
 
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
@@ -1546,7 +1546,12 @@ limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.0
 
   # add column with number of good replicates
   ngood <- pdat$stats[pdat$stats$condition == condition, c("id", "ngood")]
-  res <- merge(res, ngood, by.x="protein", by.y="id")
+  res <- merge(res, ngood, by.x=pdat$content, by.y="id")
+
+  # add annotations
+  if(!is.null(pdat$annotation)) {
+    res <- merge(res, pdat$annotation, by=pdat$content, all.x=TRUE)
+  }
 
   attr(res, "transform.fun") <- deparse(substitute(transform.fun))
   attr(res, "sig.level") <- sig.level

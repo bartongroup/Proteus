@@ -600,7 +600,7 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
 #'
 #' @export
 makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
-                             min.peptides=1, ncores=4) {
+                             min.peptides=2, ncores=4) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
 
   meta <- pepdat$metadata

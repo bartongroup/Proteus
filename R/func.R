@@ -626,12 +626,10 @@ makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
         row <- as.data.frame(t(rep(NA, length(samples))))
       }
       names(row) <- samples
-      row <- data.frame(protein=prot, npep=npep, row)
+      row <- data.frame(protein=prot, row, check.names=FALSE)
       return(row)
     }, mc.cores=ncores)
     protint <- do.call(rbind, protcond)
-
-    colnames(protint) <- c("protein", "npep", samples)
     protlist[[cond]] <- protint
   }
 
@@ -640,11 +638,13 @@ makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
 
   # remove empty rows (happens when min.peptides > 1)
   protab <- protab[which(rowSums(!is.na(protab)) > 0), ]
-
   proteins <- protab$protein
-  npep <- data.frame(npep=protab$npep.x)     # join split npep into npep.x, npep.y, ... for conditions
+  protab <- as.matrix(protab[,as.character(meta$sample)])  # just numbers
+
+  # count peptides
+  n <- as.integer(tapply(pepdat$pep2prot$protein, pepdat$pep2prot$protein, length))
+  npep <- data.frame(npep=n[proteins])
   rownames(npep) <- proteins                 # a bit redundant, but might be useful
-  protab <- as.matrix(protab[,as.character(meta$sample)])  # get rid of npep.y...
 
   prodat <- proteusData(protab, meta, "protein", pepdat$pep2prot, pepdat$peptides,
                         proteins, pepdat$measures,

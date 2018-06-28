@@ -1435,9 +1435,11 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
     sel <- which(meta$condition %in% conditions)
     meta <- droplevels(meta[sel,])
     tab <- tab[,sel]
+  } else {
+    conditions <- levels(meta$condition)
   }
 
-  if(nlevels(meta$condition) != 2) stop("This function requires exactly two conditions. Use the parameter conditions.")
+  if(length(conditions) != 2) stop("This function requires exactly two conditions. Use the parameter conditions.")
 
   # limma analysis
   design <- model.matrix(as.formula(formula), meta)
@@ -1451,7 +1453,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
   rownames(res) <- c()
 
   # add columns with mean intensity
-  for(cond in levels(meta$condition)) {
+  for(cond in conditions) {
     cname <- paste0("mean_", cond)
     m <- rowMeans(tab[,which(meta$condition == cond), drop=FALSE], na.rm=TRUE)
     m[which(is.nan(m))] <- NA
@@ -1460,6 +1462,7 @@ limmaDE <- function(pdat, formula="~condition", conditions=NULL, transform.fun=l
 
   # add columns with number of good replicates
   ngood <- reshape2::dcast(pdat$stats, id ~ condition, fun.aggregate=sum, value.var="ngood")
+  ngood <- ngood[, c("id", conditions)]
   names(ngood)[2:ncol(ngood)] <- paste0("ngood_", names(ngood)[2:ncol(ngood)])
   res <- merge(res, ngood, by.x=pdat$content, by.y="id")
 

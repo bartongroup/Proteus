@@ -5,7 +5,7 @@
 \title{Make protein table}
 \usage{
 makeProteinTable(pepdat, aggregate.fun = aggregateHifly, ...,
-  min.peptides = 1, ncores = 4)
+  min.peptides = 2, ncores = 4)
 }
 \arguments{
 \item{pepdat}{A \code{proteusData} object containing peptide data, normally

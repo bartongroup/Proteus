@@ -1,7 +1,7 @@
 Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
-Version: 0.2.5
+Version: 0.2.6
 Depends: R (>= 3.4)
 Author: MG
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>
@@ -9,13 +9,14 @@ Description: Downstream analysis of MaxQuant evidence data.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Imports:
     dplyr,
     reshape2,
     ggplot2,
     ggExtra,
     gridExtra,
+    viridis,
     hexbin,
     dendextend,
     limma,

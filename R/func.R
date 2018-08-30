@@ -1,5 +1,6 @@
 #' @import ggplot2
 #' @import graphics
+#' @import viridis
 #' @import methods
 #' @import stats
 #' @import utils
@@ -971,7 +972,7 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
   m$Sample2 <- factor(m$Sample2, levels=pdat$metadata$sample)
   ggplot(m, aes_(x=~Sample1, y=~Sample2)) +
     geom_tile(aes_(fill=~value)) +
-    #scale_fill_manual(values=palette) +
+    viridis::scale_fill_viridis() +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5, size=text.size),
       axis.text.y = element_text(size=text.size)
@@ -1037,6 +1038,7 @@ plotCount <- function(pdat, x.text.size=10, palette=cbPalette){
     labs(title = paste0("Median count = ", med.count)) +
     theme(plot.title=element_text(hjust=0, size=12))
   if(nlevels(as.factor(df$condition)) <= length(palette)) g <- g + scale_fill_manual(values=palette)
+  #g <- g + viridis::scale_fill_viridis(discrete=TRUE)
   g
 }
 
@@ -1298,7 +1300,8 @@ plotMV <- function(pdat, with.loess=FALSE, bins=80, xmin=5, xmax=10, ymin=7, yma
     facet_wrap(~condition) +
     stat_binhex(bins=bins) +
     theme(text = element_text(size=text.size)) +
-    scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
+    viridis::scale_fill_viridis(values=c(0, mid.gradient, 1), name="count", na.value=NA) +
+    #scale_fill_gradientn(colours=c("seagreen","yellow", "red"), values=c(0, mid.gradient, 1), name="count", na.value=NA)
   if(with.n) g <- g + geom_text(data=protnum, aes_(x=~xmin+0.5, y=~ymax, label=~labn))
   if(with.loess) g <- g + geom_line(data=ldf, aes_(x=~x,y=~y), color='black')
   return(g)
@@ -1377,7 +1380,7 @@ plotIntensities <- function(pdat, id=NULL, log=FALSE, ymin=as.numeric(NA), ymax=
       {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
       geom_point(position=pd, size=point.size) +
       scale_shape_identity() +  # necessary for shape mapping
-      #scale_fill_manual(values=palette) +
+      viridis::scale_fill_viridis(discrete=TRUE) +
       labs(x = 'Condition', y = ylab, title=title)
   }
 }
@@ -1637,7 +1640,8 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
 
   if(binhex) {
     g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
-      scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA)
+      viridis::scale_fill_viridis(name="count", na.value=NA)
+      #scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA)
   } else {
     g <- g + geom_point(size=point.size) +
       geom_point(data=df[!good,], aes_(x=~x, y=~y), colour="orange", size=point.size)
@@ -1730,7 +1734,8 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
 
   if(binhex) {
     g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
-      scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA)
+      viridis::scale_fill_viridis(name="count", na.value=NA)
+      #scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA)
   } else {
     g <- g + geom_point()
   }
@@ -1804,6 +1809,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {
 
   g1 <- ggplot(dat, aes_(x=~pepnum, y=~intensity, fill=~condition)) +
     scale_fill_manual(values=palette) +
+    #viridis::scale_fill_viridis(discrete=TRUE) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     facet_wrap(~condition) +
@@ -1811,6 +1817,7 @@ plotProtPeptides <- function(pepdat, protein, prodat=NULL, palette=cbPalette) {
     labs(x="Peptide", y="log intensity", title=protein)
   g2 <- ggplot(dat, aes_(x=~sample, y=~intensity, fill=~condition)) +
     scale_fill_manual(values=palette) +
+    #viridis::scale_fill_viridis(discrete=TRUE) +
     geom_boxplot(outlier.shape = NA)  +
     geom_jitter(width=0, size=0.5) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5)) +

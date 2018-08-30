@@ -7,8 +7,8 @@
 plotSampleDistributions(pdat, title = "", method = c("violin", "dist",
   "box"), x.text.size = 7, n.grid.rows = 3, hist.bins = 100,
   x.text.angle = 90, vmin = as.numeric(NA), vmax = as.numeric(NA),
-  log.scale = TRUE, log.base = 10, palette = cbPalette, fill = NULL,
-  colour = NULL, hline = FALSE)
+  log.scale = TRUE, log.base = 10, palette = cbPalette,
+  fill = NULL, colour = NULL, hline = FALSE)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptide/protein intensities.}

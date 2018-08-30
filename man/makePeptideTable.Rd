@@ -4,8 +4,8 @@
 \alias{makePeptideTable}
 \title{Create peptide table from evidence data}
 \usage{
-makePeptideTable(evi, meta, sequence.col = c("sequence", "modified_sequence"),
-  protein.col = c("protein", "protein_group"),
+makePeptideTable(evi, meta, sequence.col = c("sequence",
+  "modified_sequence"), protein.col = c("protein", "protein_group"),
   measure.cols = measureColumns, aggregate.fun = aggregateSum, ...,
   experiment.type = c("label-free", "TMT", "SILAC"), ncores = 4)
 }

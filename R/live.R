@@ -1,4 +1,5 @@
 #' @import shiny
+#' @import ggplot2
 
 selectProtein <- function(tab, input, max_hover=1) {
   sel <- NULL
@@ -66,7 +67,9 @@ replicateTable <- function(tab, input, pdat, max_points) {
         dat <- log10(dat)
       }
       if(length(sel) <= max_points) {
-        data.frame(Sample=colnames(dat), Intensity=sprintf("%.3g", colMeans(dat, na.rm = TRUE)))
+        df <- data.frame(Sample=colnames(dat), Intensity=signif(colMeans(dat, na.rm = TRUE), 3))
+        df$Intensity[is.nan(df$Intensity)] <- NA
+        df
       }
     }
   }, width = "80px")
@@ -121,16 +124,14 @@ jitterPlot <- function(tab, input, pdat, max_points) {
       )
       p$shape <- rep(21, length(p$intensity))
       p$shape[which(p$intensity==0)] <- 24
-      pd <- position_dodge(width = 0.4)
-      # colorblind friendly definition (alas, only 7 colours, so doesn't work for more replicates)
-      # cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+      pd <- ggplot2::position_dodge(width = 0.4)
       ggplot(p, aes_(x=~condition, y=~intensity, ymin=~lo, ymax=~up, colour=~replicate, shape=~shape, fill=~replicate)) +
-        theme(text = element_text(size=20), legend.position = "bottom", legend.direction = "horizontal") +
+        theme(text = element_text(size=20), legend.position = "none", legend.direction = "horizontal") +
         {if (input$intensityScale == '') ylim(0, NA)} +
         geom_point(position=pd, size=4) +
         {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
         scale_shape_identity() +  # necessary for shape mapping
-        #scale_fill_manual(values=cbPalette) +
+        viridis::scale_fill_viridis(discrete=TRUE) +
         {if (input$intensityScale == 'Log') labs(x = 'Condition', y = 'Log Intensity') else labs(x = 'Condition', y = 'Intensity')}
     }
   })
@@ -190,10 +191,10 @@ plotVolcano_live <- function(pdat, res, max_points=100){
   ui <- shinyUI(fluidPage(
 
     # Application title
-    titlePanel("PlotVolcano live version"),
+    titlePanel("PlotVolcano live"),
 
     fluidRow(
-      column(5, plotOutput("plotVolcano", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
+      column(5, plotOutput("plotVolcano", height = "600px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
         fluidRow(tableOutput("proteinInfo")),
           fluidRow(
@@ -203,7 +204,7 @@ plotVolcano_live <- function(pdat, res, max_points=100){
              ),
              fluidRow(
                column(4,
-                fluidRow(plotOutput("jitterPlot", height = "400px",width = "100%")),
+                fluidRow(plotOutput("jitterPlot", height = "300px",width = "100%")),
                 fluidRow(htmlOutput("gap")),
                 fluidRow(tableOutput("significanceTable"))
                ),
@@ -305,10 +306,10 @@ plotFID_live <- function(pdat, res, max_points=100){
   ui <- shinyUI(fluidPage(
 
     # Application title
-    titlePanel("PlotFID live version"),
+    titlePanel("PlotFID live"),
 
     fluidRow(
-      column(5, plotOutput("plotFID", height = "700px", width = "100%", brush = "plot_brush",hover="plot_hover")),
+      column(5, plotOutput("plotFID", height = "600px", width = "100%", brush = "plot_brush",hover="plot_hover")),
       column(7,
              fluidRow(tableOutput("proteinInfo")),
              fluidRow(

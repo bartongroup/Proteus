@@ -987,6 +987,7 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
 #' hierarchical clustering.
 #'
 #' @param pdat Peptide or protein \code{proteusData} object.
+#' @param x.text.size Size of text on the x-axis (sample names).
 #' @return Creates a plot
 #'
 #' @examples
@@ -995,15 +996,25 @@ plotDistanceMatrix <- function(pdat, distance=c("correlation"), text.size=10) {
 #' plotClustering(pepdat)
 #'
 #' @export
-plotClustering <- function(pdat) {
+plotClustering <- function(pdat, x.text.size=10) {
   if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
   corr.mat <- cor(pdat$tab, use="complete.obs")
   dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
-  dend <- as.dendrogram(hclust(dis))
-  colors_to_use <- as.numeric(pdat$metadata$condition)
-  colors_to_use <- colors_to_use[order.dendrogram(dend)]
-  dendextend::labels_colors(dend) <- colors_to_use
-  plot(dend)
+  hc <- hclust(dis)
+  dendr <- ggdendro::dendro_data(hc)
+  theme.d <- ggplot2::theme(
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.background = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust=0.5, size=x.text.size),
+    axis.line.x = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank()
+  )
+  ggplot() +
+    theme.d +
+    geom_segment(data=segment(dendr), aes_(x=~x, y=~y, xend=~xend, yend=~yend)) +
+    scale_x_continuous(breaks = seq_along(dendr$labels$label), labels = dendr$labels$label) +
+    labs(x="Sample", y="Distance")
 }
 
 
@@ -1012,7 +1023,7 @@ plotClustering <- function(pdat) {
 #' \code{plotCount} makes a plot of peptide/protein count per sample.
 #'
 #' @param pdat A \code{proteusData} object.
-#' @param x.text.size Size of text on the x-axis.
+#' @param x.text.size Size of text on the x-axis (sample names).
 #' @param palette Palette of colours
 #' @return A plot (\code{ggplot} object) of the number of peptides/proteins
 #'   detected in each sample.

@@ -4,10 +4,12 @@
 \alias{plotClustering}
 \title{Plot clustering dendrogram}
 \usage{
-plotClustering(pdat)
+plotClustering(pdat, x.text.size = 10)
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}
+
+\item{x.text.size}{Size of text on the x-axis (sample names).}
 }
 \value{
 Creates a plot

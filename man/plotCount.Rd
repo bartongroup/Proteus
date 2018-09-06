@@ -9,7 +9,7 @@ plotCount(pdat, x.text.size = 10, palette = cbPalette)
 \arguments{
 \item{pdat}{A \code{proteusData} object.}
 
-\item{x.text.size}{Size of text on the x-axis.}
+\item{x.text.size}{Size of text on the x-axis (sample names).}
 
 \item{palette}{Palette of colours}
 }

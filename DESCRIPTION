@@ -1,7 +1,7 @@
 Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
-Version: 0.2.6
+Version: 0.2.7
 Depends: R (>= 3.4)
 Author: MG
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>
@@ -14,11 +14,11 @@ Imports:
     dplyr,
     reshape2,
     ggplot2,
+    ggdendro,
     ggExtra,
     gridExtra,
     viridis,
     hexbin,
-    dendextend,
     limma,
     methods,
     stats,

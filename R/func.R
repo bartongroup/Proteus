@@ -1012,7 +1012,7 @@ plotClustering <- function(pdat, x.text.size=10) {
   )
   ggplot() +
     theme.d +
-    geom_segment(data=segment(dendr), aes_(x=~x, y=~y, xend=~xend, yend=~yend)) +
+    geom_segment(data=ggdendro::segment(dendr), aes_(x=~x, y=~y, xend=~xend, yend=~yend)) +
     scale_x_continuous(breaks = seq_along(dendr$labels$label), labels = dendr$labels$label) +
     labs(x="Sample", y="Distance")
 }

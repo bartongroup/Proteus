@@ -1002,6 +1002,7 @@ plotClustering <- function(pdat, x.text.size=10) {
   dis <- as.dist(1 - corr.mat)  # dissimilarity matrix
   hc <- hclust(dis)
   dendr <- ggdendro::dendro_data(hc)
+  dat <- ggdendro::segment(dendr)
   theme.d <- ggplot2::theme(
     panel.grid.major = ggplot2::element_blank(),
     panel.grid.minor = ggplot2::element_blank(),
@@ -1012,8 +1013,9 @@ plotClustering <- function(pdat, x.text.size=10) {
   )
   ggplot() +
     theme.d +
-    geom_segment(data=ggdendro::segment(dendr), aes_(x=~x, y=~y, xend=~xend, yend=~yend)) +
+    geom_segment(data=dat, aes_(x=~x, y=~y, xend=~xend, yend=~yend)) +
     scale_x_continuous(breaks = seq_along(dendr$labels$label), labels = dendr$labels$label) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, max(dat$y) * 1.03)) +
     labs(x="Sample", y="Distance")
 }
 

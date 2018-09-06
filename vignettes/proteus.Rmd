@@ -222,7 +222,7 @@ plotDistanceMatrix(pepdat)
 
 We can use `plotClustering()` to see a dendrogram of the peptide data set:
 
-```{r plot_clusterin, fig.width=6, fig.height=5}
+```{r plot_clusterin, fig.width=5, fig.height=4}
 plotClustering(pepdat)
 ```
 
@@ -251,7 +251,7 @@ as.character(meta.clean$sample)
 
 Clustering confirms that the offending sample is gone.
 
-```{r, fig.width=6, fig.height=5}
+```{r, fig.width=5, fig.height=4}
 plotClustering(pepdat.clean)
 ```
 
@@ -317,7 +317,7 @@ plotMV(prodat.med, with.loess=TRUE)
 
 We can use the same function `plotClustering()` to see the dendrogram for the proteins.
 
-```{r plot_clustering_proteins, fig.width=6, fig.height=5}
+```{r plot_clustering_proteins, fig.width=5, fig.height=4}
 plotClustering(prodat.med)
 ```
 
@@ -469,6 +469,35 @@ By default `makeProteinTable` aggregates peptides to proteins using the high-fly
 The aggregator function has exactly the same format as in evidence-to-peptide aggregator (see [above][Evidence-to-peptide aggregation]). That is, it takes a two-dimensional matrix (columns are samples, rows are peptides) and calculates an aggregated vector. There are three aggregators in the package: the default `aggregateHifly` plus the same functions we used for evidence-to-peptide aggregation, `aggregateSum` and `aggregateMedian`.
 
 A user-defined function can be used to aggregate proteins. Please see [section on evidence-to-peptide aggregation][Evidence-to-peptide aggregation] for details.
+
+## Reading MaxQuant's protein groups file
+
+*MaxQuant* output contains a file with aggregated protein data, usually called `proteinGroups.txt`. Protein intensities in this file are summed over protein groups. It is possible to read these data directly into *Proteus* and skip peptide and protein aggregation steps.
+
+```{r read_protein_groups, eval=FALSE}
+proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusLabelFree")
+prot.MQ <- readProteinGroups(proteinGroupsFile, meta)
+```
+
+This creates a `proteusData` object with all necessary information: that is, intensity table, metadata, protein names. This object can be visualized and analysed using *Proteus* functions.
+
+Just like with evidence data, we might have to specify which columns need to be read from the file. There are two arguments in `readProteinGroups` that control this: `measure.cols` and `data.cols`.
+
+`measure.cols` specifies columns with measurements. The default value for this argument is a named list or vector:
+
+```{r protein_groups_measure_columns}
+setNames(paste("Intensity", meta$sample), meta$sample)
+```
+
+Values of this list are actual column names in the file (`Intensity 1112-1`, `Intensity 1112-2`, and so on), names of the list are sample names. If columns with measurements in the protein groups file are named following a different convention, this argument will have to be changed. Make sure this is a named list with names corresponding to sample names.
+
+`data.cols` specifies additional columns to be read. It defaults to a global list `proteinColumn`. This is a another named list, containing the following elements:
+
+```{r protein_columns}
+str(proteinColumns)
+```
+
+Again, if the majority protein ID column is named differently, this will have to be changed in `data.cols` argument. The three names of this list (`protein`, `reverse` and `contaminant`) are used internally and should not be changed or removed.
 
 # Differential expression
 

@@ -83,7 +83,7 @@ plotDetectionSimilarity(pepdat, bin.size = 0.02)
 ## ----plot_correlation_matrix, fig.width=6, fig.height=5------------------
 plotDistanceMatrix(pepdat)
 
-## ----plot_clusterin, fig.width=6, fig.height=5---------------------------
+## ----plot_clusterin, fig.width=5, fig.height=4---------------------------
 plotClustering(pepdat)
 
 ## ----remove_bad_replicate------------------------------------------------
@@ -95,7 +95,7 @@ meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
 ## ----clean_peptides_samples----------------------------------------------
 as.character(meta.clean$sample)
 
-## ---- fig.width=6, fig.height=5------------------------------------------
+## ---- fig.width=5, fig.height=4------------------------------------------
 plotClustering(pepdat.clean)
 
 ## ----make_proteins, eval=FALSE-------------------------------------------
@@ -122,7 +122,7 @@ plotSampleDistributions(prodat.quant, title="Quantile normalization", fill="cond
 ## ----plot_mv, fig.width=6, fig.height=4, warning=FALSE-------------------
 plotMV(prodat.med, with.loess=TRUE)
 
-## ----plot_clustering_proteins, fig.width=6, fig.height=5-----------------
+## ----plot_clustering_proteins, fig.width=5, fig.height=4-----------------
 plotClustering(prodat.med)
 
 ## ----protein_annotations-------------------------------------------------
@@ -179,6 +179,16 @@ aggregateMax(evitab.example)
 
 ## ----peptide_aggregate_maximum_create, eval=FALSE------------------------
 #  pepdat.max <- makePeptideTable(evi, meta, aggregate.fun=aggregateMax)
+
+## ----read_protein_groups, eval=FALSE-------------------------------------
+#  proteinGroupsFile <- system.file("extdata", "proteinGroups.txt.gz", package="proteusLabelFree")
+#  prot.MQ <- readProteinGroups(proteinGroupsFile, meta)
+
+## ----protein_groups_measure_columns--------------------------------------
+setNames(paste("Intensity", meta$sample), meta$sample)
+
+## ----protein_columns-----------------------------------------------------
+str(proteinColumns)
 
 ## ----limma, warning=FALSE------------------------------------------------
 res <- limmaDE(prodat.med, sig.level=0.05)

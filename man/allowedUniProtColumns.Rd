@@ -3,12 +3,16 @@
 \docType{data}
 \name{allowedUniProtColumns}
 \alias{allowedUniProtColumns}
-\title{A character vector containing possible columns to query using \code{fetchFromUniProt}}
+\title{UniProt columns}
 \format{An object of class \code{character} of length 27.}
 \usage{
 allowedUniProtColumns
 }
 \description{
-A character vector containing possible columns to query using \code{fetchFromUniProt}
+A character vector containing possible columns to query using \code{\link{fetchFromUniProt}}.
+}
+\examples{
+allowedUniProtColumns
+
 }
 \keyword{datasets}

@@ -1,4 +1,11 @@
-#' A character vector containing possible columns to query using \code{fetchFromUniProt}
+#' UniProt columns
+#'
+#' A character vector containing possible columns to query using \code{\link{fetchFromUniProt}}.
+#'
+#' @examples
+#' allowedUniProtColumns
+#'
+#' @export
 allowedUniProtColumns <- c("citation", "clusters", "comments", "domains", "domain", "ec",
                            "id", "entry name", "existence", "families", "features", "genes",
                            "go", "go-id", "interactor", "keywords", "last-modified", "length",

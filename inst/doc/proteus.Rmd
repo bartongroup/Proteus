@@ -20,7 +20,7 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from label free MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk and Matthias Trost. The data are distributed in a package *proteusLabelFree*, which needs loading first:
+This tutorial demonstrates how to analyse data from label free MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk, Sarah Coulthurst and Matthias Trost. The data are distributed in a package *proteusLabelFree*, which needs loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusLabelFree, warn.conflicts=FALSE)
@@ -228,12 +228,12 @@ plotClustering(pepdat)
 
 ## Removing bad data
 
-The last sample (BMO-7) in the example data looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
+The last sample (B-7) in the example data looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.
 
 Warning: this is only an example. You should exercise caution when removing any of your data.
 
 ```{r remove_bad_replicate}
-meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
+meta.clean <- meta[which(meta$sample  != 'B-7'),]
 ```
 
 Now, we create a new "clean" peptide data set from evidence data:
@@ -489,7 +489,7 @@ Just like with evidence data, we might have to specify which columns need to be 
 setNames(paste("Intensity", meta$sample), meta$sample)
 ```
 
-Values of this list are actual column names in the file (`Intensity 1112-1`, `Intensity 1112-2`, and so on), names of the list are sample names. If columns with measurements in the protein groups file are named following a different convention, this argument will have to be changed. Make sure this is a named list with names corresponding to sample names.
+Values of this list are actual column names in the file (`Intensity A-1`, `Intensity A-2`, and so on), names of the list are sample names. If columns with measurements in the protein groups file are named following a different convention, this argument will have to be changed. Make sure this is a named list with names corresponding to sample names.
 
 `data.cols` specifies additional columns to be read. It defaults to a global list `proteinColumn`. This is a another named list, containing the following elements:
 
@@ -524,7 +524,7 @@ res[which(res$significant), c("protein", "logFC", "adj.P.Val")]
 Note: `limmaDE` requires exactly two conditions to do a differential expression on. When data contain more conditions, a parameter `conditions` is required to select a pair:
 
 ```{r limma_conditions, eval=FALSE}
-res <- limmaDE(prodat.med, conditions=c("1112", "BMO"))
+res <- limmaDE(prodat.med, conditions=c("A", "B"))
 ```
 
 For more complicated designs we recommend using [limma](http://bioconductor.org/packages/release/bioc/html/limma.html) functions directly.
@@ -537,17 +537,17 @@ Sometimes data for a given protein is missing entirely from a condition (that is
 head(prodat$detect)
 ```
 
-The first protein, `1112-yEGFP` is not detected in `BMO` condition. The proteins detected in only one condition can be found using a logical expression:
+The first protein, `mut-yEGFP` is not detected in `B` condition. The proteins detected in only one condition can be found using a logical expression:
 
 ```{r missing_condition}
-only.1112 <- which(prodat$detect$`1112` & !prodat$detect$BMO)
-only.BMO <- which(!prodat$detect$`1112` & prodat$detect$BMO)
+only.A <- which(prodat$detect$`A` & !prodat$detect$B)
+only.B <- which(!prodat$detect$`A` & prodat$detect$B)
 ```
 
-We can list their identifiers from the `proteins` field in the protein object, as in this example for condition `1112`:
+We can list their identifiers from the `proteins` field in the protein object, as in this example for condition `A`:
 
 ```{r missing_condition_proteins}
-as.character(prodat$proteins[only.1112])
+as.character(prodat$proteins[only.A])
 ```
 
 

@@ -87,7 +87,7 @@ plotDistanceMatrix(pepdat)
 plotClustering(pepdat)
 
 ## ----remove_bad_replicate------------------------------------------------
-meta.clean <- meta[which(meta$sample  != 'BMO-7'),]
+meta.clean <- meta[which(meta$sample  != 'B-7'),]
 
 ## ----make_clean_peptides, eval=FALSE-------------------------------------
 #  pepdat.clean <- makePeptideTable(evi, meta.clean)
@@ -200,17 +200,17 @@ head(res)
 res[which(res$significant), c("protein", "logFC", "adj.P.Val")]
 
 ## ----limma_conditions, eval=FALSE----------------------------------------
-#  res <- limmaDE(prodat.med, conditions=c("1112", "BMO"))
+#  res <- limmaDE(prodat.med, conditions=c("A", "B"))
 
 ## ----protein_detection---------------------------------------------------
 head(prodat$detect)
 
 ## ----missing_condition---------------------------------------------------
-only.1112 <- which(prodat$detect$`1112` & !prodat$detect$BMO)
-only.BMO <- which(!prodat$detect$`1112` & prodat$detect$BMO)
+only.A <- which(prodat$detect$`A` & !prodat$detect$B)
+only.B <- which(!prodat$detect$`A` & prodat$detect$B)
 
 ## ----missing_condition_proteins------------------------------------------
-as.character(prodat$proteins[only.1112])
+as.character(prodat$proteins[only.A])
 
 ## ----plot_fid, fig.width=4, fig.height=4, warning=FALSE------------------
 plotFID(prodat.med)

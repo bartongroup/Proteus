@@ -10,7 +10,7 @@ fetchFromUniProt(unis, columns = c("genes", "protein names"),
 \arguments{
 \item{unis}{A character vector with UniProt identifiers}
 
-\item{columns}{Data columns requested}
+\item{columns}{Data columns requested (see \code{\link{allowedUniProtColumns}})}
 
 \item{col.names}{How to name data columns in the returned data frame}
 

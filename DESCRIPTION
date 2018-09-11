@@ -3,9 +3,15 @@ Type: Package
 Title: Downstream analysis of the MaxQuant output
 Version: 0.2.8
 Depends: R (>= 3.4)
-Author: MG
+Authors@R: c(
+  person("Marek", "Gierlinski", email="M.Gierlinski@dundee.ac.uk", role=c("aut", "cre")),
+  person("Francesco", "Gastaldello", email="f.gastaldello@dundee.ac.uk", role=c("ctb")))
 Maintainer: Marek Gierlinski <M.Gierlinski@dundee.ac.uk>
-Description: Downstream analysis of MaxQuant evidence data.
+Description: Proteus is a package for downstream analysis of MaxQuant evidence data in R environment.
+   It provides a variety of tools for peptide and protein aggregation, quality checks, data exploration
+   and visualisation, including interactive analysis utilising Shiny framework. Proteus performs
+   differential expression with limma, offering a robust treatment of missing data, with no need for
+   (random) imputation.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

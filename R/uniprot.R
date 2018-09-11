@@ -1,6 +1,8 @@
-#' UniProt columns
+#' Allowed UniProt columns
 #'
-#' A character vector containing possible columns to query using \code{\link{fetchFromUniProt}}.
+#' A character vector containing possible columns to query with
+#' \code{\link{fetchFromUniProt}}. Any selection of these names can be used as
+#' \code{columns} parameter.
 #'
 #' @examples
 #' allowedUniProtColumns
@@ -44,7 +46,7 @@ tryQuery <- function(url, maxtry=5) {
 #' \code{col.names}. The \code{id} column is added by default.
 #'
 #' @param unis A character vector with UniProt identifiers
-#' @param columns Data columns requested
+#' @param columns Data columns requested (see \code{\link{allowedUniProtColumns}})
 #' @param col.names How to name data columns in the returned data frame
 #' @param batchsize Size of batch of proteins in a single query
 #' @param verbose Logical, if true, query progress will be displayed

@@ -20,7 +20,7 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This tutorial demonstrates how to analyse data from label free MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk, Sarah Coulthurst and Matthias Trost. The data are distributed in a package *proteusLabelFree*, which needs loading first:
+This tutorial demonstrates how to analyse data from label free MS/MS experiment in *Proteus*. We use an example data set from an unpublished experiment by Katharina Trunk, Sarah Coulthurst, Julien Peltier and Matthias Trost. The data are distributed in a package *proteusLabelFree*, which needs installing and loading first:
 
 ```{r load_data, echo=FALSE}
 library(proteusLabelFree, warn.conflicts=FALSE)
@@ -28,6 +28,7 @@ data(proteusLabelFree)
 ```
 
 ```{r load_data_dummy, eval=FALSE}
+devtools::install_github("bartongroup/proteusLabelFree")
 library(proteusLabelFree)
 data(proteusLabelFree)
 ```

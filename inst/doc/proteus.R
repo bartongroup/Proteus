@@ -9,6 +9,7 @@ library(proteusLabelFree, warn.conflicts=FALSE)
 data(proteusLabelFree)
 
 ## ----load_data_dummy, eval=FALSE-----------------------------------------
+#  devtools::install_github("bartongroup/proteusLabelFree")
 #  library(proteusLabelFree)
 #  data(proteusLabelFree)
 

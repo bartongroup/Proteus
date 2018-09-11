@@ -12,6 +12,7 @@ Description: Proteus is a package for downstream analysis of MaxQuant evidence d
    and visualisation, including interactive analysis utilising Shiny framework. Proteus performs
    differential expression with limma, offering a robust treatment of missing data, with no need for
    (random) imputation.
+URL: https://github.com/bartongroup/Proteus
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
@@ -34,6 +35,6 @@ Imports:
     shiny,
     DT
 Suggests: testthat, knitr, rmarkdown, proteusTMT, proteusLabelFree, proteusSILAC
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 biocViews: Proteomics, MassSpectrometry
 Language: en-GB

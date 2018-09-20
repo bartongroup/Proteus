@@ -68,7 +68,7 @@ plotSampleDistributions(prodat.norm, log.scale=FALSE, fill="replicate") + labs(t
 plotClustering(prodat.norm)
 
 ## ----DE_C0_C4------------------------------------------------------------
-res <- limmaDE(prodat.norm, conditions=c("C0", "C5"))
+res <- limmaDE(prodat.norm, conditions=c("T0.5", "T8"))
 
 ## ----p_value_dist, fig.width=5, fig.height=4-----------------------------
 plotPdist(res)

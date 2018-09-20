@@ -112,7 +112,7 @@ We chose the median to aggregate peptide intensities from multiple entries in th
 pepdat <- makePeptideTable(evi, meta, measure.cols=measCols, aggregate.fun=aggregateMedian, experiment.type="TMT")
 ```
 
-We can use generic `summary` function to see more information about `xppepdat`.
+We can use generic `summary` function to see more information about `pepdat`.
 
 ```{r summary_peptides}
 summary(pepdat)
@@ -172,10 +172,10 @@ plotClustering(prodat.norm)
 
 # Differential expression
 
-These particular data come from a time-course experiment that would require analysis beyond *Proteus* package. We can however show how differential expression can be used to identify proteins changing between the first and middle time point:
+These particular data come from a time-course experiment that would require analysis beyond *Proteus* package. We can however show how differential expression can be used to identify proteins changing between time points 0.5^h^ and 8^h^.
 
 ```{r DE_C0_C4}
-res <- limmaDE(prodat.norm, conditions=c("C0", "C5"))
+res <- limmaDE(prodat.norm, conditions=c("T0.5", "T8"))
 ```
 
 The distribution of p-values looks fine.

@@ -48,3 +48,7 @@ There are additional, shorter vignettes, showing the specifics of using *Proteus
 vignette("TMT", package="proteus")
 vignette("SILAC", package="proteus")
 ```
+
+## Application note
+
+The article about this package can be found on [BioRxiv](https://www.biorxiv.org/content/early/2018/09/20/416511).

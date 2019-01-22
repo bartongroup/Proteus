@@ -550,7 +550,11 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   for(s in unique(sequences)) {
     sel <- which(sequences == s)
     wp <- tab[sel,, drop=FALSE]
-    x <- aggregate.fun(wp, ...)
+    # WARNING!!! This needs to go back to the code!
+    # x <- aggregate.fun(wp, ...)
+    x <- aggregateSum(wp)
+
+
     row <- as.data.frame(t(as.vector(x)))
     rownames(row) <- s
     tab.aggr[[i]] <- row
@@ -568,6 +572,7 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   pep.aggr <- as.matrix(do.call(rbind, pep.aggr))
   colnames(pep.aggr) <- colnames(tab)
 
+  pep.aggr[is.na(tab.aggr)] <- NA
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi[[sequence.col]], protein=evi[[protein.col]])

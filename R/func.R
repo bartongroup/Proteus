@@ -45,7 +45,8 @@ evidenceColumns <- list(
   experiment = 'Experiment',
   charge = 'Charge',
   reverse = 'Reverse',
-  contaminant = 'Potential contaminant'
+  contaminant = 'Potential contaminant',
+  pep = 'PEP'
 )
 
 #' Measure columns
@@ -109,7 +110,7 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
                         npep=NULL, type="label-free", sequence.col="sequence", protein.col="protein",
                         peptide.aggregate.fun=NULL, peptide.aggregate.parameters=NULL,
                         protein.aggregate.fun=NULL, protein.aggregate.parameters=NULL,
-                        min.peptides=NULL, norm.fun=identity) {
+                        min.peptides=NULL, norm.fun=identity, pep=NULL) {
   stopifnot(
     ncol(tab) == nrow(metadata),
     is(tab, "matrix"),
@@ -167,7 +168,8 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
     pep2prot = pep2prot,
     peptides = peptides,
     proteins = proteins,
-    npep = npep
+    npep = npep,
+    pep = pep
   )
   class(pdat) <- append(class(pdat), "proteusData")
   pdat$stats <- intensityStats(pdat)
@@ -452,9 +454,10 @@ parameterString <- function(...) {
 #'
 #' @export
 makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_sequence"),
-                             protein.col=c("protein", "protein_group"), measure.cols=measureColumns,
-                             aggregate.fun=aggregateSum, ..., experiment.type=c("label-free", "TMT", "SILAC"),
-                             ncores = 4) {
+                             protein.col=c("protein", "protein_group"), pep.col="pep",
+                             measure.cols=measureColumns, aggregate.fun=aggregateSum, ...,
+                             experiment.type=c("label-free", "TMT", "SILAC"),
+                             fdr.limit = 1, ncores = 4) {
 
   sequence.col <- match.arg(sequence.col)
   protein.col <- match.arg(protein.col)
@@ -462,7 +465,7 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
 
   # check if measure.cols, sequence.col and protein.col are in the evidence file
   measures <- names(measure.cols)
-  for(col in c(measures, sequence.col, protein.col)) {
+  for(col in c(measures, sequence.col, protein.col, pep.col)) {
     if(!(col %in% names(evi))) stop(paste0("Column '", col, "' not found in evidence data."))
   }
 
@@ -489,15 +492,18 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   # make sure to keep correct order of samples
   meta$sample <- factor(meta$sample, levels=meta$sample)
 
+  # index when we need to refer to the original rows of evidence file
+  evi$idx <- 1:nrow(evi)
+
   # melt and recast evidence data
   #
   # NOTE: due to a potential conflict between reshape and reshape2 we do not use
   # "variable.name" parameter and default to the column name "variable". This is
   # changed manually to "measure", because we want it this way. See
   # https://github.com/hadley/reshape/issues/63 for more details.
-  eviMelted <- reshape2::melt(evi, id.vars = c(sequence.col, "experiment"), measure.vars=measures)
-  names(eviMelted)[1] <- "sequence"  # for simplicity, call it sequence
-  names(eviMelted)[3] <- "measure" # see note above
+  eviMelted <- reshape2::melt(evi, id.vars = c("idx", sequence.col, "experiment"), measure.vars=measures)
+  names(eviMelted)[2] <- "sequence"  # for simplicity, call it sequence
+  names(eviMelted)[4] <- "measure" # see note above
   eviMelted$value <- as.numeric(eviMelted$value)   # integers do not work well in cast + median
   eviMelted$measure <- measure.cols[eviMelted$measure]  # recover original measurement columns
 
@@ -509,7 +515,8 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   eviMelted$expmes <- paste0(eviMelted$experiment, ".", eviMelted$measure)
   eviMelted <- eviMelted[which(eviMelted$expmes %in% names(m2s)),] # select only experiment.measure present in metadata
   eviMelted$sample <- m2s[eviMelted$expmes]
-  eviMelted <- eviMelted[, c("sequence", "sample", "value")]
+  eviMelted <- eviMelted[, c("idx", "sequence", "sample", "value")]
+  eviMelted$pep <- evi[eviMelted$idx, "pep"]
 
   # create unique sequence names
   eviMelted$seqsam <- paste0(eviMelted$sequence, ".", eviMelted$sample)
@@ -522,6 +529,10 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   # in this table there are multiple entries per peptide
   tab <- reshape2::dcast(eviMelted, uniseq ~ sample, sum, value.var="value")
 
+  # find PEP values
+  pep <- reshape2::dcast(eviMelted, uniseq ~ sample, prod, value.var="pep")
+
+
   # original sequence
   u2s <- setNames(eviMelted$sequence, eviMelted$uniseq)
   sequences <- u2s[tab$uniseq]
@@ -530,17 +541,33 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   tab <- as.matrix(tab[,2:ncol(tab)])
   tab[tab == 0] <- NA
 
+  pep <- as.matrix(pep[,2:ncol(pep)])
+
   # aggregate peptides
-  ptab <- parallel::mclapply(unique(sequences), function(s) {
-    wp <- tab[sequences == s,, drop=FALSE]
+  tab.aggr <- list()
+  pep.aggr <- list()
+  i <- 1
+  for(s in unique(sequences)) {
+    sel <- which(sequences == s)
+    wp <- tab[sel,, drop=FALSE]
     x <- aggregate.fun(wp, ...)
     row <- as.data.frame(t(as.vector(x)))
     rownames(row) <- s
-    return(row)
-  }, mc.cores=ncores)
-  ptab <- as.matrix(do.call(rbind, ptab))
-  colnames(ptab) <- colnames(tab)
-  peptides <- row.names(ptab)
+    tab.aggr[[i]] <- row
+
+    pp <- pep[sel,, drop=FALSE]
+    row <- apply(pp, 2, function(x) prod(x, na.rm=TRUE))
+    pep.aggr[[i]] <- row
+
+    i <- i + 1
+  }
+  tab.aggr <- as.matrix(do.call(rbind, tab.aggr))
+  colnames(tab.aggr) <- colnames(tab)
+  peptides <- row.names(tab.aggr)
+
+  pep.aggr <- as.matrix(do.call(rbind, pep.aggr))
+  colnames(pep.aggr) <- colnames(tab)
+
 
   # peptide to protein conversion
   pep2prot <- data.frame(sequence=evi[[sequence.col]], protein=evi[[protein.col]])
@@ -551,11 +578,12 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   proteins <- levels(as.factor(pep2prot$protein))
 
   # create pdat object
-  pdat <- proteusData(ptab, meta, "peptide", pep2prot, peptides, proteins,
+  pdat <- proteusData(tab.aggr, meta, "peptide", pep2prot, peptides, proteins,
                       as.character(measure.cols), type = experiment.type,
                       sequence.col = sequence.col, protein.col = protein.col,
                       peptide.aggregate.fun = deparse(substitute(aggregate.fun)),
-                      peptide.aggregate.parameters = parameterString(...)
+                      peptide.aggregate.parameters = parameterString(...),
+                      pep=pep.aggr
   )
 
   return(pdat)

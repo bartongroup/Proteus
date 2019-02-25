@@ -49,6 +49,12 @@ vignette("TMT", package="proteus")
 vignette("SILAC", package="proteus")
 ```
 
+If, for some reason, you cannot build vignettes, copies are available online:
+
+- [Proteus](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/proteus.html)
+- [SILAC](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/SILAC.html)
+- [TMT](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/TMT.html)
+
 ## Application note
 
 The article about this package can be found on [BioRxiv](https://www.biorxiv.org/content/early/2018/09/20/416511).

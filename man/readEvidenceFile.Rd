@@ -35,8 +35,10 @@ There are two default lists, supplied with the package, appropriate for an
 label-free experiment, \code{measureColumns} and \code{evidenceColumns}.
 }
 \examples{
+\dontrun{
 library(proteusLabelFree)
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 evi <- readEvidenceFile(evidenceFile)
+}
 
 }

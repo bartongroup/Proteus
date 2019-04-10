@@ -91,8 +91,10 @@ evidence data. This makes selection of samples for downstream processing
 easy: select only required rows in the metadata data frame.
 }
 \examples{
+\dontrun{
 library(proteusLabelFree)
 data(proteusLabelFree)
 pepdat <- makePeptideTable(evi, meta, ncores=2)
+}
 
 }

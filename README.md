@@ -7,9 +7,9 @@
 Proteus can be installed directly from GitHub. First, you need to install BioConductor and limma:
 
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite()
-biocLite("limma")
+install.packages("BiocManager")
+BiocManager::install()
+BiocManager::install("limma")
 ```
 
 You also need devtools:
@@ -29,7 +29,7 @@ devtools::install_github("bartongroup/proteusSILAC")
 Finally, you can install proteus:
 
 ```r
-devtools::install_github("bartongroup/Proteus", build_vignettes = TRUE)
+devtools::install_github("bartongroup/Proteus", build_opts= c("--no-resave-data", "--no-manual"), build_vignettes=TRUE)
 ```
 
 Note: use `build_vignettes = FALSE` if you run into problems with vignettes installation.

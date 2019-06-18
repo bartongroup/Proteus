@@ -1,7 +1,7 @@
 Package: proteus
 Type: Package
 Title: Downstream analysis of the MaxQuant output
-Version: 0.2.11
+Version: 0.2.12
 Depends: R (>= 3.4)
 Authors@R: c(
   person("Marek", "Gierlinski", email="M.Gierlinski@dundee.ac.uk", role=c("aut", "cre")),

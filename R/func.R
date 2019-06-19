@@ -1716,7 +1716,7 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
 plotPdist <- function(res, bin.size=0.02, text.size=12, plot.grid=TRUE) {
   ggplot(res, aes_(~P.Value, ~..density..)) +
     {if(plot.grid) simple_theme_grid else simple_theme} +
-    geom_histogram(breaks=seq(0, 1, bin.size), colour='blue') +
+    geom_histogram(breaks=seq(0, 1, bin.size), colour='blue', na.rm=TRUE) +
     labs(x='P-value', y='Density') +
     theme(text = element_text(size=text.size))
 }

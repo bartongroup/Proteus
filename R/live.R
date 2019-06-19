@@ -128,7 +128,7 @@ jitterPlot <- function(tab, input, pdat, max_points) {
       ggplot(p, aes_(x=~condition, y=~intensity, ymin=~lo, ymax=~up, colour=~replicate, shape=~shape, fill=~replicate)) +
         theme(text = element_text(size=20), legend.position = "none", legend.direction = "horizontal") +
         {if (input$intensityScale == '') ylim(0, NA)} +
-        geom_point(position=pd, size=4) +
+        geom_point(position=pd, size=4, na.rm=TRUE) +
         {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
         scale_shape_identity() +  # necessary for shape mapping
         viridis::scale_fill_viridis(discrete=TRUE) +

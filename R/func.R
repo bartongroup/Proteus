@@ -1652,12 +1652,12 @@ plotFID <- function(pdat, pair=NULL, bins=80, marginal.histograms=FALSE,
   g <- ggplot(df[good, ], aes_(x=~x, y=~y))
 
   if(binhex) {
-    g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
+    g <- g + stat_binhex(bins=bins, show.legend=show.legend, na.rm=TRUE) +
       viridis::scale_fill_viridis(name="count", na.value=NA)
       #scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count",na.value=NA)
   } else {
-    g <- g + geom_point(size=point.size) +
-      geom_point(data=df[!good,], aes_(x=~x, y=~y), colour="orange", size=point.size)
+    g <- g + geom_point(size=point.size, na.rm=TRUE) +
+      geom_point(data=df[!good,], aes_(x=~x, y=~y), colour="orange", size=point.size, na.rm=TRUE)
   }
 
   if(plot.grid) {
@@ -1746,11 +1746,11 @@ plotVolcano <- function(res, bins=80, xmax=NULL, ymax=NULL, marginal.histograms=
   g <- ggplot(res, aes_(~logFC, ~-log10(P.Value)))
 
   if(binhex) {
-    g <- g + stat_binhex(bins=bins, show.legend=show.legend) +
+    g <- g + stat_binhex(bins=bins, show.legend=show.legend, na.rm=TRUE) +
       viridis::scale_fill_viridis(name="count", na.value=NA)
       #scale_fill_gradientn(colours=c("seagreen","yellow", "red"), name = "count", na.value=NA)
   } else {
-    g <- g + geom_point()
+    g <- g + geom_point(na.rm=TRUE)
   }
 
   if(plot.grid) {

@@ -7,9 +7,9 @@
 Proteus can be installed directly from GitHub. First, you need to install BioConductor and limma:
 
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite()
-biocLite("limma")
+install.packages("BiocManager")
+BiocManager::install()
+BiocManager::install("limma")
 ```
 
 You also need devtools:
@@ -29,7 +29,7 @@ devtools::install_github("bartongroup/proteusSILAC")
 Finally, you can install proteus:
 
 ```r
-devtools::install_github("bartongroup/Proteus", build_vignettes = TRUE)
+devtools::install_github("bartongroup/Proteus", build_opts= c("--no-resave-data", "--no-manual"), build_vignettes=TRUE)
 ```
 
 Note: use `build_vignettes = FALSE` if you run into problems with vignettes installation.
@@ -48,3 +48,13 @@ There are additional, shorter vignettes, showing the specifics of using *Proteus
 vignette("TMT", package="proteus")
 vignette("SILAC", package="proteus")
 ```
+
+If, for some reason, you cannot build vignettes, copies are available online:
+
+- [Proteus](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/proteus.html)
+- [SILAC](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/SILAC.html)
+- [TMT](http://www.compbio.dundee.ac.uk/user/mgierlinski/proteus/TMT.html)
+
+## Application note
+
+The article about this package can be found on [BioRxiv](https://www.biorxiv.org/content/early/2018/09/20/416511).

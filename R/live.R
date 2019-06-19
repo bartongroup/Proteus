@@ -132,6 +132,7 @@ jitterPlot <- function(tab, input, pdat, max_points) {
         {if(n > 1) geom_errorbar(position=pd, width = 0.1)} +
         scale_shape_identity() +  # necessary for shape mapping
         viridis::scale_fill_viridis(discrete=TRUE) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5)) +
         {if (input$intensityScale == 'Log') labs(x = 'Condition', y = 'Log Intensity') else labs(x = 'Condition', y = 'Intensity')}
     }
   })

@@ -143,9 +143,10 @@ proteusData <- function(tab, metadata, content, pep2prot, peptides, proteins, me
   }
 
   # number of replicates in each condition
-  cnd <- metadata$condition
-  cnd.fac <- as.factor(cnd)
+  cnd <- as.character(metadata$condition)
+  cnd.fac <- factor(cnd)
   nrep <- tapply(cnd, cnd.fac, length) # nice trick
+  metadata$condition <- cnd.fac
 
   pdat <- list(
     tab = tab,
@@ -257,9 +258,11 @@ readColumnNames <- function(file) {
 #' @return Data frame with selected columns from the evidence file.
 #'
 #' @examples
+#' \dontrun{
 #' library(proteusLabelFree)
 #' evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 #' evi <- readEvidenceFile(evidenceFile)
+#' }
 #'
 #' @export
 readEvidenceFile <- function(file, measure.cols=measureColumns, data.cols=evidenceColumns, zeroes.are.missing=TRUE) {
@@ -445,9 +448,11 @@ parameterString <- function(...) {
 #'   metadata.
 #'
 #' @examples
+#' \dontrun{
 #' library(proteusLabelFree)
 #' data(proteusLabelFree)
 #' pepdat <- makePeptideTable(evi, meta, ncores=2)
+#' }
 #'
 #' @export
 makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_sequence"),
@@ -458,6 +463,12 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
   sequence.col <- match.arg(sequence.col)
   protein.col <- match.arg(protein.col)
   experiment.type <- match.arg(experiment.type)
+
+  # mclapply doesn't work on Windows, so force 1 core
+  if(Sys.info()[['sysname']] == "Windows") {
+    ncores <- 1
+    warning("Multicore processing not available in Windows. Using ncores=1")
+  }
 
   # check if measure.cols, sequence.col and protein.col are in the evidence file
   measures <- names(measure.cols)
@@ -603,6 +614,12 @@ makePeptideTable <- function(evi, meta, sequence.col=c("sequence", "modified_seq
 makeProteinTable <- function(pepdat, aggregate.fun=aggregateHifly, ...,
                              min.peptides=2, ncores=4) {
   if(!is(pepdat, "proteusData")) stop ("Input data must be of class proteusData.")
+
+  # mclapply doesn't work on Windows, so force 1 core
+  if(Sys.info()[['sysname']] == "Windows") {
+    ncores <- 1
+    warning("Multicore processing not available in Windows. Using ncores=1")
+  }
 
   meta <- pepdat$metadata
   tab <- pepdat$tab

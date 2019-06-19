@@ -8,7 +8,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Using proteus R package}
+  %\VignetteIndexEntry{proteus}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -38,6 +38,7 @@ data(proteusLabelFree)
 Here is a minimal example of data analysis in *Proteus*. You will need the evidence file from *MaxQuant* and a very simple text file with metadata  (see below how to create it). Then, you can get from the evidence file to differential expression in just a few steps.
 
 ```{r quick_start, eval=FALSE}
+library(proteus)
 evidenceFile <- system.file("extdata", "evidence.txt.gz", package="proteusLabelFree")
 metadataFile <- system.file("extdata", "metadata.txt", package="proteusLabelFree")
 

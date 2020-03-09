@@ -4,8 +4,12 @@
 \alias{readEvidenceFile}
 \title{Read MaxQuant's evidence file}
 \usage{
-readEvidenceFile(file, measure.cols = measureColumns,
-  data.cols = evidenceColumns, zeroes.are.missing = TRUE)
+readEvidenceFile(
+  file,
+  measure.cols = measureColumns,
+  data.cols = evidenceColumns,
+  zeroes.are.missing = TRUE
+)
 }
 \arguments{
 \item{file}{File name.}

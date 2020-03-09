@@ -4,8 +4,13 @@
 \alias{fetchFromUniProt}
 \title{Fetch annotations from UniProt}
 \usage{
-fetchFromUniProt(unis, columns = c("genes", "protein names"),
-  col.names = NULL, batchsize = 400, verbose = FALSE)
+fetchFromUniProt(
+  unis,
+  columns = c("genes", "protein names"),
+  col.names = NULL,
+  batchsize = 400,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{unis}{A character vector with UniProt identifiers}

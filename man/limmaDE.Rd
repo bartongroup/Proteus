@@ -4,8 +4,13 @@
 \alias{limmaDE}
 \title{Simple differential expression with limma}
 \usage{
-limmaDE(pdat, formula = "~condition", conditions = NULL,
-  transform.fun = log2, sig.level = 0.05)
+limmaDE(
+  pdat,
+  formula = "~condition",
+  conditions = NULL,
+  transform.fun = log2,
+  sig.level = 0.05
+)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}

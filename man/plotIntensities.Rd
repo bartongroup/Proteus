@@ -4,9 +4,16 @@
 \alias{plotIntensities}
 \title{Plot protein/peptide intensities}
 \usage{
-plotIntensities(pdat, id = NULL, log = FALSE, ymin = as.numeric(NA),
-  ymax = as.numeric(NA), text.size = 12, point.size = 3,
-  title = NULL)
+plotIntensities(
+  pdat,
+  id = NULL,
+  log = FALSE,
+  ymin = as.numeric(NA),
+  ymax = as.numeric(NA),
+  text.size = 12,
+  point.size = 3,
+  title = NULL
+)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object.}

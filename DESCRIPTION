@@ -22,6 +22,7 @@ Imports:
     reshape2,
     ggplot2,
     ggdendro,
+    ggrepel,
     ggExtra,
     gridExtra,
     viridis,

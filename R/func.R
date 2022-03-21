@@ -1037,6 +1037,58 @@ plotClustering <- function(pdat, x.text.size=10) {
 }
 
 
+#' Plot PCA
+#'
+#' \code{plotPCA} creates a principal analysis plot using first two components.
+#'
+#' @param pdat Peptide or protein \code{proteusData} object.
+#' @param with.legend Logical, whether to plot a legend.
+#' @param point.size Size of the point in the plot.
+#' @param text.size Size of the axis text.
+#' @param label.size Size of the text labels identifying sapmles.
+#' @param legend.text.size Size of the legend text.
+#' @param palette Palette of colours
+#'
+#' @return Creates a plot
+#'
+#' @examples
+#' library(proteusLabelFree)
+#' data(proteusLabelFree)
+#' plotPCA(pepdat)
+#' @export
+plotPCA <- function(pdat, with.legend=TRUE, point.size=1.2, text.size=10,
+                    label.size=3, legend.text.size=7, palette=cbPalette) {
+  if(!is(pdat, "proteusData")) stop ("Input data must be of class proteusData.")
+  pca <- prcomp(t(na.omit(log10(pdat$tab))), scale.=TRUE, center=TRUE)
+
+  p <- data.frame(
+    x = pca$x[, 1],
+    y = pca$x[, 2],
+    condition = pdat$metadata$condition,
+    sample = pdat$metadata$sample
+  )
+  var.perc <- 100 * (pca$sdev)^2 / sum((pca$sdev)^2)
+  pca1 <- sprintf("PCA1 (%5.1f%%)", var.perc[1])
+  pca2 <- sprintf("PCA2 (%5.1f%%)", var.perc[2])
+
+  g <- ggplot(p, aes_(x=~x, y=~y, label=~sample)) +
+    simple_theme +
+    theme(
+      legend.title = element_text(size = legend.text.size),
+      legend.text = element_text(size = legend.text.size)
+    ) +
+    coord_cartesian(expand=TRUE) +
+    geom_point(aes_(colour=~condition), size=point.size) +
+    ggrepel::geom_text_repel(size=label.size) +
+    scale_color_manual(values=palette) +
+    theme(text = element_text(size=text.size)) +
+    labs(x=pca1, y=pca2)
+  if(!with.legend) g <- g + theme(legend.position="none")
+  g
+}
+
+
+
 #' Plot peptide or protein count per sample
 #'
 #' \code{plotCount} makes a plot of peptide/protein count per sample.

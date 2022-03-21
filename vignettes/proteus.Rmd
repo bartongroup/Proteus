@@ -228,6 +228,14 @@ We can use `plotClustering()` to see a dendrogram of the peptide data set:
 plotClustering(pepdat)
 ```
 
+## PCA
+
+Function `plotPCA()` creates a principal-component analysis plot.
+
+```{r plot_pca, fig.width=5, fig.height=4}
+plotPCA(pepdat)
+```
+
 ## Removing bad data
 
 The last sample (B-7) in the example data looks odd. Lets say we call it "bad" and want to remove from analysis. The easiest way to do this is to modify the metadata.

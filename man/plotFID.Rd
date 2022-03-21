@@ -4,10 +4,21 @@
 \alias{plotFID}
 \title{Fold-change intensity diagram}
 \usage{
-plotFID(pdat, pair = NULL, bins = 80, marginal.histograms = FALSE,
-  xmin = NULL, xmax = NULL, ymax = NULL, text.size = 12,
-  point.size = 1, show.legend = TRUE, plot.grid = TRUE,
-  binhex = TRUE, transform.fun = log10)
+plotFID(
+  pdat,
+  pair = NULL,
+  bins = 80,
+  marginal.histograms = FALSE,
+  xmin = NULL,
+  xmax = NULL,
+  ymax = NULL,
+  text.size = 12,
+  point.size = 1,
+  show.legend = TRUE,
+  plot.grid = TRUE,
+  binhex = TRUE,
+  transform.fun = log10
+)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}

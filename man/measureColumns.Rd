@@ -4,7 +4,9 @@
 \name{measureColumns}
 \alias{measureColumns}
 \title{Measure columns}
-\format{An object of class \code{list} of length 1.}
+\format{
+An object of class \code{list} of length 1.
+}
 \usage{
 measureColumns
 }

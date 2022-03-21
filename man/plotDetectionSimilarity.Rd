@@ -4,8 +4,13 @@
 \alias{plotDetectionSimilarity}
 \title{Detection Jaccard similarity}
 \usage{
-plotDetectionSimilarity(pdat, bin.size = 0.01, text.size = 12,
-  plot.grid = TRUE, hist.colour = "grey30")
+plotDetectionSimilarity(
+  pdat,
+  bin.size = 0.01,
+  text.size = 12,
+  plot.grid = TRUE,
+  hist.colour = "grey30"
+)
 }
 \arguments{
 \item{pdat}{A \code{proteusData} object with peptides (or proteins).}

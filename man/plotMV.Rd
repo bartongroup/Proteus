@@ -4,9 +4,18 @@
 \alias{plotMV}
 \title{Plot mean-variance relationship}
 \usage{
-plotMV(pdat, with.loess = FALSE, bins = 80, xmin = 5, xmax = 10,
-  ymin = 7, ymax = 20, with.n = FALSE, mid.gradient = 0.3,
-  text.size = 10)
+plotMV(
+  pdat,
+  with.loess = FALSE,
+  bins = 80,
+  xmin = 5,
+  xmax = 10,
+  ymin = 7,
+  ymax = 20,
+  with.n = FALSE,
+  mid.gradient = 0.3,
+  text.size = 10
+)
 }
 \arguments{
 \item{pdat}{Peptide or protein \code{proteusData} object.}

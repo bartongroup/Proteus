@@ -4,8 +4,7 @@
 \alias{limmaRatioDE}
 \title{Simple one-sample differential expression with limma}
 \usage{
-limmaRatioDE(pdat, condition = NULL, transform.fun = log2,
-  sig.level = 0.05)
+limmaRatioDE(pdat, condition = NULL, transform.fun = log2, sig.level = 0.05)
 }
 \arguments{
 \item{pdat}{Protein \code{proteusData} object.}

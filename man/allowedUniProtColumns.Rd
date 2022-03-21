@@ -4,7 +4,9 @@
 \name{allowedUniProtColumns}
 \alias{allowedUniProtColumns}
 \title{Allowed UniProt columns}
-\format{An object of class \code{character} of length 27.}
+\format{
+An object of class \code{character} of length 27.
+}
 \usage{
 allowedUniProtColumns
 }

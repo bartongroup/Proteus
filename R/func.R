@@ -1567,7 +1567,7 @@ limmaRatioDE <- function(pdat, condition=NULL, transform.fun=log2, sig.level=0.0
 
   # select condition
   sel <- which(meta$condition == condition)
-  if(length(sel) < 3) stop("Need at least two replicates for one-sample differential expression.")
+  if(length(sel) < 2) stop("Need at least two replicates for one-sample differential expression.")
   tab <- tab[, sel]
 
   # limma analysis

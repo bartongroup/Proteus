@@ -4,8 +4,7 @@
 \alias{readProteinGroups}
 \title{Read protein groups file from MaxQuant}
 \usage{
-readProteinGroups(file, meta, measure.cols = NULL,
-  data.cols = proteinColumns)
+readProteinGroups(file, meta, measure.cols = NULL, data.cols = proteinColumns)
 }
 \arguments{
 \item{file}{Input file}

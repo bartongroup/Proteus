@@ -4,12 +4,25 @@
 \alias{proteusData}
 \title{\code{proteusData} constructor}
 \usage{
-proteusData(tab, metadata, content, pep2prot, peptides, proteins, measures,
-  npep = NULL, type = "label-free", sequence.col = "sequence",
-  protein.col = "protein", peptide.aggregate.fun = NULL,
-  peptide.aggregate.parameters = NULL, protein.aggregate.fun = NULL,
-  protein.aggregate.parameters = NULL, min.peptides = NULL,
-  norm.fun = identity)
+proteusData(
+  tab,
+  metadata,
+  content,
+  pep2prot,
+  peptides,
+  proteins,
+  measures,
+  npep = NULL,
+  type = "label-free",
+  sequence.col = "sequence",
+  protein.col = "protein",
+  peptide.aggregate.fun = NULL,
+  peptide.aggregate.parameters = NULL,
+  protein.aggregate.fun = NULL,
+  protein.aggregate.parameters = NULL,
+  min.peptides = NULL,
+  norm.fun = identity
+)
 }
 \arguments{
 \item{tab}{A matrix with data, rows are peptides/proteins, columns are

@@ -30,6 +30,7 @@ meta <- read.table("../testdata/data_makePeptide_meta.txt", header=TRUE, sep="\t
 # make sure even if levels order is not correct, makePeptideTable sorts this out:
 meta.ordered <- meta
 meta.ordered$sample <- factor(meta.ordered$sample, levels=meta.ordered$sample)
+meta.ordered$condition <- factor(meta.ordered$condition)
 
 context("Casting evidence into peptide table")
 

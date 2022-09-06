@@ -98,7 +98,7 @@ fetchFromUniProt <- function(unis, columns=c("genes", "protein names"),
     stop("No valid UniProt accession numbers found.")
   }
 
-  url <- "http://www.uniprot.org/uniprot/"
+  url <- "http://legacy.uniprot.org/uniprot/"
 
   # split id list into batches of maximum size of batchsize
   batches <- split(unis, ceiling(seq_along(unis) / batchsize))
